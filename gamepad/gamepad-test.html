@@ -1,16 +1,14 @@
 <!DOCTYPE html>
 <html>
+<head>
+    <title>Gamepad Test</title>
+</head>
+<body>
     <h1>GAMEPAD STUFF</h1>
     <div id="container">
-        <p id="gamepad-text"></p>
+        <p id="gamepad-status">No gamepad connected!</p>
+        <pre id="gamepad-text"></pre>
     </div>
-   <script src="gamepad.js"></script> 
-   <script>
-        // let obj;
-        let container = document.getElementById("container");
-        const obj = {name: "John", age: 30, city: "New York"};
-        const myJSON = JSON.stringify(obj);
-        console.log(myJSON);
-   </script>
-   <p id="jsonOutput"></p>
+    <script src="gamepad.js"></script>
+</body>
 </html>
