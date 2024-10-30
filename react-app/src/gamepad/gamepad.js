@@ -35,8 +35,8 @@ function detectBrowser() {
  */
 const getButtonObjectFromGamepad = (gamepad) => {
     return {
-        x: gamepad.buttons[3].value,
-        y: gamepad.buttons[2].value,
+        x: gamepad.buttons[2].value,
+        y: gamepad.buttons[3].value,
         a: gamepad.buttons[0].value,
         b: gamepad.buttons[1].value,
         lt: gamepad.buttons[6].value,
