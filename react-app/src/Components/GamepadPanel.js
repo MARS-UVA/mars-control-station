@@ -1,4 +1,4 @@
-import React, { useState, useEffect} from 'react';
+import React from 'react';
 
 // This component renders a panel with a message indicating the gamepad status
 function GamepadPanel({gamepadStatus}) {
