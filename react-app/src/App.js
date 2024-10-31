@@ -14,7 +14,7 @@ const App = () => {
   const [gamepadStatus, setGamepadStatus] = useState('No gamepad connected!');
 
   
-  const [timestamp, setTimestamp] = useState(1);
+  const [timestamp, setTimestamp] = useState(0);
   const [chartData, setChartData] = useState(Array.from({ length: 1 }, (_, i) => ({
     
     time: i,

@@ -23,35 +23,31 @@ function Socket({ setGamePadStatus, setChartData, setLastDataPoint, timestamp, s
       }, []);
 
       useEffect(() => {
-
         const addNewData = () => {
-          const newData = (l)=>{ return {
-            time: l, // The next index as time
-            value1: Math.random() * 100,
-            value2: Math.random() * 100,
-            value3: Math.random() * 100,
-            value4: Math.random() * 100,
-          }}
-      
-          // Set the new array (using the spread operator to create a new array)
-          setChartData((prevData) => {
-            let newDataPoint = newData(timestamp)
-            setLastDataPoint(newDataPoint)
-            setTimestamp((prevTime) => prevTime + 1)
-            const newDataArray = [...prevData, newDataPoint];
-            // Keep only the most recent 30 seconds of data
-            return newDataArray.slice(-30);
+          setTimestamp((prevTime) => {
+            const newTime = prevTime + 1;
+            const newData = {
+              time: newTime,
+              value1: Math.random() * 100,
+              value2: Math.random() * 100,
+              value3: Math.random() * 100,
+              value4: Math.random() * 100,
+            };
+    
+            setChartData((prevData) => {
+              setLastDataPoint(newData);
+              const newDataArray = [...prevData, newData];
+              return newDataArray.slice(-30);
+            });
+    
+            return newTime;
           });
         };
-
+    
         const intervalId = setInterval(addNewData, 1000);
-
-  
-  
-
-
+    
         return () => clearInterval(intervalId);
-      }, []);
+      }, [setChartData, setLastDataPoint, setTimestamp]);
 
       useEffect(() => {
 
