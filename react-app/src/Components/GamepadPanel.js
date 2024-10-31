@@ -1,26 +1,10 @@
 import React, { useState, useEffect} from 'react';
 
 // This component renders a panel with a message indicating the gamepad status
-function GamepadPanel() {
+function GamepadPanel({gamepadStatus}) {
   // State Hook - useState for managing local state
-  const [gamepadStatus, setGamepadStatus] = useState('No gamepad connected!');
-  useEffect(() => {
-    const handleGamepadConnected = (e) => {
-      setGamepadStatus(`Gamepad connected!: ${e.gamepad.id}`);
-    };
 
-    const handleGamepadDisconnected = () => {
-      setGamepadStatus('No gamepad connected!');
-    };
-
-    window.addEventListener('gamepadconnected', handleGamepadConnected);
-    window.addEventListener('gamepaddisconnected', handleGamepadDisconnected);
-
-    return () => {
-      window.removeEventListener('gamepadconnected', handleGamepadConnected);
-      window.removeEventListener('gamepaddisconnected', handleGamepadDisconnected);
-    };
-  }, []);
+  
   
 
 
