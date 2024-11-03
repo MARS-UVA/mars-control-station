@@ -27,8 +27,19 @@ function LiveDataPanel() {
     </ResponsiveContainer>
   );
 
-  // Ref Hook - useRef for accessing a DOM element or mutable value
-  
+  const Lever = ({ value, label }) => (
+    <div className="lever-container">
+      <div className="lever">
+        <div 
+          className="lever-fill"
+          style={{ height: `${value * 100}%` }}
+        />
+      </div>
+      <div className="lever-label">
+        {label}
+      </div>
+    </div>
+  );
 
   useEffect(() => {
 
@@ -72,6 +83,12 @@ function LiveDataPanel() {
           <div className="chart-space"><Chart dataKey="value2" />Motor 2: {round(lastDataPoint["value2"])}</div>
           <div className="chart-space"><Chart dataKey="value3" />Motor 3: {round(lastDataPoint["value3"])}</div>
           <div className="chart-space"><Chart dataKey="value4" />Motor 4: {round(lastDataPoint["value4"])}</div>
+        </div>
+        <div className="lever-grid">
+          <div className="lever-space"><Lever value={lastDataPoint["value1"] / 100} label={`Motor 5: ${round(lastDataPoint["value1"])}`} /></div>
+          <div className="lever-space"><Lever value={lastDataPoint["value1"] / 100} label={`Motor 5: ${round(lastDataPoint["value1"])}`} /></div>
+          <div className="lever-space"><Lever value={lastDataPoint["value1"] / 100} label={`Motor 5: ${round(lastDataPoint["value1"])}`} /></div>
+          <div className="lever-space"><Lever value={lastDataPoint["value1"] / 100} label={`Motor 5: ${round(lastDataPoint["value1"])}`} /></div>
         </div>
       </div>
     </>
