@@ -1,3 +1,6 @@
+/*
+If a gamepad is connected, this component displays what buttons are pressed on it
+*/
 import React from 'react';
 import './GamepadDisplay.css';
 
