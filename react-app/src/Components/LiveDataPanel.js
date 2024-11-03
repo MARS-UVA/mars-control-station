@@ -27,7 +27,7 @@ function LiveDataPanel() {
     </ResponsiveContainer>
   );
 
-  const Lever = ({ value }) => (
+  const Lever = ({ value, label }) => (
     <div className="lever-container">
       <div className="lever">
         <div 
@@ -35,8 +35,8 @@ function LiveDataPanel() {
           style={{ height: `${value * 100}%` }}
         />
       </div>
-      <div className="lever-value">
-        {value.toFixed(1)}
+      <div className="lever-label">
+        {label}
       </div>
     </div>
   );
@@ -85,10 +85,10 @@ function LiveDataPanel() {
           <div className="chart-space"><Chart dataKey="value4" />Motor 4: {round(lastDataPoint["value4"])}</div>
         </div>
         <div className="lever-grid">
-            <div className="lever-space"><Lever value={lastDataPoint["value1"] / 100} />Motor 5: {round(lastDataPoint["value1"])}</div>
-            <div className="lever-space"><Lever value={lastDataPoint["value1"] / 100} />Motor 5: {round(lastDataPoint["value1"])}</div>
-            <div className="lever-space"><Lever value={lastDataPoint["value1"] / 100} />Motor 5: {round(lastDataPoint["value1"])}</div>
-            <div className="lever-space"><Lever value={lastDataPoint["value1"] / 100} />Motor 5: {round(lastDataPoint["value1"])}</div>
+          <div className="lever-space"><Lever value={lastDataPoint["value1"] / 100} label={`Motor 5: ${round(lastDataPoint["value1"])}`} /></div>
+          <div className="lever-space"><Lever value={lastDataPoint["value1"] / 100} label={`Motor 5: ${round(lastDataPoint["value1"])}`} /></div>
+          <div className="lever-space"><Lever value={lastDataPoint["value1"] / 100} label={`Motor 5: ${round(lastDataPoint["value1"])}`} /></div>
+          <div className="lever-space"><Lever value={lastDataPoint["value1"] / 100} label={`Motor 5: ${round(lastDataPoint["value1"])}`} /></div>
         </div>
       </div>
     </>
