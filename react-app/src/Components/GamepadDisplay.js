@@ -23,12 +23,16 @@ const GamepadDisplay = ({ gamepadData }) => {
       <div className="buttons">
         {Object.keys(buttons).map((button) => (
           <div key={button} className={`button ${buttons[button] ? 'pressed' : ''}`}>
-            {button.toUpperCase()}: {buttons[button]}
+            {button.toUpperCase()}: {round(buttons[button])}
           </div>
         ))}
       </div>
     </div>
   );
 };
+
+function round(num) {
+  return Math.round(num * 100) / 100
+}
 
 export default GamepadDisplay;
