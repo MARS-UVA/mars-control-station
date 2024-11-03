@@ -36,7 +36,7 @@ int main()
     }
 
     address.sin_family = AF_INET;
-    address.sin_addr.s_addr = INADDR_ANY;
+    address.sin_addr.s_addr = htonl(INADDR_ANY);
     address.sin_port = htons(PORT);
 
     if (bind(server_fd, (struct sockaddr *)&address, sizeof(address)) < 0)
@@ -50,7 +50,7 @@ int main()
         perror("not listening");
         exit(EXIT_FAILURE);
     }
-
+    while(1){
     if ((server_socket = accept(server_fd, (struct sockaddr *)&address, (socklen_t *)&addrlen)) < 0)
     {
         perror("accept failed");
@@ -60,5 +60,7 @@ int main()
     valread = read(server_socket, buffer, 1024);
     printf("%s\n", buffer);
     send(server_socket, ack, strlen(ack), 0);
+    close(server_socket);
+    }
     return 0;
 }
