@@ -1,7 +1,7 @@
-```
+/*
 Renders dashboard with gamepad status, drive state, live data, and webcam feed
 Updates through socket connection
-```
+*/
 
 import React, {useState, useEffect} from "react";
 
