@@ -1,3 +1,8 @@
+```
+Renders dashboard with gamepad status, drive state, live data, and webcam feed
+Updates through socket connection
+```
+
 import React, {useState, useEffect} from "react";
 
 import "./App.css";
@@ -7,6 +12,8 @@ import DriveStatePanel from "./Components/DriveStatePanel";
 import WebcamPanel from "./Components/WebcamPanel";
 import Socket from "./Components/Socket";
 import SingleLiveDataStream from "./Components/SingleLiveDataStream";
+
+
 
 const App = () => {
 
