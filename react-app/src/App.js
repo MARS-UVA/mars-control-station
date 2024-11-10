@@ -24,14 +24,14 @@ const App = () => {
     value4: Math.random() * 100,
   })));
   const [lastDataPoint, setLastDataPoint] = useState(chartData[chartData.length - 1]);
-  const [iluvbrian, setBrian] = useState("goat");
+  const [valueData, setData] = useState("data");
 
   
 
   return (
     <div className="app-container">
       {/* <h1 className="title">MARS Web UI</h1> */}
-      <Socket setGamePadStatus={setGamepadStatus} setChartData={setChartData} setLastDataPoint={setLastDataPoint} timestamp={timestamp} setTimestamp={setTimestamp} setBrian={setBrian}/>
+      <Socket setGamePadStatus={setGamepadStatus} setChartData={setChartData} setLastDataPoint={setLastDataPoint} timestamp={timestamp} setTimestamp={setTimestamp} setData={setData}/>
 
 
       <div className="content">
@@ -41,9 +41,9 @@ const App = () => {
           <DriveStatePanel />
 
           <div className="content">
-            <SingleLiveDataStream dataStreamName={"oofs"} currentVal={2}/>
-            <SingleLiveDataStream dataStreamName={"yay"} currentVal={3}/>
-            <SingleLiveDataStream dataStreamName={"iluvbrian"} currentVal={iluvbrian}/>
+            <SingleLiveDataStream dataStreamName={"value1"} currentVal={2}/>
+            <SingleLiveDataStream dataStreamName={"value2"} currentVal={3}/>
+            <SingleLiveDataStream dataStreamName={"value3"} currentVal={valueData}/>
           </div>
 
         </div>

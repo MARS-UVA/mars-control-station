@@ -2,7 +2,7 @@ import React, { useEffect, useState} from 'react';
 
 // This component renders a panel with a message indicating the gamepad status
 
-function Socket({ setGamePadStatus, setChartData, setLastDataPoint, timestamp, setTimestamp, setBrian }) {
+function Socket({ setGamePadStatus, setChartData, setLastDataPoint, timestamp, setTimestamp, setData: setData }) {
  
     useEffect(() => {
         const handleGamepadConnected = (e) => {
@@ -51,14 +51,14 @@ function Socket({ setGamePadStatus, setChartData, setLastDataPoint, timestamp, s
 
       useEffect(() => {
 
-        const addBrian = () => {
-          setBrian((prevData) => {
-            if(prevData.length>10) {return "goat";}
-            return prevData + "!"
+        const addData = () => {
+          setData((prevData) => {
+            if(prevData.length>10) {return "data";}
+            return prevData + "."
           });
         };
 
-        const intervalId = setInterval(addBrian, 1000);
+        const intervalId = setInterval(addData, 1000);
 
   
   
