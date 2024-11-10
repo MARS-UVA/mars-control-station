@@ -1,7 +1,7 @@
 import React from "react";
 
 
-// This component renders a panel with charts and live values
+// This component renders a small UI panel with a single piece of data
 function SingleLiveDataStream({dataStreamName, currentVal}) {
   
 

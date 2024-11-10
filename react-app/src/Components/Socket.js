@@ -1,6 +1,6 @@
 import React, { useEffect, useState} from 'react';
 
-// This component renders a panel with a message indicating the gamepad status
+// This component will handle backend/API calls with useEffect blocks, and send the data to the UI components
 
 function Socket({ setGamePadStatus, setChartData, setLastDataPoint, timestamp, setTimestamp, setData: setData }) {
  
