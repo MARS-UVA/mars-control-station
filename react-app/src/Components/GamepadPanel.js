@@ -1,20 +1,36 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { getGamepadState} from '../gamepad/gamepad';
+import GamepadDisplay from './GamepadDisplay';
+// renders the gamepad panel
+function GamepadPanel() {
+  const [gamepadStatus, setGamepadStatus] = useState('No gamepad connected!');
+  const [gamepadData, setGamepadData] = useState(null);
 
-// This component renders a panel with a message indicating the gamepad status
-function GamepadPanel({gamepadStatus}) {
-  // State Hook - useState for managing local state
+  useEffect(() => {
+    const handleGamepadConnected = (e) => {
+      setGamepadStatus(`Gamepad connected!: ${e.gamepad.id}`);
+    };
 
-  
-  
+    const handleGamepadDisconnected = () => {
+      setGamepadStatus('No gamepad connected!');
+      setGamepadData(null);
+    };
 
+    window.addEventListener('gamepadconnected', handleGamepadConnected);
+    window.addEventListener('gamepaddisconnected', handleGamepadDisconnected);
 
-  // Render the component UI
-  return (
-    <div className="panel">
-            {/* <h2 className="panel-title">Gamepad Status</h2> */}
-            <p className="gamepad-status">{gamepadStatus}</p>
-    </div>
-  );
-}
+    const interval = setInterval(() => {
+      const gamepads = navigator.getGamepads();
+      if (gamepads[0]) {
+        setGamepadData(getGamepadState(0));
+      }
+    }, 30);
+
+    return () => {
+      window.removeEventListener('gamepadconnected', handleGamepadConnected);
+      window.removeEventListener('gamepaddisconnected', handleGamepadDisconnected);
+      clearInterval(interval);
+    };
+  }, []);
 
 export default GamepadPanel;
