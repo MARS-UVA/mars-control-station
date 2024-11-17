@@ -33,12 +33,4 @@ function GamepadPanel() {
     };
   }, []);
 
-  return (
-    <div className="panel">
-      <p className="gamepad-status">{gamepadStatus}</p>
-      {gamepadData && <GamepadDisplay gamepadData={gamepadData} />}
-    </div>
-  );
-}
-
 export default GamepadPanel;
