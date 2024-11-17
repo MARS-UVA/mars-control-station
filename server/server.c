@@ -60,7 +60,7 @@ int main()
     valread = read(server_socket, buffer, 1024);
     printf("%s\n", buffer);
     send(server_socket, ack, strlen(ack), 0);
-    close(server_socket);
+    pclose(server_socket);
     }
     return 0;
 }

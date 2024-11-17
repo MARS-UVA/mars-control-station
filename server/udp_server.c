@@ -4,7 +4,7 @@
 #include <arpa/inet.h>
 
 #define PORT 8080
-
+#define MESSAGE_LENGTH 100
 int main() {
     int socket_desc;
     struct sockaddr_in server_addr, client_addr;
@@ -40,7 +40,7 @@ int main() {
     
     while(1) {
         // Receive client's message:
-        if (recvfrom(socket_desc, client_message, sizeof(client_message), 0,
+        if (recvfrom(socket_desc, client_message, MESSAGE_LENGTH, 0,
             (struct sockaddr*)&client_addr, &client_struct_length) < 0){
              printf("Couldn't receive\n");
             return -1;
