@@ -32,5 +32,5 @@ function GamepadPanel() {
       clearInterval(interval);
     };
   }, []);
-
+}
 export default GamepadPanel;
