@@ -69,6 +69,11 @@
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
+.lever-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
 
 .panel-title {
   text-align: center;
@@ -182,17 +187,16 @@
   padding: 10px;
   font-variant-numeric: tabular-nums;
 }
+.lever-space {
+  text-align: center;
+  padding: 10px;
+  font-variant-numeric: tabular-nums;
+}
 
 .lever-grid {
   display: flex;
   justify-content: center;
-}
-
-.lever-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin: 0 8px;
+  grid-template-columns: repeat(4, 1fr);
 }
 
 .lever {
@@ -237,4 +241,40 @@
 .gamepad-status {
   text-align: center;
   color: #718096;
+}
+.gamepad-data {
+  background-color: #f5f5f5;
+  border: 1px solid #ddd;
+  padding: 10px;
+  border-radius: 5px;
+  font-family: monospace;
+  white-space: pre-wrap; /* Allows wrapping of long lines */
+  word-wrap: break-word; /* Breaks long words */
+}
+.lever-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.lever {
+  width: 50px;
+  height: 200px;
+  border: 1px solid #000;
+  position: relative;
+}
+
+.lever-fill {
+  width: 100%;
+  background-color: #8884d8;
+  position: absolute;
+  bottom: 0;
+}
+
+.lever-label {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  margin-top: 10px;
 }
