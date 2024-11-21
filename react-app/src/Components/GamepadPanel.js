@@ -33,6 +33,7 @@ function GamepadPanel() {
     };
   }, []);
 
+
   return (
     <div className="panel">
       <p className="gamepad-status">{gamepadStatus}</p>
