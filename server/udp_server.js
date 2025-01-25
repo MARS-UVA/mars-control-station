@@ -49,18 +49,7 @@ server.on('message', (message, remote) => {
         // Clear chunks to recieve new image
         recievedChunks = {};
     }
-
-    /*
-    // output image tetings
-    fs.writeFile('output.jpg', message, (err) => {
-        if (err) {
-            console.error('Error writing the file:', err);
-        } else {
-            console.log('JPEG file created successfully as output.jpg');
-        }
-    });
-    */
-
+    
     /*
     // Echo the message back to the client
     server.send(message, 0, message.length, remote.port, remote.address, (err) => {
