@@ -9,7 +9,7 @@ class ServerSocket {
     /**
      * 
      * @param {Number} port 
-     * @param {(server: dgram.Socket) => void} onMessage 
+     * @param {(receivedChunks: object) => void} onMessage 
      */
     constructor (port, onMessage) {
         this.PORT = port;
@@ -18,15 +18,15 @@ class ServerSocket {
         this.server = dgram.createSocket('udp4');
     
         // Event: On server start
-        server.on('listening', () => {
-            const address = server.address();
+        this.server.on('listening', () => {
+            const address = this.server.address();
             console.log(`Server is listening on ${address.address}:${address.port}`);
             // Set buffer size
-            server.setRecvBufferSize(MESSAGE_LENGTH);
+            this.server.setRecvBufferSize(MESSAGE_LENGTH);
         });
 
         // Event: On receiving a message
-        server.on('message', (message, remote) => {
+        this.server.on('message', (message, remote) => {
             //console.log(`Received message from IP: ${remote.address} and port: ${remote.port}`);
             //console.log(`Msg from client: ${message.toString()}`);
 
@@ -36,25 +36,13 @@ class ServerSocket {
             const chunkData = message.subarray(3);
             console.log(`Received packet ${sequenceNumber + 1} of ${totalPackets}`);
             receivedChunks[sequenceNumber] = chunkData;
-            totalChunks = totalPackets;
-
-            // This variable (function) does logic speicific to type of data socket handles
-            onMessage()
+            const totalChunks = totalPackets;
 
             // Check if all packets have been received
             // Probably keep check recievedChunks length in default, rest in logic
             if(Object.keys(receivedChunks).length == totalChunks) {
-                console.log("All chunks received. Reassembling image.")
-                const fullImage = Buffer.concat(Object.values(receivedChunks));
-
-                // Write image to file
-                fs.writeFile('output.jpg', fullImage, (err) => {
-                    if(err) {
-                        console.error("Error writing file: ", err)
-                    } else {
-                        console.log("File reassembled and saved successfully (?)")
-                    }
-                })
+                // This variable (function) does logic speicific to type of data socket handles
+                onMessage(receivedChunks)
             }
             
             /*
@@ -70,19 +58,39 @@ class ServerSocket {
         });
 
         // Bind the server to the port and IP
-        server.bind(PORT, '127.0.0.1', () => {
+        this.server.bind(this.PORT, '127.0.0.1', () => {
             console.log("Socket bound successfully");
         });
 
         // Event: On error
-        server.on('error', (err) => {
+        this.server.on('error', (err) => {
             console.error(`Server error: ${err.stack}`);
-            server.close();
+            this.server.close();
         });
 
         // Event: On close
-        server.on('close', () => {
+        this.server.on('close', () => {
             console.log("Server socket closed");
         });
     }
 }
+
+const imageOnMessage = (receivedChunks) => {
+    console.log("All chunks received. Reassembling image.")
+    const fullImage = Buffer.concat(Object.values(receivedChunks));
+
+    // Write image to file
+    fs.writeFile('output.jpg', fullImage, (err) => {
+        if (err) {
+            console.error("Error writing file: ", err)
+        } else {
+            console.log("File reassembled and saved successfully (?)")
+        }
+    })
+}
+
+const imageSocket = new ServerSocket(8080, imageOnMessage)
+const motorFeedbackSocket = new ServerSocket(2000, (receivedChunks) => {
+    console.log("packet received")
+    console.log(receivedChunks)
+})
