@@ -25,24 +25,27 @@ class ServerSocket {
             this.server.setRecvBufferSize(MESSAGE_LENGTH);
         });
 
+        this.receivedChunks = {}
+
         // Event: On receiving a message
         this.server.on('message', (message, remote) => {
             //console.log(`Received message from IP: ${remote.address} and port: ${remote.port}`);
             //console.log(`Msg from client: ${message.toString()}`);
 
-            const receivedChunks = {}
+            // const receivedChunks = {}
             const sequenceNumber = message[0];
             const totalPackets = (message[1] << 8) | message[2];
             const chunkData = message.subarray(3);
             console.log(`Received packet ${sequenceNumber + 1} of ${totalPackets}`);
-            receivedChunks[sequenceNumber] = chunkData;
+            this.receivedChunks[sequenceNumber] = chunkData;
             const totalChunks = totalPackets;
 
             // Check if all packets have been received
             // Probably keep check recievedChunks length in default, rest in logic
-            if(Object.keys(receivedChunks).length == totalChunks) {
+            if(sequenceNumber + 1 == totalChunks) {
                 // This variable (function) does logic speicific to type of data socket handles
-                onMessage(receivedChunks)
+                onMessage(this.receivedChunks)
+                this.receivedChunks = {}
             }
             
             /*
@@ -77,6 +80,7 @@ class ServerSocket {
 
 const imageOnMessage = (receivedChunks) => {
     console.log("All chunks received. Reassembling image.")
+    console.log(Object.keys(receivedChunks))
     const fullImage = Buffer.concat(Object.values(receivedChunks));
 
     // Write image to file
