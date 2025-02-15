@@ -17,6 +17,7 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
       </LineChart>
     </ResponsiveContainer>
   );
+
   
   const Lever = ({ value }) => (
     <ResponsiveContainer Container width="100%" height={100}>
@@ -28,6 +29,7 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
         />
       </div>
 
+
       <div className="lever-value">
         {value.toFixed(1)}
       </div>
@@ -35,6 +37,7 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
   );
   // Ref Hook - useRef for accessing a DOM element or mutable value
 
+  
 
 
   
@@ -52,12 +55,21 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
           <div className="chart-space"><Chart dataKey="value3" />Motor 3: {round(lastDataPoint["value3"])}</div>
           <div className="chart-space"><Chart dataKey="value4" />Motor 4: {round(lastDataPoint["value4"])}</div>
         </div>
+
+        <div className="lever-grid">
+          <div className="lever-space"><Lever value={lastDataPoint["value1"] / 100} label={`Motor 5: ${round(lastDataPoint["value1"])}`} /></div>
+          <div className="lever-space"><Lever value={lastDataPoint["value1"] / 100} label={`Motor 5: ${round(lastDataPoint["value1"])}`} /></div>
+          <div className="lever-space"><Lever value={lastDataPoint["value1"] / 100} label={`Motor 5: ${round(lastDataPoint["value1"])}`} /></div>
+          <div className="lever-space"><Lever value={lastDataPoint["value1"] / 100} label={`Motor 5: ${round(lastDataPoint["value1"])}`} /></div>
+        </div>
+
         {/* <div className="lever-grid">
           <div className="lever-space"><Lever value={lastDataPoint["value1"] / 100} /></div>
           <div className="lever-space"><Lever value={lastDataPoint["value2"] / 100} /></div>
           <div className="lever-space"><Lever value={lastDataPoint["value3"] / 100} /></div>
           <div className="lever-space"><Lever value={lastDataPoint["value3"] / 100} /></div>
         </div> */}
+
 
       </div>
     </>
