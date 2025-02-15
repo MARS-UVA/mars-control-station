@@ -44,5 +44,4 @@ function GamepadPanel() {
 
 
 
-}
 export default GamepadPanel;
