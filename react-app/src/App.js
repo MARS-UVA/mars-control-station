@@ -10,7 +10,7 @@ import LiveDataPanel from "./Components/LiveDataPanel";
 import GamepadPanel from "./Components/GamepadPanel";
 import DriveStatePanel from "./Components/DriveStatePanel";
 import WebcamPanel from "./Components/WebcamPanel";
-import SocketHandler from "./Components/SockeHandler";
+import SocketHandler from "./Components/SocketHandler";
 import SingleLiveDataStream from "./Components/SingleLiveDataStream";
 
 
