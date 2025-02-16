@@ -37,3 +37,6 @@ if (process.argv.length !== 4) {
 const ip = process.argv[2];
 const data = process.argv[3];
 client(ip, data);
+
+
+export default client;
