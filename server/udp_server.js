@@ -1,8 +1,31 @@
 const fs = require('fs');
 const dgram = require('dgram');
+const WebSocket = require('ws');
 
 
 const MESSAGE_LENGTH = 1500;
+const WS_PORT = 3001;
+
+const webSocketServer = new WebSocket.Server({port : WS_PORT})
+let lastImageBuffer = null;
+const clients = new Set();
+
+
+webSocketServer.on('connection', (ws) => {
+    console.log('Websocket client connected')
+    clients.add(ws)
+
+    ws.on('close', () => {
+        clients.delete(ws);
+        console.log('Disconnected Websocket client');
+    });
+
+    if(lastImageBuffer) {
+        ws.send(lastImageBuffer);
+    }
+    console.log(clients)
+})
+
 
 class ServerSocket {
     // Local Variables
@@ -82,7 +105,17 @@ const imageOnMessage = (receivedChunks) => {
     console.log("All chunks received. Reassembling image.")
     console.log(Object.keys(receivedChunks))
     const fullImage = Buffer.concat(Object.values(receivedChunks));
+    lastImageBuffer = fullImage;
 
+    // Send to websocket
+    console.log(clients);
+    clients.forEach((client) => {
+        if(client.readyState == WebSocket.OPEN) {
+            client.send(lastImageBuffer);
+        }
+    })
+
+    /*
     // Write image to file
     fs.writeFile('output.jpg', fullImage, (err) => {
         if (err) {
@@ -90,7 +123,7 @@ const imageOnMessage = (receivedChunks) => {
         } else {
             console.log("File reassembled and saved successfully (?)")
         }
-    })
+    }) */
 }
 
 const imageSocket = new ServerSocket(8080, imageOnMessage)

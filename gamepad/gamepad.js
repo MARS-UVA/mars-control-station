@@ -11,6 +11,14 @@ window.addEventListener('gamepaddisconnected', e => {
     document.getElementById('gamepad-text').textContent = '';
 });
 
+function getGamepadState(index = 0) {
+    return {
+        leftStick: getLeftStickFromGamepad(gamepads[index]),
+        rightStick: getRightStickFromGamepad(gamepads[index]),
+        buttons: getButtonObjectFromGamepad(gamepads[index])
+    };
+}
+
 function detectBrowser() {
     const userAgent = navigator.userAgent;
     if (userAgent.match(/chrome|chromium|crios/i)) {
