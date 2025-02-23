@@ -13,12 +13,14 @@ import WebcamPanel from "./Components/WebcamPanel";
 import SocketHandler from "./Components/SocketHandler";
 import SingleLiveDataStream from "./Components/SingleLiveDataStream";
 
+import { useHotkeys } from 'react-hotkeys-hook';
 
 
 const App = () => {
 
   
   const [gamepadStatus, setGamepadStatus] = useState('No gamepad connected!');
+  const [driveState, setDriveState] = useState('Idle');
 
   
   const [timestamp, setTimestamp] = useState(0);
@@ -33,6 +35,21 @@ const App = () => {
   const [lastDataPoint, setLastDataPoint] = useState(chartData[chartData.length - 1]);
   const [valueData, setData] = useState("data");
 
+  function handleESTOP () {
+    //handle ESTOP press
+  }
+
+  function handleAStopHotkey () {
+    if (driveState == "Autonomous Drive") {handleAutonomousStop()}
+  }
+
+  function handleAutonomousStop () {
+    //handle immediate switching out of autonomous drive 
+    setDriveState("Direct Drive")
+  }
+
+  useHotkeys('space', handleAStopHotkey );
+
   
 
   return (
@@ -45,7 +62,7 @@ const App = () => {
         <div className="left-panel">
           <GamepadPanel gamepadStatus={gamepadStatus}/>
 
-          <DriveStatePanel />
+          <DriveStatePanel driveState={driveState} setDriveState={setDriveState} handleESTOP={handleESTOP} handleAutonomousStop={handleAutonomousStop}/>
 
           <div className="content">
             <SingleLiveDataStream dataStreamName={"value1"} currentVal={2}/>
