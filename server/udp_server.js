@@ -6,25 +6,17 @@ const WebSocket = require('ws');
 const MESSAGE_LENGTH = 1500;
 const WS_PORT = 3001;
 
-const webSocketServer = new WebSocket.Server({port : WS_PORT})
+const webSocketClient = new WebSocket('ws://localhost:' + WS_PORT);
 let lastImageBuffer = null;
-const clients = new Set();
 
 
-webSocketServer.on('connection', (ws) => {
+webSocketClient.on('open', () => {
     console.log('Websocket client connected')
-    clients.add(ws)
+});
 
-    ws.on('close', () => {
-        clients.delete(ws);
-        console.log('Disconnected Websocket client');
-    });
-
-    if(lastImageBuffer) {
-        ws.send(lastImageBuffer);
-    }
-    console.log(clients)
-})
+webSocketClient.on('close', () => {
+    console.log('Disconnected Websocket client');
+});
 
 
 class ServerSocket {
@@ -52,13 +44,14 @@ class ServerSocket {
 
         // Event: On receiving a message
         this.server.on('message', (message, remote) => {
+            console.log(message.subarray(0, 10));
             //console.log(`Received message from IP: ${remote.address} and port: ${remote.port}`);
             //console.log(`Msg from client: ${message.toString()}`);
 
             // const receivedChunks = {}
-            const sequenceNumber = message[0];
-            const totalPackets = (message[1] << 8) | message[2];
-            const chunkData = message.subarray(3);
+            const sequenceNumber = (message[1] << 8) | message[0];
+            const totalPackets = (message[3] << 8) | message[2];
+            const chunkData = message.subarray(10);
             console.log(`Received packet ${sequenceNumber + 1} of ${totalPackets}`);
             this.receivedChunks[sequenceNumber] = chunkData;
             const totalChunks = totalPackets;
@@ -108,12 +101,7 @@ const imageOnMessage = (receivedChunks) => {
     lastImageBuffer = fullImage;
 
     // Send to websocket
-    console.log(clients);
-    clients.forEach((client) => {
-        if(client.readyState == WebSocket.OPEN) {
-            client.send(lastImageBuffer);
-        }
-    })
+    webSocketClient.send(lastImageBuffer);
 
     /*
     // Write image to file
@@ -126,8 +114,8 @@ const imageOnMessage = (receivedChunks) => {
     }) */
 }
 
-const imageSocket = new ServerSocket(8080, imageOnMessage)
-const motorFeedbackSocket = new ServerSocket(2000, (receivedChunks) => {
+const imageSocket = new ServerSocket(2000, imageOnMessage)
+const motorFeedbackSocket = new ServerSocket(2001, (receivedChunks) => {
     console.log("packet received")
     console.log(receivedChunks)
 })
