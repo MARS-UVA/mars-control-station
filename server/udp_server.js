@@ -6,16 +6,20 @@ const WebSocket = require('ws');
 const MESSAGE_LENGTH = 1500;
 const WS_PORT = 3001;
 
-const webSocketClient = new WebSocket('ws://localhost:' + WS_PORT);
+const webSocketServer = new WebSocket.Server({port: WS_PORT});
 let lastImageBuffer = null;
 
 
-webSocketClient.on('open', () => {
-    console.log('Websocket client connected')
-});
+webSocketServer.on('connection', (ws) => {
+    console.log('Websocket client connected');
+    if(lastImageBuffer) {
+        ws.send(lastImageBuffer);
+        console.log('Sent image to client')
+    }
 
-webSocketClient.on('close', () => {
-    console.log('Disconnected Websocket client');
+    ws.on('close', () => {
+        console.log('Disconnected Websocket server');
+    });
 });
 
 
@@ -101,7 +105,10 @@ const imageOnMessage = (receivedChunks) => {
     lastImageBuffer = fullImage;
 
     // Send to websocket
-    webSocketClient.send(lastImageBuffer);
+    webSocketServer.clients.forEach((client) => {
+       client.send(lastImageBuffer) ;
+       console.log("sent image to client");
+    });
 
     /*
     // Write image to file
