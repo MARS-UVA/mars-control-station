@@ -1,10 +1,20 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Camera } from "lucide-react";
+import { Camera, ChevronRight, ChevronLeft } from "lucide-react";
 
 // This component renders a panel with a webcam feed (currently showing laptop webcam)
 function WebcamPanel() {
 
     const videoRef = useRef(null);
+    const [cameraState, setCameraState] = useState("cam1")
+    
+    const rightClicked = () => {
+      setCameraState("cam2");
+      console.log(cameraState)
+    }
+    const leftClicked = () => {
+      setCameraState("cam1")
+      console.log(cameraState)
+    }
 
     useEffect(() => {
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -27,10 +37,16 @@ function WebcamPanel() {
     <>
       <div className="panel">
         <div className="webcam-container">
-          <video ref={videoRef} autoPlay playsInline muted className="webcam" />
+          {cameraState == "cam1" ? <video ref={videoRef} autoPlay playsInline muted className="webcam" /> : ""}
           <div className="camera-icon">
             <Camera size={20} />
           </div>
+          <button className="camera-right-button" onClick={rightClicked}>
+            <ChevronRight size={20} />
+          </button>
+          <button className="camera-left-button" onClick={leftClicked}>
+            <ChevronLeft size={20} />
+          </button>
         </div>
       </div>
     </>
