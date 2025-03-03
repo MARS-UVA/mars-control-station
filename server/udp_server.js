@@ -41,7 +41,7 @@ class ServerSocket {
             const address = this.server.address();
             console.log(`Server is listening on ${address.address}:${address.port}`);
             // Set buffer size
-            this.server.setRecvBufferSize(MESSAGE_LENGTH);
+            this.server.setRecvBufferSize(MESSAGE_LENGTH * 100);    // This buffer could change size here to be more optimal im sure
         });
 
         this.receivedChunks = {}
@@ -57,6 +57,7 @@ class ServerSocket {
             const totalPackets = (message[3] << 8) | message[2];
             const chunkData = message.subarray(10);
             console.log(`Received packet ${sequenceNumber + 1} of ${totalPackets}`);
+            console.log(chunkData.length);
             this.receivedChunks[sequenceNumber] = chunkData;
             const totalChunks = totalPackets;
 

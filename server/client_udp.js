@@ -6,7 +6,7 @@ function client(ip, data) {
     const socket = dgram.createSocket('udp4');
 
     // Send the message to the server
-    socket.send(data, PORT, ip, (err) => {
+    socket.send(Buffer.from(data), PORT, ip, (err) => {
         if (err) {
             console.error('Error while sending message:', err.message);
             socket.close();
@@ -39,4 +39,4 @@ const data = process.argv[3];
 client(ip, data);
 
 
-export default client;
+//export default client;
