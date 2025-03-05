@@ -126,6 +126,7 @@
 .camera-left-button {
   position: absolute;
   top: 150px;
+  left: 20px;
   background-color: #2d3748;
   color: #ffffff;
   padding: 4px;

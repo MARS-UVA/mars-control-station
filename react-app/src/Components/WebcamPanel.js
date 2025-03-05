@@ -9,12 +9,11 @@ function WebcamPanel() {
     
     const rightClicked = () => {
       setCameraState("cam2");
-      console.log(cameraState)
     }
     const leftClicked = () => {
       setCameraState("cam1")
-      console.log(cameraState)
     }
+
 
     useEffect(() => {
         if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -29,7 +28,7 @@ function WebcamPanel() {
               console.error("Error accessing webcam:", error);
             });
         }
-      }, []);
+      }, [cameraState]);
 
 
 
@@ -41,12 +40,13 @@ function WebcamPanel() {
           <div className="camera-icon">
             <Camera size={20} />
           </div>
-          <button className="camera-right-button" onClick={rightClicked}>
-            <ChevronRight size={20} />
-          </button>
           <button className="camera-left-button" onClick={leftClicked}>
             <ChevronLeft size={20} />
           </button>
+          <button className="camera-right-button" onClick={rightClicked}>
+            <ChevronRight size={20} />
+          </button>
+          
         </div>
       </div>
     </>
