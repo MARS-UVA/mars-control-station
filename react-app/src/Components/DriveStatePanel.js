@@ -24,8 +24,29 @@ function DriveStatePanel() {
   useEffect(() => {
 
     const onKeyReleased = (event) => {
-      console.log('Key down:', event.key);
-     
+      console.log('Key up:', event.keyCode);
+      
+      switch (event.keyCode) {
+        case 65:
+          setDriveState('Autonomous Drive');
+          break;
+        case 83:
+          setDriveState('Direct Drive');
+          break;
+        case 68:
+          setDriveState('Idle');
+          break;
+      }
+
+      // if (event.keyCode == 83) {
+      //   switch (driveState) {
+      //     case 'Autonomous Drive':
+      //       setDriveState('Direct Drive');
+      //       break;
+
+      //   }
+      //   console.log(driveState);
+      // }
     };
 
     document.addEventListener('keyup', onKeyReleased);
