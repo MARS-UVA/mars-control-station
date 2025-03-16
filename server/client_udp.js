@@ -1,5 +1,16 @@
 const dgram = require('dgram');
 const PORT = 8080;
+const WebSocket = require('ws');
+
+
+const ws = new WebSocket("ws://localhost:3001");
+ws.onopen = () => {
+    console.log('ws connected');
+};
+ws.onmessage = (event) => {
+    console.log(JSON.parse(event.data));
+    client('127.0.0.1', event.data);
+};
 
 function client(ip, data) {
     // Create a UDP socket
@@ -16,10 +27,10 @@ function client(ip, data) {
     });
 
     // Listen for a response from the server
-    socket.on('message', (message) => {
+    /*socket.on('message', (message) => {
         console.log("Server's response:", message.toString());
         socket.close(); // Close the socket after receiving the response
-    });
+    });*/
 
     // Handle socket errors
     socket.on('error', (err) => {
@@ -28,15 +39,19 @@ function client(ip, data) {
     });
 }
 
+
+/*
 // Run the client function
 if (process.argv.length !== 4) {
     console.error('Usage: node client.js <IP_ADDRESS> <DATA>');
     process.exit(1);
 }
 
+
 const ip = process.argv[2];
 const data = process.argv[3];
 client(ip, data);
+*/
 
 
 //export default client;

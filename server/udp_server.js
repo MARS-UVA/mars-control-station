@@ -17,6 +17,14 @@ webSocketServer.on('connection', (ws) => {
         console.log('Sent image to client')
     }
 
+    ws.on('message', (message) => {
+        webSocketServer.clients.forEach(client => {
+            if(client != ws) {
+                client.send(message);
+            }
+        })
+    });
+
     ws.on('close', () => {
         console.log('Disconnected Websocket server');
     });
