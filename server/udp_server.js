@@ -9,8 +9,15 @@ const WS_PORT = 3001;
 const webSocketServer = new WebSocket.Server({port: WS_PORT});
 let lastImageBuffer = null;
 
+const websockets = {
+    image: null,
+    motorCurent: null,
+    client: null
+};
+
 
 webSocketServer.on('connection', (ws) => {
+    let firstMessage = true;
     console.log('Websocket client connected');
     if(lastImageBuffer) {
         ws.send(lastImageBuffer);
@@ -18,11 +25,27 @@ webSocketServer.on('connection', (ws) => {
     }
 
     ws.on('message', (message) => {
-        webSocketServer.clients.forEach(client => {
-            if(client != ws) {
-                client.send(message);
+        if(firstMessage) {
+            switch (message.readUInt8(0)) {
+                case 0:
+                    websockets.image = ws;
+                    if(lastImageBuffer) {
+                        ws.send(lastImageBuffer)
+                    }
+                    break;
+                case 1:
+                    websockets.motorCurent = ws;
+                    break;
+                case 2:
+                    websockets.client = ws;
+                    break;
+                default:
+                    break;
             }
-        })
+            firstMessage = false;
+        } else {
+            websockets[client].send(message);
+        }
     });
 
     ws.on('close', () => {
@@ -114,20 +137,8 @@ const imageOnMessage = (receivedChunks) => {
     lastImageBuffer = fullImage;
 
     // Send to websocket
-    webSocketServer.clients.forEach((client) => {
-       client.send(lastImageBuffer) ;
-       console.log("sent image to client");
-    });
-
-    /*
-    // Write image to file
-    fs.writeFile('output.jpg', fullImage, (err) => {
-        if (err) {
-            console.error("Error writing file: ", err)
-        } else {
-            console.log("File reassembled and saved successfully (?)")
-        }
-    }) */
+    websockets[image].send(lastImageBuffer) ;
+    console.log("sent image to client");
 }
 
 const imageSocket = new ServerSocket(2000, imageOnMessage)

@@ -8,6 +8,10 @@ function WebcamPanel() {
     useEffect(() => {
       const ws = new WebSocket("ws://localhost:3001");
 
+      ws.onopen = () => {
+        ws.send(0);
+      }
+
       ws.onmessage = (event) => {
         const blob = new Blob([event.data], {type: 'image/jpeg'});
         setImageSrc(URL.createObjectURL(blob));

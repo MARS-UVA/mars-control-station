@@ -3,6 +3,7 @@ let gamepads = navigator.getGamepads()
 
 const ws = new WebSocket('ws://localhost:3001');
 ws.onopen = () => {
+  ws.send(-1)
   console.log('websocket connected');
 };
 ws.onclose = () => {

@@ -5,6 +5,7 @@ const WebSocket = require('ws');
 
 const ws = new WebSocket("ws://localhost:3001");
 ws.onopen = () => {
+    ws.send(2)
     console.log('ws connected');
 };
 ws.onmessage = (event) => {
