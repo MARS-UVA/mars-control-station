@@ -9,7 +9,7 @@ const WS_PORT = 3001;
 const webSocketServer = new WebSocket.Server({port: WS_PORT});
 let lastImageBuffer = null;
 
-const websockets = {
+let websockets = {
     image: null,
     motorCurent: null,
     client: null
@@ -18,41 +18,36 @@ const websockets = {
 
 webSocketServer.on('connection', (ws) => {
     let firstMessage = true;
-    console.log('Websocket client connected');
-    if(lastImageBuffer) {
-        ws.send(lastImageBuffer);
-        console.log('Sent image to client')
-    }
 
     ws.on('message', (message) => {
         if(firstMessage) {
-            switch (message.readUInt8(0)) {
+            switch (message.readUInt8()) {
                 case 0:
                     websockets.image = ws;
+                    console.log("connected webcam ws");
                     if(lastImageBuffer) {
-                        ws.send(lastImageBuffer)
+                        ws.send(lastImageBuffer);
                     }
                     break;
                 case 1:
                     websockets.motorCurent = ws;
+                    console.log("connected motor current ws");
                     break;
                 case 2:
                     websockets.client = ws;
+                    console.log("connected client_udp ws");
                     break;
                 default:
                     break;
             }
             firstMessage = false;
         } else {
-            //websockets[client].send(message);
-            for (ws of webSocketServer.clients) {
-                ws.send(message);
-            }
+            websockets.client.send(message);
         }
     });
 
     ws.on('close', () => {
-        console.log('Disconnected Websocket server');
+        console.log('Disconnected Websocket client');
     });
 });
 
@@ -140,7 +135,7 @@ const imageOnMessage = (receivedChunks) => {
     lastImageBuffer = fullImage;
 
     // Send to websocket
-    websockets[image].send(lastImageBuffer) ;
+    websockets.image.send(lastImageBuffer);
     console.log("sent image to client");
 }
 

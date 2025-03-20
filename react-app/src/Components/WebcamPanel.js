@@ -9,7 +9,9 @@ function WebcamPanel() {
       const ws = new WebSocket("ws://localhost:3001");
 
       ws.onopen = () => {
-        ws.send(0);
+        const buffer = new Uint8Array([0]);
+        ws.send(buffer)
+        console.log('webcamPanel ws connected');
       }
 
       ws.onmessage = (event) => {
