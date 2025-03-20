@@ -2,6 +2,21 @@ const dgram = require('dgram');
 const PORT = 8080;
 const WebSocket = require('ws');
 
+function crc32bit(data) {
+    let crc = 0xFFFFFFFF;
+    for (let i = 0; i < data.length; i++) {
+        crc ^= data.charCodeAt(i);
+        for (let j = 0; j < 8; j++) {
+            if ((crc & 1) === 1) {
+                crc = (crc >>> 1) ^ 0xEDB88320;
+            } else {
+                crc >>>= 1;
+            }
+        }
+    }
+    return ~crc >>> 0; // Ensure the result is a positive integer
+}
+
 
 const ws = new WebSocket("ws://localhost:3001");
 ws.onopen = () => {
@@ -11,7 +26,9 @@ ws.onopen = () => {
 };
 ws.onmessage = (event) => {
     console.log(JSON.parse(event.data));
-    client('127.0.0.1', event.data);
+    let test_msg = "Hello"
+    let message = "pckt"+crc32bit(test_msg).toString()+test_msg;
+    client('172.25.153.79', message);
 };
 
 function client(ip, data) {
