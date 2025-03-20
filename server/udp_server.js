@@ -44,7 +44,10 @@ webSocketServer.on('connection', (ws) => {
             }
             firstMessage = false;
         } else {
-            websockets[client].send(message);
+            //websockets[client].send(message);
+            for (ws of webSocketServer.clients) {
+                ws.send(message);
+            }
         }
     });
 
