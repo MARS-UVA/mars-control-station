@@ -4,7 +4,7 @@
  * This component renders a control panel with buttons to switch between different drive states
  * and an emergency stop (ESTOP) button.
  */
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 function DriveStatePanel() {
   // Define the drive state and displays the current state
   const [driveState, setDriveState] = useState('Idle');
@@ -13,6 +13,50 @@ function DriveStatePanel() {
           {label}
         </button>
       );
+  
+  // Add motor control buttons that will beb shown in Direct Drive Mode
+  const MotorButton = ({ motorNumber }) => (
+  <button className="motor-button">
+     Motor {motorNumber} 
+     </button>)
+
+
+  useEffect(() => {
+
+    const onKeyPressed = (event) => {
+      console.log('Key pressed:', event.keyCode);
+      
+      switch (event.keyCode) {
+        case 97:
+          setDriveState('Autonomous Drive');
+          break;
+        case 115:
+          setDriveState('Direct Drive');
+          break;
+        case 100:
+          setDriveState('Idle');
+          break;
+      }
+
+      // if (event.keyCode == 83) {
+      //   switch (driveState) {
+      //     case 'Autonomous Drive':
+      //       setDriveState('Direct Drive');
+      //       break;
+
+      //   }
+      //   console.log(driveState);
+      // }
+    };
+
+    document.addEventListener('keypress', onKeyPressed);
+
+    return () => {
+      document.removeEventListener('keypress', onKeyPressed);
+    }
+
+  }, []); 
+
   // Render the component UI
   return (
     <div className="panel">
@@ -25,9 +69,30 @@ function DriveStatePanel() {
                 />
               ))}
             </div>
-            <button className="estop-button">
-              ESTOP
+            <button className="estop-stop-button">
+              Motor Stop
             </button>
+            {driveState == "Autonomous Drive" ? <button className="autonomous-stop-button">
+              Autonomous Stop
+            </button> : ""}
+
+            {driveState === 'Direct Drive' && (
+
+              <div className="motor-controls">
+                <h3>Motor Controls</h3> 
+                <div className="motor-grid">
+                  {[1,2,3,4].map((motorNum) => 
+                    (<MotorButton key={motorNum} motorNumbers={motorNum}/>
+                    ))}
+                </div>
+              </div>
+
+            )}
+            
+            
+
+            
+            
           </div>
   );
 }
