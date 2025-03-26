@@ -57,13 +57,15 @@ const App = () => {
 
         <div className="right-panel">
           <LiveDataPanel lastDataPoint={lastDataPoint} timestamp={timestamp} chartData={chartData}/>
-          <div className="front-camera-panel">
-            <h2 className="front-camera-header">Front</h2>
-            <WebcamPanel/>
-          </div>
-          <div className="back-camera-panel">
-            <h2 className="back-camera-header">Back</h2>
-            <WebcamPanel/>
+          <div className = "camera-panel">
+            <div className="front-camera-panel">
+              <h2 className="front-camera-header">Front</h2>
+              <WebcamPanel/>
+            </div>
+            <div className="back-camera-panel">
+              <h2 className="back-camera-header">Back</h2>
+              <WebcamPanel/>
+            </div>
           </div>
         </div>
       </div>
