@@ -1,5 +1,8 @@
 # Mars Control Station
 
+## How to Run
+Run `./start.sh`
+
 ## Gateway Server
 
 - `server.c` : Creates a socket to listen to incoming messages (future improvement is to include a set of sockets to lighten load on server socket and have different reciever socket)
