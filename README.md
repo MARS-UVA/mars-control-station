@@ -14,3 +14,6 @@
 ## React App
 
 ## Gamepad
+
+## Troubleshooting
+If the Jetson's IP address changes, edit `server/client_udp.js`

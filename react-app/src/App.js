@@ -10,15 +10,17 @@ import LiveDataPanel from "./Components/LiveDataPanel";
 import GamepadPanel from "./Components/GamepadPanel";
 import DriveStatePanel from "./Components/DriveStatePanel";
 import WebcamPanel from "./Components/WebcamPanel";
-import Socket from "./Components/Socket";
+import SocketHandler from "./Components/SocketHandler";
 import SingleLiveDataStream from "./Components/SingleLiveDataStream";
 
+import { useHotkeys } from 'react-hotkeys-hook';
 
 
 const App = () => {
 
   
   const [gamepadStatus, setGamepadStatus] = useState('No gamepad connected!');
+  const [driveState, setDriveState] = useState('Idle');
 
   
   const [timestamp, setTimestamp] = useState(0);
@@ -33,19 +35,34 @@ const App = () => {
   const [lastDataPoint, setLastDataPoint] = useState(chartData[chartData.length - 1]);
   const [valueData, setData] = useState("data");
 
+  function handleESTOP () {
+    //handle ESTOP press
+  }
+
+  function handleAStopHotkey () {
+    if (driveState == "Autonomous Drive") {handleAutonomousStop()}
+  }
+
+  function handleAutonomousStop () {
+    //handle immediate switching out of autonomous drive 
+    setDriveState("Direct Drive")
+  }
+
+  useHotkeys('space', handleAStopHotkey );
+
   
 
   return (
     <div className="app-container">
       {/* <h1 className="title">MARS Web UI</h1> */}
-      <Socket setGamePadStatus={setGamepadStatus} setChartData={setChartData} setLastDataPoint={setLastDataPoint} timestamp={timestamp} setTimestamp={setTimestamp} setData={setData}/>
+      <SocketHandler setGamePadStatus={setGamepadStatus} setChartData={setChartData} setLastDataPoint={setLastDataPoint} timestamp={timestamp} setTimestamp={setTimestamp} setData={setData}/>
 
 
       <div className="content">
         <div className="left-panel">
           <GamepadPanel gamepadStatus={gamepadStatus}/>
 
-          <DriveStatePanel />
+          <DriveStatePanel driveState={driveState} setDriveState={setDriveState} handleESTOP={handleESTOP} handleAutonomousStop={handleAutonomousStop}/>
 
           <div className="content">
             <SingleLiveDataStream dataStreamName={"value1"} currentVal={2}/>

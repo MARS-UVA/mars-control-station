@@ -1,5 +1,15 @@
 let gamepads = navigator.getGamepads()
 
+
+const ws = new WebSocket('ws://localhost:3001');
+ws.onopen = () => {
+  ws.send(-1)
+  console.log('websocket connected');
+};
+ws.onclose = () => {
+  console.log('websocket closed');
+};
+
 window.addEventListener('gamepadconnected', e => {
     gamepads = navigator.getGamepads()
 })
@@ -112,7 +122,9 @@ setInterval(() => {
         } // when we get out output method, we can send this object to it
 
         // gamepadText.textContent = JSON.stringify(output, 2)
-        console.log(JSON.stringify(output))
+        let json = JSON.stringify(output);
+        console.log("sending data: " + json);
+        ws.send(json);
     }
 }, intervalTime)
 
