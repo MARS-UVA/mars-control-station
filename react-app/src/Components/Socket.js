@@ -1,5 +1,4 @@
 import React, { useEffect, useState} from 'react';
-// import client from '../../../server/client_udp';
 
 // This component will handle backend/API calls with useEffect blocks, and send the data to the UI components
 
