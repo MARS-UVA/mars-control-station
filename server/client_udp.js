@@ -30,12 +30,13 @@ ws.onmessage = (event) => {
 
     const gamepadOut = `${jsonObj.buttons.x},${jsonObj.buttons.y},${jsonObj.buttons.a},${jsonObj.buttons.b},
     ${jsonObj.buttons.lt},${jsonObj.buttons.rt},${jsonObj.buttons.lb},${jsonObj.buttons.rb},${jsonObj.buttons.dd},
-    ${jsonObj.buttons.du},${jsonObj.buttons.dl}.${jsonObj.buttons.dr},${jsonObj.buttons.l3},${jsonObj.buttons.r3},
+    ${jsonObj.buttons.du},${jsonObj.buttons.l3},${jsonObj.buttons.r3},
     ${jsonObj.buttons.back},${jsonObj.buttons.start},${jsonObj.leftStick.x},${jsonObj.leftStick.y},${jsonObj.rightStick.x},
     ${jsonObj.rightStick.y}`;
 
     let message = "pcktcontnt"+gamepadOut;
-    client('172.25.153.79', message);
+    console.log(message);
+    client('172.25.182.202', message);
 };
 
 function client(ip, data) {
