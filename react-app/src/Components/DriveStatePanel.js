@@ -5,9 +5,9 @@
  * and an emergency stop (ESTOP) button.
  */
 import React, {useState} from 'react';
-function DriveStatePanel({driveState, setDriveState, handleESTOP, handleAutonomousStop}) {
-
-
+function DriveStatePanel() {
+  // Define the drive state and displays the current state
+  const [driveState, setDriveState] = useState('Idle');
     const CommandButton = ({ label, active, onClick }) => (
         <button className={"command-button " + active} onClick={onClick}>
           {label}
@@ -25,21 +25,9 @@ function DriveStatePanel({driveState, setDriveState, handleESTOP, handleAutonomo
                 />
               ))}
             </div>
-            {driveState == "Autonomous Drive" ? 
-            <>
-            <button className="estop-button" style={{"width": "20%"}} onClick={handleESTOP}>
+            <button className="estop-button">
               ESTOP
             </button>
-            <button className="estop-button" style={{"width": "80%", "backgroundColor": "maroon"}} onClick={handleAutonomousStop}>
-              Autonomous Stop
-            </button>
-            </>
-            :
-            
-            <button className="estop-button" onClick={handleESTOP}>
-            ESTOP
-          </button>
-          }
           </div>
   );
 }
