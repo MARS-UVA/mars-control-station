@@ -41,7 +41,7 @@ function WebcamPanel() {
             <Camera size={20} />
           </div>
           <button className="camera-left-button" onClick={leftClicked}>
-            <ChevronLeft size={20} />
+            <ChevronLeft size={20} /> 
           </button>
           <button className="camera-right-button" onClick={rightClicked}>
             <ChevronRight size={20} />
