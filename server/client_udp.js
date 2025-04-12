@@ -19,7 +19,8 @@ function crc32bit(data) {
 
 
 const ws = new WebSocket("ws://localhost:3001");
-ws.onopen = () => {
+
+wsWebSocket.onopen = () => {
     const buffer = Buffer.from([2]);
     ws.send(buffer)
     console.log('ws connected');
@@ -36,12 +37,19 @@ ws.onmessage = (event) => {
 
     let message = "pcktcontnt"+gamepadOut;
     console.log(message);
-    client('172.25.182.202', message);
+    client('192.168.0.105', message);
 };
 
 function client(ip, data) {
     // Create a UDP socket
     const socket = dgram.createSocket('udp4');
+
+    socket.bind({
+        port : PORT,
+        address : ip,
+        exclusive : false
+    }
+    )
 
     // Send the message to the server
     socket.send(Buffer.from(data), PORT, ip, (err) => {
