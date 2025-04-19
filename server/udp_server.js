@@ -11,8 +11,9 @@ let lastImageBuffer = null;
 
 let websockets = {
     image: null,
-    motorCurent: null,
-    client: null
+    motorCurrent: null,
+    client: null,
+    potentiometer: null
 };
 
 
@@ -30,13 +31,18 @@ webSocketServer.on('connection', (ws) => {
                     }
                     break;
                 case 1:
-                    websockets.motorCurent = ws;
+                    websockets.motorCurrent = ws;
                     console.log("connected motor current ws");
                     break;
                 case 2:
                     websockets.client = ws;
                     console.log("connected client_udp ws");
                     break;
+                case 3:
+                    websockets.potentiometer = ws;
+                    console.log("connected potentiometer ws");
+                    const floats = new Float32Array([1, 1, 1, 1, 1]);
+                    ws.send(floats.buffer);
                 default:
                     break;
             }
@@ -74,6 +80,7 @@ class ServerSocket {
         });
 
         this.receivedChunks = {}
+        this.packetCount = 0;
 
         // Event: On receiving a message
         this.server.on('message', (message, remote) => {
@@ -89,10 +96,12 @@ class ServerSocket {
             console.log(chunkData.length);
             this.receivedChunks[sequenceNumber] = chunkData;
             const totalChunks = totalPackets;
+            this.packetCount++;
 
             // Check if all packets have been received
             // Probably keep check recievedChunks length in default, rest in logic
-            if(sequenceNumber + 1 == totalChunks) {
+            if(this.packetCount == totalChunks) {
+                this.packetCount = 0;
                 // This variable (function) does logic speicific to type of data socket handles
                 onMessage(this.receivedChunks)
                 this.receivedChunks = {}
@@ -139,8 +148,13 @@ const imageOnMessage = (receivedChunks) => {
     console.log("sent image to client");
 }
 
-const imageSocket = new ServerSocket(2000, imageOnMessage)
-const motorFeedbackSocket = new ServerSocket(2001, (receivedChunks) => {
-    console.log("packet received")
-    console.log(receivedChunks)
-})
+const motorFeedbackOnMessage = (data) => {
+    const buffer = Buffer.concat(Object.values(data));
+    // Can combine these if we end up wanting to send these to the same place.
+    websockets.motorCurrent.send(buffer.subarray(0, 20));
+    //websockets.potentiometer.send(data.subarray(20));
+    console.log("sent motor current feedback to UI");
+}
+
+const imageSocket = new ServerSocket(2000, imageOnMessage);
+const motorFeedbackSocket = new ServerSocket(2001, (motorFeedbackOnMessage));
