@@ -1,6 +1,7 @@
 const dgram = require('dgram');
 const PORT = 8080;
 const WebSocket = require('ws');
+const JETSON_IP = process.env.JETSON_IP;
 
 function crc32bit(data) {
     let crc = 0xFFFFFFFF;
@@ -36,7 +37,7 @@ ws.onmessage = (event) => {
 
     let message = "pcktcontnt"+gamepadOut;
     console.log(message);
-    client('172.25.182.202', message);
+    client(JETSON_IP, message);
 };
 
 function client(ip, data) {

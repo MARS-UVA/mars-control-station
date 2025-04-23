@@ -6,10 +6,12 @@ PASSWORD="marsuva!"
 if [ $# -eq 0 ]; then
     echo "No arguments supplied, connecting to MARS network"
     nmcli device wifi connect "$SSID" password "$PASSWORD"
+    JETSON_IP="192.168.0.105"
 elif [ $# -eq 1 ]; then
     if [ "$1" == "eduroam" ]; then
         echo "Connecting to eduroam network..."
         nmcli device wifi connect "eduroam"
+        JETSON_IP="172.25.182.202"
     elif [ "$1" == "MARS" ] || [ "$1" == "mars" ]; then
         echo "Connecting to MARS network..."
         nmcli device wifi connect "$SSID" password "$PASSWORD"
@@ -25,6 +27,14 @@ elif [ $# -gt 2 ]; then
 fi
 
 # nmcli dev eth connect $SSID password $PASSWORD
+
+if [ -n "$JETSON_IP" ]; then
+    echo "Using $JETSON_IP as the Jetson's IP"
+else
+    echo "Jetson IP address: "
+    read JETSON_IP
+fi
+export JETSON_IP
 
 cd react-app
 
