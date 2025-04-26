@@ -3,7 +3,7 @@
   flex-direction: column;
   align-items: center;
   padding: 16px;
-  max-width: 96rem;
+  /* max-width: 96rem; */
   margin: auto;
 }
 
@@ -52,15 +52,31 @@
 
 .content {
   display: flex;
+  flex-direction: row;
   width: 100%;
-  gap: 16px;
+  height: 100%;
 }
 
-.left-panel, .right-panel {
-  flex: 1;
+.left-panel {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  width: 20%;
+  padding: 10px;
+  height: 100%;
+  /* background-color: #f0f0f0; Optional for visual distinction */
+}
+
+.middle-panel {
+  width: 60%;
+  padding: 10px;
+  /* background-color: #e0e0e0; Optional for visual distinction */
+}
+
+.right-panel {
+  width: 20%;
+  padding: 10px;
+  /* background-color: #d0d0d0; Optional for visual distinction */
 }
 
 .panel {
@@ -69,6 +85,34 @@
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
+
+.data-stream-panel {
+  padding: 10px;
+  width: 100%;
+  height: 100px;
+  margin: 0px 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  text-align: center;
+  border-radius: 8px;  
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease; /* Smooth transition for color changes */
+}
+
+.data-stream-name {
+  font-size: 20px;
+  color: #555;
+  /* margin-bottom: 5px; */
+}
+
+.data-stream-value {
+  font-size: 24px;
+  font-weight: bold;
+  color: #000;
+  margin-top: -20px;
+}
+
 .lever-container {
   display: flex;
   flex-wrap: wrap;
@@ -125,6 +169,7 @@
   transition: background-color 0.3s;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   border: 1px solid #e2e8f0;
+  margin-bottom: 10px; /* Add spacing between buttons */
 }
 
 .command-button:hover {
@@ -139,7 +184,7 @@
 
 .estop-button {
   width: 100%;
-  height: 5rem;
+  height: 11.25rem;
   padding: 12px;
   background-color: #f56565;
   color: #ffffff;
@@ -149,6 +194,7 @@
   border: 1px solid #e2e8f0;
   text-align: center;
   transition: background-color 0.3s;
+  /* margin-top: 10px; Add spacing between buttons in the right column */
 }
 
 .estop-button:hover {
@@ -279,4 +325,70 @@
   align-items: center;
   text-align: center;
   margin-top: 10px;
+}
+
+.drive-panel-grid {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px; /* Optional spacing between columns */
+}
+
+.drive-buttons-column {
+  display: flex;
+  flex-direction: column;
+  width: 50%; /* Adjust as needed */
+}
+
+.estop-buttons-column {
+  display: flex;
+  flex-direction: column;
+  width: 50%; /* Adjust as needed */
+}
+
+.actuator-data-display {
+  display: flex;
+  flex-direction: column;
+}
+
+.actuator-section{
+  margin-bottom: 20px;
+}
+
+.actuator-section h3{
+  font-size: 18px;
+  margin-bottom: 10px;
+  color: #333;
+  text-align: center;
+}
+
+.actuator-data {
+  display: flex;
+}
+
+.actuator-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  padding-right: 10px;
+
+}
+.actuator-button {
+  width: 100%;
+  padding: 10px 20px;
+  margin: 5px;
+  border: none;
+  border-radius: 5px;
+  font-size: 14px;
+  background-color: white;  
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);  
+  border: 1px solid #ccc;
+  transition: background-color 0.1s, transform 0.1s;
+}
+
+.actuator-button:hover {
+  transform: scale(1.1);
+  background-color: lightgray;
 }

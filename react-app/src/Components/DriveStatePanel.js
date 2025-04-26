@@ -4,43 +4,96 @@
  * This component renders a control panel with buttons to switch between different drive states
  * and an emergency stop (ESTOP) button.
  */
-import React, {useState} from 'react';
-function DriveStatePanel({driveState, setDriveState, handleESTOP, handleAutonomousStop}) {
+import React, { useState, useEffect } from 'react';
 
+function DriveStatePanel({ driveState, setDriveState, handleESTOP, handleAutonomousStop }) {
+  const [estopSuccess, setEstopSuccess] = useState(false); // State to track the success indication
 
-    const CommandButton = ({ label, active, onClick }) => (
-        <button className={"command-button " + active} onClick={onClick}>
-          {label}
-        </button>
-      );
+  const handleESTOPWithFeedback = () => {
+    handleESTOP(); // Call the original handleESTOP function
+    setEstopSuccess(true); // Set success state to true
+    setTimeout(() => setEstopSuccess(false), 1000); // Reset success state after 1 second
+  };
+
+  const CommandButton = ({ label, active, onClick }) => (
+    <button className={"command-button " + active} onClick={onClick}>
+      {label}
+    </button>
+  );
+
+  // Add event listener for spacebar press
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.code === 'Space') {
+        handleESTOPWithFeedback();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    // Cleanup event listener on component unmount
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
   // Render the component UI
   return (
     <div className="panel">
-            <h2 className="panel-title">Controls</h2>
-            <div className="command-grid">
-              {['Autonomous Drive', 'Direct Drive', 'Idle'].map((label, index) => (
-                <CommandButton key={index} label={label} 
-                active={label === driveState ? 'active' : ''}
-                onClick={() => setDriveState(label)}
-                />
-              ))}
-            </div>
-            {driveState == "Autonomous Drive" ? 
+      <h2 className="panel-title">Controls</h2>
+      <div className="drive-panel-grid">
+        {/* Left column for drive state buttons */}
+        <div className="drive-buttons-column">
+          {['Auto Drive', 'Direct Drive', 'Reverse Drive', 'Idle'].map((label, index) => (
+            <CommandButton
+              key={index}
+              label={label}
+              active={label === driveState ? 'active' : ''}
+              onClick={() => setDriveState(label)}
+            />
+          ))}
+        </div>
+
+        {/* Right column for ESTOP buttons */}
+        <div className="estop-buttons-column">
+          {driveState === "Auto Drive" ? (
             <>
-            <button className="estop-button" style={{"width": "20%"}} onClick={handleESTOP}>
-              ESTOP
-            </button>
-            <button className="estop-button" style={{"width": "80%", "backgroundColor": "maroon"}} onClick={handleAutonomousStop}>
-              Autonomous Stop
-            </button>
+              <button
+                className="estop-button"
+                style={{
+                  height: "5.25rem",
+                  backgroundColor: estopSuccess ? "red" : "",
+                }}
+                onClick={handleESTOPWithFeedback}
+              >
+                Soft STOP
+              </button>
+              <button
+                className="estop-button"
+                style={{
+                  backgroundColor: "blue",
+                  marginTop: "10px",
+                  height: "5.25rem",
+                }}
+                onClick={handleAutonomousStop}
+              >
+                Autonomous Stop
+              </button>
             </>
-            :
-            
-            <button className="estop-button" onClick={handleESTOP}>
-            ESTOP
-          </button>
-          }
-          </div>
+          ) : (
+            <button
+              className="estop-button"
+              style={{
+                backgroundColor: estopSuccess ? "orange" : "",
+              }}
+              onClick={handleESTOPWithFeedback}
+            >
+              Soft STOP
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
 

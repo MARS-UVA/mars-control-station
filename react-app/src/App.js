@@ -12,6 +12,7 @@ import DriveStatePanel from "./Components/DriveStatePanel";
 import WebcamPanel from "./Components/WebcamPanel";
 import SocketHandler from "./Components/SocketHandler";
 import SingleLiveDataStream from "./Components/SingleLiveDataStream";
+import ActuatorDataDisplay from "./Components/ActuatorDataDisplay";
 
 import { useHotkeys } from 'react-hotkeys-hook';
 
@@ -64,17 +65,15 @@ const App = () => {
 
           <DriveStatePanel driveState={driveState} setDriveState={setDriveState} handleESTOP={handleESTOP} handleAutonomousStop={handleAutonomousStop}/>
 
-          <div className="content">
-            <SingleLiveDataStream dataStreamName={"value1"} currentVal={2}/>
-            <SingleLiveDataStream dataStreamName={"value2"} currentVal={3}/>
-            <SingleLiveDataStream dataStreamName={"value3"} currentVal={valueData}/>
-          </div>
+          <ActuatorDataDisplay />
+        </div>
 
+        <div className="middle-panel">
+          <WebcamPanel />
         </div>
 
         <div className="right-panel">
           <LiveDataPanel lastDataPoint={lastDataPoint} timestamp={timestamp} chartData={chartData}/>
-          <WebcamPanel/>
         </div>
       </div>
     </div>
