@@ -51,10 +51,10 @@ function Socket({ setGamePadStatus, setChartData, setLastDataPoint, timestamp, s
             const newTime = prevTime + 1;
             const newData = {
               time: newTime,
-              value1: motor_values[0] * 1000,
-              value2: motor_values[1] * 1000,
-              value3: motor_values[2] * 1000,
-              value4: motor_values[3] * 1000,
+              value1: motor_values[4],
+              value2: motor_values[5],
+              value3: 4.315 * (motor_values[6] + motor_values[7]) - 14.18,
+              value4: motor_values[8],
             };
     
             setChartData((prevData) => {

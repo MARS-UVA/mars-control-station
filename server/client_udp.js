@@ -36,21 +36,24 @@ ws.onmessage = (event) => {
 
     let message = "pcktcontnt"+gamepadOut;
     console.log(message);
-    client('172.25.182.202', message);
+    client('192.168.0.105', message);
 };
 
 function client(ip, data) {
     // Create a UDP socket
     const socket = dgram.createSocket('udp4');
+    buffer = Buffer.from(data);
+    buffer.writeUInt16LE(buffer.length, 4)
 
     // Send the message to the server
-    socket.send(Buffer.from(data), PORT, ip, (err) => {
+    socket.send(buffer, PORT, ip, (err) => {
         if (err) {
             console.error('Error while sending message:', err.message);
             socket.close();
             return;
         }
         console.log('Message sent successfully');
+        socket.close();
     });
 
     // Listen for a response from the server

@@ -76,7 +76,7 @@ class ServerSocket {
             const address = this.server.address();
             console.log(`Server is listening on ${address.address}:${address.port}`);
             // Set buffer size
-            this.server.setRecvBufferSize(MESSAGE_LENGTH * 100);    // This buffer could change size here to be more optimal im sure
+            this.server.setRecvBufferSize(MESSAGE_LENGTH * 10000);    // This buffer could change size here to be more optimal im sure
         });
 
         this.receivedChunks = {}
@@ -100,7 +100,7 @@ class ServerSocket {
 
             // Check if all packets have been received
             // Probably keep check recievedChunks length in default, rest in logic
-            if(this.packetCount == totalChunks) {
+            if(this.packetCount == totalChunks || this.packetCount > 10000) {
                 this.packetCount = 0;
                 // This variable (function) does logic speicific to type of data socket handles
                 onMessage(this.receivedChunks)
@@ -120,7 +120,7 @@ class ServerSocket {
         });
 
         // Bind the server to the port and IP
-        this.server.bind(this.PORT, '127.0.0.1', () => {
+        this.server.bind(this.PORT, '192.168.0.100', () => {
             console.log("Socket bound successfully");
         });
 
@@ -151,10 +151,13 @@ const imageOnMessage = (receivedChunks) => {
 const motorFeedbackOnMessage = (data) => {
     const buffer = Buffer.concat(Object.values(data));
     // Can combine these if we end up wanting to send these to the same place.
-    websockets.motorCurrent.send(buffer.subarray(0, 20));
+    websockets.motorCurrent.send(buffer.subarray(0, 36));
     //websockets.potentiometer.send(data.subarray(20));
     console.log("sent motor current feedback to UI");
 }
 
 const imageSocket = new ServerSocket(2000, imageOnMessage);
 const motorFeedbackSocket = new ServerSocket(2001, (motorFeedbackOnMessage));
+const robotPosePort = new ServerSocket(2003, imageOnMessage);   // if time permits
+const obstaclePoesePort = new ServerSocket(2008, imageOnMessage);   // if time permits
+const pathPort = new ServerSocket(2025, imageOnMessage);    // if time permits
