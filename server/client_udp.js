@@ -36,7 +36,18 @@ ws.onmessage = (event) => {
     ${jsonObj.buttons.back},${jsonObj.buttons.start},${jsonObj.leftStick.x},${jsonObj.leftStick.y},${jsonObj.rightStick.x},
     ${jsonObj.rightStick.y}`;
 
-    let message = "pcktcontnt"+gamepadOut;
+    //const sizeHex = Buffer.from([gamepadOut.length]).toString('hex').padStart(2, '0');
+    //let message = "pckt" + sizeHex + crc32bit(gamepadOut) + gamepadOut;
+    const payload = Buffer.from(gamepadOut);
+    const fragmentSize = payloadBuffer.length;
+    const crc = crc32bit(gamepadOut);
+    const message = Buffer.alloc(10 + fragmentSize);
+    message.writeUInt16LE(0, 0);
+    message.writeUInt16LE(0, 2);
+    message.writeUInt16LE(fragmentSize, 4);
+    message.writeUInt32LE(crc, 6);
+    payload.copy(message, 10);
+
     console.log(message);
     client(JETSON_IP, message);
 };
