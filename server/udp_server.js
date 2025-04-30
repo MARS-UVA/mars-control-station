@@ -68,8 +68,8 @@ class ServerSocket {
      */
     constructor (port, onMessage) {
         this.PORT = port;
-        this.liveBuffer = null;
-        this.count = 0;
+        this.receivedChunks = {}
+        this.packetCount = 0;
         
         // Create a UDP socket
         this.server = dgram.createSocket('udp4');
@@ -96,33 +96,19 @@ class ServerSocket {
             const totalPackets = (message[3] << 8) | message[2];
             const chunkData = message.subarray(10);
 
-            if(sequenceNumber === 0) {
-                this.liveBuffer = Buffer.alloc(totalPackets * (MESSAGE_LENGTH - HEADER_LENGTH));
+            console.log(`Received packet ${sequenceNumber + 1} of ${totalPackets}`);
+            console.log(chunkData.length);
+            this.receivedChunks[sequenceNumber] = chunkData;
+            const totalChunks = totalPackets;
+            this.packetCount++;
+            //Check if all packets have been received
+            //Probably keep check recievedChunks length in default, rest in logic
+            if(this.packetCount == totalChunks || this.packetCount > 10000) {
+                this.packetCount = 0;
+                // This variable (function) does logic speicific to type of data socket handles
+                onMessage(this.receivedChunks)
+                this.receivedChunks = {}
             }
-
-            chunkData.copy(this.liveBuffer, sequenceNumber * (MESSAGE_LENGTH - HEADER_LENGTH));
-            this.count++;
-
-            if(this.count == totalPackets) {
-                onMessage(this.liveBuffer);
-                this.count = 0;
-                this.liveBuffer = null;
-            }
-
-
-            // console.log(`Received packet ${sequenceNumber + 1} of ${totalPackets}`);
-            // console.log(chunkData.length);
-            // this.receivedChunks[sequenceNumber] = chunkData;
-            // const totalChunks = totalPackets;
-            // this.packetCount++;
-            // Check if all packets have been received
-            // Probably keep check recievedChunks length in default, rest in logic
-            // if(this.packetCount == totalChunks || this.packetCount > 10000) {
-            //     this.packetCount = 0;
-            //     // This variable (function) does logic speicific to type of data socket handles
-            //     onMessage(this.receivedChunks)
-            //     this.receivedChunks = {}
-            // }
             
             /*
             // Echo the message back to the client
@@ -154,28 +140,20 @@ class ServerSocket {
     }
 }
 
-const imageOnMessage = (newImage) => {
-    if(websockets.image) {
-        websockets.image.send(newImage);
-    }
+const imageOnMessage = (receivedChunks) => {
+    console.log("All chunks received. Reassembling image.");
+    console.log(Object.keys(receivedChunks));
+    const fullImage = Buffer.concat(Object.values(receivedChunks));
+    lastImageBuffer = fullImage;
 
-    // console.log("All chunks received. Reassembling image.");
-    // console.log(Object.keys(receivedChunks));
-    // const fullImage = Buffer.concat(Object.values(receivedChunks));
-    // lastImageBuffer = fullImage;
-
-    // // Send to websocket
-    // websockets.image.send(lastImageBuffer);
-    // console.log("sent image to client");
+    // Send to websocket
+    websockets.image.send(lastImageBuffer);
+    console.log("sent image to client");
 }
 
 const motorFeedbackOnMessage = (data) => {
-    // Can combine these if we end up wanting to send these to the same place.
-    if(websockets.motorCurrent) {
-        websockets.motorCurrent.send(data.subarray(0, 36));
-        //websockets.potentiometer.send(data.subarray(20));
-        console.log("sent motor current feedback to UI");
-    }
+    const buffer = Buffer.concat(Object.values(data));
+    if(websockets.motorCurrent) websockets.motorCurrent.send(buffer.subarray(0, 36));
 }
 
 const imageSocket = new ServerSocket(2000, imageOnMessage);
