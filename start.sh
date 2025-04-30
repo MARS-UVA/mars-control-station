@@ -6,7 +6,7 @@ PASSWORD="marsuva!"
 if [ $# -eq 0 ]; then
     echo "No arguments supplied, connecting to MARS network"
     nmcli device wifi connect "$SSID" password "$PASSWORD"
-    JETSON_IP="192.168.0.105"
+    export JETSON_IP="192.168.0.105"
 elif [ $# -eq 1 ]; then
     if [ "$1" == "eduroam" ]; then
         echo "Connecting to eduroam network..."
@@ -32,10 +32,8 @@ if [ -n "$JETSON_IP" ]; then
     echo "Using $JETSON_IP as the Jetson's IP"
 else
     echo "Jetson IP address: "
-    read JETSON_IP
+    export read JETSON_IP
 fi
-export JETSON_IP
-
 cd react-app
 
 node ../server/udp_server.js &

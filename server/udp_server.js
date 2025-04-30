@@ -120,7 +120,7 @@ class ServerSocket {
         });
 
         // Bind the server to the port and IP
-        this.server.bind(this.PORT, '192.168.0.100', () => {
+        this.server.bind(this.PORT, '0.0.0.0', () => {
             console.log("Socket bound successfully");
         });
 
@@ -144,6 +144,7 @@ const imageOnMessage = (receivedChunks) => {
     lastImageBuffer = fullImage;
 
     // Send to websocket
+	if(websockets.image)
     websockets.image.send(lastImageBuffer);
     console.log("sent image to client");
 }
@@ -151,7 +152,8 @@ const imageOnMessage = (receivedChunks) => {
 const motorFeedbackOnMessage = (data) => {
     const buffer = Buffer.concat(Object.values(data));
     // Can combine these if we end up wanting to send these to the same place.
-    websockets.motorCurrent.send(buffer.subarray(0, 36));
+    if(websockets.motorCurrent)
+	websockets.motorCurrent.send(buffer.subarray(0, 36));
     //websockets.potentiometer.send(data.subarray(20));
     console.log("sent motor current feedback to UI");
 }

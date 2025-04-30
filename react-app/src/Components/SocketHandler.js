@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
-
+const DATA_UPDATE_DELAY_MS = 30;
+const DATA_WINDOW_WIDTH = 10000 / DATA_UPDATE_DELAY_MS;
 // This component will handle backend/API calls with useEffect blocks, and send the data to the UI components
 
 function Socket({ setGamePadStatus, setChartData, setLastDataPoint, timestamp, setTimestamp, setData: setData }) {
@@ -60,14 +61,14 @@ function Socket({ setGamePadStatus, setChartData, setLastDataPoint, timestamp, s
             setChartData((prevData) => {
               setLastDataPoint(newData);
               const newDataArray = [...prevData, newData];
-              return newDataArray.slice(-30);
+              return newDataArray.slice(-DATA_WINDOW_WIDTH);
             });
     
             return newTime;
           });
         };
     
-        const intervalId = setInterval(addNewData, 1000);
+        const intervalId = setInterval(addNewData, DATA_UPDATE_DELAY_MS);
     
         return () => clearInterval(intervalId);
       }, [setChartData, setLastDataPoint, setTimestamp]);
@@ -75,13 +76,13 @@ function Socket({ setGamePadStatus, setChartData, setLastDataPoint, timestamp, s
       useEffect(() => {
 
         const addData = () => {
-          setData((prevData) => {
-            if(prevData.length>10) {return "data";}
-            return prevData + "."
-          });
+          // setData((prevData) => {
+          //   if(prevData.length>10) {return "data";}
+          //   return prevData + "."
+          // });
         };
 
-        const intervalId = setInterval(addData, 1000);
+        const intervalId = setInterval(addData, DATA_UPDATE_DELAY_MS);
 
   
   
