@@ -25,7 +25,7 @@ function WebcamPanel() {
 
         if(lastUrl.current) {
           const oldUrl = lastUrl.current
-          requestAnimationFrame(() => URL.revokeObjectURL(lastUrl.current));
+          requestAnimationFrame(() => URL.revokeObjectURL(oldUrl));
         }
         lastUrl.current = newUrl;
 
