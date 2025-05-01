@@ -3,10 +3,14 @@ import { Camera } from "lucide-react";
 
 // This component renders a panel with a webcam feed (currently showing laptop webcam)
 function WebcamPanel() {
-    const [imageSrc, setImageSrc] = useState(null);
+    //const [imageSrc, setImageSrc] = useState(null);
+    const imgRef = useRef(null);
+    const lastUrl = useRef(null);
+    const socketRef = useRef(null);
 
     useEffect(() => {
       const ws = new WebSocket("ws://localhost:3001");
+      ws.binaryType = "arraybuffer";
 
       ws.onopen = () => {
         const buffer = new Uint8Array([0]);
@@ -16,9 +20,23 @@ function WebcamPanel() {
 
       ws.onmessage = (event) => {
         const blob = new Blob([event.data], {type: 'image/jpeg'});
-        setImageSrc(URL.createObjectURL(blob));
-      }
-      return() => ws.close();
+        const newUrl = URL.createObjectURL(blob);
+        //setImageSrc(URL.createObjectURL(blob));
+
+        if(lastUrl.current) {
+          const oldUrl = lastUrl.current
+          requestAnimationFrame(() => URL.revokeObjectURL(lastUrl.current));
+        }
+        lastUrl.current = newUrl;
+
+        if(imgRef.current) {
+          imgRef.current.src = newUrl;
+        }
+      };
+      return() => {
+        ws.close();
+        if(lastUrl.current) URL.revokeObjectURL(lastUrl.current)
+      };
     }, []);
 
 
@@ -27,11 +45,7 @@ function WebcamPanel() {
     <>
       <div className="panel">
         <div className="webcam-container">
-          {imageSrc ? (
-            <img src={imageSrc}/>
-          ) : (
-            <p>Waiting for Image</p>
-          )}
+          <img ref={imgRef} alt="Waiting for image" />
         </div>
       </div>
     </>

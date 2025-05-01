@@ -100,11 +100,9 @@ class ServerSocket {
             console.log(chunkData.length);
             this.receivedChunks[sequenceNumber] = chunkData;
             const totalChunks = totalPackets;
-            this.packetCount++;
             //Check if all packets have been received
             //Probably keep check recievedChunks length in default, rest in logic
-            if(this.packetCount == totalChunks || this.packetCount > 10000) {
-                this.packetCount = 0;
+            if(sequenceNumber+1 >= totalChunks) {
                 // This variable (function) does logic speicific to type of data socket handles
                 onMessage(this.receivedChunks)
                 this.receivedChunks = {}
