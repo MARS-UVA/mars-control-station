@@ -70,6 +70,7 @@ const App = () => {
 
         <div className="middle-panel">
           <WebcamPanel />
+          <WebcamPanel />
         </div>
 
         <div className="right-panel">
