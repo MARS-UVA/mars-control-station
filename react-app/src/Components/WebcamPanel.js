@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 import { Camera } from "lucide-react";
 
 // This component renders a panel with a webcam feed (currently showing laptop webcam)
-function WebcamPanel() {
+function WebcamPanel(props) {
+    const id = parseInt(props.id);
     //const [imageSrc, setImageSrc] = useState(null);
     const imgRef = useRef(null);
     const lastUrl = useRef(null);
@@ -13,7 +14,7 @@ function WebcamPanel() {
       ws.binaryType = "arraybuffer";
 
       ws.onopen = () => {
-        const buffer = new Uint8Array([0]);
+        const buffer = new Uint8Array([id]);
         ws.send(buffer)
         console.log('webcamPanel ws connected');
       }

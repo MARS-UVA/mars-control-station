@@ -8,10 +8,10 @@ const HEADER_LENGTH = 10;
 const WS_PORT = 3001;
 
 const webSocketServer = new WebSocket.Server({port: WS_PORT});
-let lastImageBuffer = null;
 
 let websockets = {
     image: null,
+    image2: null,
     motorCurrent: null,
     client: null,
     potentiometer: null
@@ -27,9 +27,6 @@ webSocketServer.on('connection', (ws) => {
                 case 0:
                     websockets.image = ws;
                     console.log("connected webcam ws");
-                    if(lastImageBuffer) {
-                        ws.send(lastImageBuffer);
-                    }
                     break;
                 case 1:
                     websockets.motorCurrent = ws;
@@ -44,12 +41,19 @@ webSocketServer.on('connection', (ws) => {
                     console.log("connected potentiometer ws");
                     const floats = new Float32Array([1, 1, 1, 1, 1]);
                     ws.send(floats.buffer);
+                    break;
+                case 4:
+                    websockets.image2 = ws;
+                    console.log("connected second webcam ws");
+                    break;
                 default:
                     break;
             }
             firstMessage = false;
         } else {
-            websockets.client.send(message);
+            if(websockets.client) {
+                websockets.client.send(message);
+            }
         }
     });
 
@@ -142,10 +146,9 @@ const imageOnMessage = (receivedChunks) => {
     console.log("All chunks received. Reassembling image.");
     console.log(Object.keys(receivedChunks));
     const fullImage = Buffer.concat(Object.values(receivedChunks));
-    lastImageBuffer = fullImage;
 
     // Send to websocket
-    websockets.image.send(lastImageBuffer);
+    websockets.image.send(fullImage);
     console.log("sent image to client");
 }
 
@@ -155,6 +158,7 @@ const motorFeedbackOnMessage = (data) => {
 }
 
 const imageSocket = new ServerSocket(2000, imageOnMessage);
+const bottomImageSocket = new ServerSocket(2026, imageOnMessage);
 const motorFeedbackSocket = new ServerSocket(2001, (motorFeedbackOnMessage));
 const robotPosePort = new ServerSocket(2003, imageOnMessage);   // if time permits
 const obstaclePoesePort = new ServerSocket(2008, imageOnMessage);   // if time permits

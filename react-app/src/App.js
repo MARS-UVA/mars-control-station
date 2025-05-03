@@ -69,8 +69,8 @@ const App = () => {
         </div>
 
         <div className="middle-panel">
-          <WebcamPanel />
-          <WebcamPanel />
+          <WebcamPanel id="0"/>
+          <WebcamPanel id="4"/>
         </div>
 
         <div className="right-panel">
