@@ -1,6 +1,7 @@
 const dgram = require('dgram');
 const PORT = 8080;
 const WebSocket = require('ws');
+const JETSON_IP = process.env.JETSON_IP;
 
 function crc32bit(data) {
     let crc = 0xFFFFFFFF;
@@ -19,6 +20,7 @@ function crc32bit(data) {
 
 
 const ws = new WebSocket("ws://localhost:3001");
+
 ws.onopen = () => {
     const buffer = Buffer.from([2]);
     ws.send(buffer)
@@ -36,21 +38,24 @@ ws.onmessage = (event) => {
 
     let message = "pcktcontnt"+gamepadOut;
     console.log(message);
-    client('172.25.182.202', message);
+    client(JETSON_IP, message);
 };
 
 function client(ip, data) {
     // Create a UDP socket
     const socket = dgram.createSocket('udp4');
+    buffer = Buffer.from(data);
+    buffer.writeUInt16LE(buffer.length, 4)
 
     // Send the message to the server
-    socket.send(Buffer.from(data), PORT, ip, (err) => {
+    socket.send(buffer, PORT, ip, (err) => {
         if (err) {
             console.error('Error while sending message:', err.message);
             socket.close();
             return;
         }
         console.log('Message sent successfully');
+        socket.close();
     });
 
     // Listen for a response from the server

@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
-
+const DATA_UPDATE_DELAY_MS = 30;
+const DATA_WINDOW_WIDTH = 10000 / DATA_UPDATE_DELAY_MS;
 // This component will handle backend/API calls with useEffect blocks, and send the data to the UI components
 
 function Socket({ setGamePadStatus, setChartData, setLastDataPoint, timestamp, setTimestamp, setData: setData }) {
@@ -51,23 +52,23 @@ function Socket({ setGamePadStatus, setChartData, setLastDataPoint, timestamp, s
             const newTime = prevTime + 1;
             const newData = {
               time: newTime,
-              value1: motor_values[0] * 1000,
-              value2: motor_values[1] * 1000,
-              value3: motor_values[2] * 1000,
-              value4: motor_values[3] * 1000,
+              value1: motor_values[4],
+              value2: motor_values[5],
+              value3: 4.315 * (motor_values[6] + motor_values[7]) - 14.18,
+              value4: motor_values[8],
             };
     
             setChartData((prevData) => {
               setLastDataPoint(newData);
               const newDataArray = [...prevData, newData];
-              return newDataArray.slice(-30);
+              return newDataArray.slice(-DATA_WINDOW_WIDTH);
             });
     
             return newTime;
           });
         };
     
-        const intervalId = setInterval(addNewData, 1000);
+        const intervalId = setInterval(addNewData, DATA_UPDATE_DELAY_MS);
     
         return () => clearInterval(intervalId);
       }, [setChartData, setLastDataPoint, setTimestamp]);
@@ -75,13 +76,13 @@ function Socket({ setGamePadStatus, setChartData, setLastDataPoint, timestamp, s
       useEffect(() => {
 
         const addData = () => {
-          setData((prevData) => {
-            if(prevData.length>10) {return "data";}
-            return prevData + "."
-          });
+          // setData((prevData) => {
+          //   if(prevData.length>10) {return "data";}
+          //   return prevData + "."
+          // });
         };
 
-        const intervalId = setInterval(addData, 1000);
+        const intervalId = setInterval(addData, DATA_UPDATE_DELAY_MS);
 
   
   
