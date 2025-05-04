@@ -131,8 +131,13 @@
   position: relative;
   aspect-ratio: 16 / 9;
   background-color: #000000;
+  color: #ffffff;
+  font-size: 72px;
   border-radius: 8px;
   overflow: hidden;
+  display:flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .webcam {
