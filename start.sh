@@ -32,8 +32,10 @@ if [ -n "$JETSON_IP" ]; then
     echo "Using $JETSON_IP as the Jetson's IP"
 else
     echo "Jetson IP address: "
-    export read JETSON_IP
+    read JETSON_IP
+    export JETSON_IP
 fi
+
 cd react-app
 
 node ../server/udp_server.js &
