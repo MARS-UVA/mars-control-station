@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import SingleLiveDataStream from "./SingleLiveDataStream";
 
-const ActuatorDataDisplay = () => {
+function ActuatorDataDisplay({lastDataPoint}) {
   const [direction, setDirection] = useState("DIG"); // Initial state for direction
+  const round = num => (Math.round((num + Number.EPSILON) * 100) / 100).toFixed(2);
 
   // Function to randomly cycle through DIG, DUMP, and IDLE
   useEffect(() => {
@@ -70,8 +71,8 @@ const ActuatorDataDisplay = () => {
       <div className="actuator-section">
         <h3>Track Actuator</h3>
         <div className="actuator-data">
-          <SingleLiveDataStream dataStreamName="Height (in)" currentVal="5" />
-          <SingleLiveDataStream dataStreamName="Current (A)" currentVal="15" />
+          <SingleLiveDataStream dataStreamName="Height (in)" currentVal={round(lastDataPoint["ActuatorHeight"])} />
+          <SingleLiveDataStream dataStreamName="Current (A)" currentVal= "15" />
         </div>
         {/* Buttons for Track Actuator */}
         <div className="actuator-buttons">

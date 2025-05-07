@@ -52,10 +52,16 @@ function Socket({ setGamePadStatus, setChartData, setLastDataPoint, timestamp, s
             const newTime = prevTime + 1;
             const newData = {
               time: newTime,
-              value1: motor_values[4],
-              value2: motor_values[5],
-              value3: 4.315 * (motor_values[6] + motor_values[7]) - 14.18,
-              value4: motor_values[8],
+              FrontLeft: motor_values[0],
+              FrontRight: motor_values[1],
+              BackLeft: motor_values[2],
+              BackRight: motor_values[3],
+              LeftDrum: motor_values[4],
+              RightDrum: motor_values[5],
+              LeftActuator: motor_values[6],
+              RightActuator: motor_values[7],
+              ActuatorHeight: -74.9 * motor_values[8] + 4.42,
+              CalculatedWeight: 4.315 * (motor_values[6] + motor_values[7]) - 14.18
             };
     
             setChartData((prevData) => {

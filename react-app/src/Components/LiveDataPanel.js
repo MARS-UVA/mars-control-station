@@ -50,10 +50,14 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
         {/* <h2 className="panel-title">Live Data Panel</h2> */}
         {/* <h3 className="panel-title">Charts</h3> */}
         <div className="chart-grid">
-          <div className="chart-space"><Chart dataKey="value1" />Motor 1: {round(lastDataPoint["value1"])}</div>
-          <div className="chart-space"><Chart dataKey="value2" />Motor 2: {round(lastDataPoint["value2"])}</div>
-          <div className="chart-space"><Chart dataKey="value3" />Motor 3: {round(lastDataPoint["value3"])}</div>
-          <div className="chart-space"><Chart dataKey="value4" />Motor 4: {round(lastDataPoint["value4"])}</div>
+          <div className="chart-space"><Chart dataKey="FrontLeft" />Front Left: {round(lastDataPoint["FrontLeft"])}</div>
+          <div className="chart-space"><Chart dataKey="FrontRight" />Front Right: {round(lastDataPoint["FrontRight"])}</div>
+          <div className="chart-space"><Chart dataKey="BackLeft" />Back Left: {round(lastDataPoint["BackLeft"])}</div>
+          <div className="chart-space"><Chart dataKey="BackRight" />Back Right: {round(lastDataPoint["BackRight"])}</div>
+          <div className="chart-space"><Chart dataKey="LeftDrum" />Left Drum: {round(lastDataPoint["LeftDrum"])}</div>
+          <div className="chart-space"><Chart dataKey="RightDrum" />Right Drum: {round(lastDataPoint["RightDrum"])}</div>
+          <div className="chart-space"><Chart dataKey="LeftActuator" />Left Actuator: {round(lastDataPoint["LeftActuator"])}</div>
+          <div className="chart-space"><Chart dataKey="RightActuator" />Right Actuator: {round(lastDataPoint["RightActuator"])}</div>
         </div>
 
         
