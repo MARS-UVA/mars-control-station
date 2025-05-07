@@ -6,6 +6,12 @@
  */
 import React, { useState, useEffect } from 'react';
 
+const CommandButton = React.memo(({ label, active, onClick }) => (
+  <button className={"command-button " + active} onClick={onClick}>
+    {label}
+  </button>
+));
+
 function DriveStatePanel({ driveState, setDriveState, handleESTOP, handleAutonomousStop }) {
   const [estopSuccess, setEstopSuccess] = useState(false); // State to track the success indication
 
@@ -15,11 +21,7 @@ function DriveStatePanel({ driveState, setDriveState, handleESTOP, handleAutonom
     setTimeout(() => setEstopSuccess(false), 1000); // Reset success state after 1 second
   };
 
-  const CommandButton = ({ label, active, onClick }) => (
-    <button className={"command-button " + active} onClick={onClick}>
-      {label}
-    </button>
-  );
+  
 
   // Add event listener for spacebar press
   useEffect(() => {
