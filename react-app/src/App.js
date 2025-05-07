@@ -61,7 +61,7 @@ const App = () => {
 
       <div className="content">
         <div className="left-panel">
-          <GamepadPanel gamepadStatus={gamepadStatus}/>
+          <GamepadPanel gamepadStatus={gamepadStatus} driveState={driveState}/>
 
           <DriveStatePanel driveState={driveState} setDriveState={setDriveState} handleESTOP={handleESTOP} handleAutonomousStop={handleAutonomousStop}/>
 

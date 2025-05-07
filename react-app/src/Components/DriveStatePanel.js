@@ -5,6 +5,7 @@
  * and an emergency stop (ESTOP) button.
  */
 import React, { useState, useEffect } from 'react';
+import GamepadPanel from './GamepadPanel';
 
 const CommandButton = React.memo(({ label, active, onClick }) => (
   <button className={"command-button " + active} onClick={onClick}>
