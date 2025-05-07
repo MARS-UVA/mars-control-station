@@ -168,7 +168,7 @@ const motorFeedbackOnMessage = (data) => {
 }
 
 const imageSocket = new ServerSocket(2000, imageOnMessage);
-const bottomImageSocket = new ServerSocket(2026, imageOnMessage);
+const bottomImageSocket = new ServerSocket(2026, image2OnMessage);
 const motorFeedbackSocket = new ServerSocket(2001, (motorFeedbackOnMessage));
 const robotPosePort = new ServerSocket(2003, imageOnMessage);   // if time permits
 const obstaclePoesePort = new ServerSocket(2008, imageOnMessage);   // if time permits
