@@ -152,6 +152,16 @@ const imageOnMessage = (receivedChunks) => {
     console.log("sent image to client");
 }
 
+const image2OnMessage = (receivedChunks) => {
+    console.log("All chunks received. Reassembling image.");
+    console.log(Object.keys(receivedChunks));
+    const fullImage = Buffer.concat(Object.values(receivedChunks));
+
+    // Send to websocket
+    websockets.image2.send(fullImage);
+    console.log("sent image to client");
+}
+
 const motorFeedbackOnMessage = (data) => {
     const buffer = Buffer.concat(Object.values(data));
     if(websockets.motorCurrent) websockets.motorCurrent.send(buffer.subarray(0, 36));
