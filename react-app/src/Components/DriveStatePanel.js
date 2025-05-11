@@ -39,6 +39,31 @@ function DriveStatePanel({ driveState, setDriveState, handleESTOP, handleAutonom
     };
   }, []);
 
+  // React to changes in drive state
+  useEffect(() => {
+    const ws = new WebSocket('ws://localhost:3001');
+    switch (driveState) {
+      case 'Auto Drive':
+        console.log('Switched to Auto Drive mode. Initializing autonomous systems...');
+        ws.send(JSON.stringify({ event: 'drive', state: 'Auto' }));
+        break;
+      case 'Direct Drive':
+        console.log('Switched to Direct Drive mode. Enabling manual controls...');
+        ws.send(JSON.stringify({ event: 'drive', state: 'Direct' }));
+        break;
+      case 'Reverse Drive':
+        console.log('Switched to Reverse Drive mode. Adjusting controls for reverse operation...');
+        ws.send(JSON.stringify({ event: 'drive', state: 'Reverse' }));
+        break;
+      case 'Idle':
+        console.log('Switched to Idle mode. Stopping all operations...');
+        ws.send(JSON.stringify({ event: 'drive', state: 'Idle' }));
+        break;
+      default:
+        console.log('Unknown drive state.');
+    }
+  }, [driveState]);
+
   // Render the component UI
   return (
     <div className="panel">

@@ -30,6 +30,13 @@ ws.onmessage = (event) => {
     let jsonObj = JSON.parse(event.data);
     console.log(jsonObj);
 
+    if (jsonObj.hasOwnProperty('event')) {
+        const output = `${jsonObj.state}`;
+        console.log("sending event: " + output);
+        client(JETSON_IP, output);
+        return;
+    }
+
     const gamepadOut = `${jsonObj.buttons.x},${jsonObj.buttons.y},${jsonObj.buttons.a},${jsonObj.buttons.b},
     ${jsonObj.buttons.lt},${jsonObj.buttons.rt},${jsonObj.buttons.lb},${jsonObj.buttons.rb},${jsonObj.buttons.dd},
     ${jsonObj.buttons.du},${jsonObj.buttons.l3},${jsonObj.buttons.r3},

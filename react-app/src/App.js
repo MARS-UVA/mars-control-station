@@ -18,10 +18,9 @@ import { useHotkeys } from 'react-hotkeys-hook';
 
 
 const App = () => {
-
-  
   const [gamepadStatus, setGamepadStatus] = useState('No gamepad connected!');
   const [driveState, setDriveState] = useState('Idle');
+  const [estopState, setEstopState] = useState(false);
 
   
   const [timestamp, setTimestamp] = useState(0);
@@ -37,7 +36,7 @@ const App = () => {
   const [valueData, setData] = useState("data");
 
   function handleESTOP () {
-    //handle ESTOP press
+    setEstopState(true);
   }
 
   function handleAStopHotkey () {
@@ -51,6 +50,20 @@ const App = () => {
 
   useHotkeys('space', handleAStopHotkey );
 
+  useEffect(() => {
+    const ws = new WebSocket('ws://localhost:3001');
+    if(estopState) {
+      const output = {
+            event: "estop", state: "estop"
+        }
+
+        // gamepadText.textContent = JSON.stringify(output, 2)
+        let json = JSON.stringify(output);
+        console.log("sending estop event: " + json);
+        ws.send(json);
+    }
+  }, [estopState]);
+
   
 
   return (
@@ -61,7 +74,7 @@ const App = () => {
 
       <div className="content">
         <div className="left-panel">
-          <GamepadPanel gamepadStatus={gamepadStatus}/>
+          <GamepadPanel />
 
           <DriveStatePanel driveState={driveState} setDriveState={setDriveState} handleESTOP={handleESTOP} handleAutonomousStop={handleAutonomousStop}/>
 
