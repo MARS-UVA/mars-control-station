@@ -222,6 +222,7 @@ const motorFeedbackOnMessage = (data) => {
 }
 
 const gyroOnMessage = (data) => {
+    console.log("GYRO MESSAGE RECIEVED");
     const buffer = Buffer.concat(Object.values(data));
     if(websockets.motorCurrent){
         const messageBuf = buffer.subarray(0, 12);
@@ -234,7 +235,7 @@ const gyroOnMessage = (data) => {
 const imageSocket = new ServerSocket(2000, imageOnMessage);
 const bottomImageSocket = new ServerSocket(2026, image2OnMessage);
 const motorFeedbackSocket = new ServerSocket(2001, (motorFeedbackOnMessage));
-const gyroPort = new ServerSocket(5, gyroOnMessage); 
+const gyroPort = new ServerSocket(2027, gyroOnMessage); 
 const robotPosePort = new ServerSocket(2003, imageOnMessage);   // if time permits
 const obstaclePoesePort = new ServerSocket(2008, imageOnMessage);   // if time permits
 const pathPort = new ServerSocket(2025, imageOnMessage);    // if time permits
