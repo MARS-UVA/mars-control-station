@@ -21,6 +21,7 @@ const App = () => {
 
   
   const [gamepadStatus, setGamepadStatus] = useState('No gamepad connected!');
+  const [gamepadData, setGamepadData] = useState(null);
   const [driveState, setDriveState] = useState('Idle');
 
   
@@ -28,10 +29,18 @@ const App = () => {
   const [chartData, setChartData] = useState(Array.from({ length: 1 }, (_, i) => ({
     
     time: i,
-    value1: Math.random() * 100,
-    value2: Math.random() * 100,
-    value3: Math.random() * 100,
-    value4: Math.random() * 100,
+    leftFrontWheel: Math.random() * 100,
+    rightFrontWheel: Math.random() * 100,
+    leftBackWheel: Math.random() * 100,
+    rightBackWheel: Math.random() * 100,
+    leftBucketDrum: Math.random() * 100,
+    rightBucketDrum: Math.random() * 100,
+    actuatorCapacity: Math.random() * 100,
+    actuatorHeight: Math.random() * 100,
+    globalDataRate: Math.random() * 100,
+    xGyro: 0.0,
+    yGyro: 0.0,
+    zGyro: 0.0,
   })));
   const [lastDataPoint, setLastDataPoint] = useState(chartData[chartData.length - 1]);
   const [valueData, setData] = useState("data");
@@ -61,7 +70,7 @@ const App = () => {
 
       <div className="content">
         <div className="left-panel">
-          <GamepadPanel gamepadStatus={gamepadStatus}/>
+          <GamepadPanel gamepadStatus={gamepadStatus} setGamepadStatus={setGamepadStatus} gamepadData={gamepadData} setGamepadData={setGamepadData}/>
 
           <DriveStatePanel driveState={driveState} setDriveState={setDriveState} handleESTOP={handleESTOP} handleAutonomousStop={handleAutonomousStop}/>
 
@@ -69,8 +78,8 @@ const App = () => {
         </div>
 
         <div className="middle-panel">
-          <WebcamPanel id="0"/>
-          <WebcamPanel id="4"/>
+          <WebcamPanel index="0" gamepadData={gamepadData}/>
+          <WebcamPanel index="4" gamepadData={null}/>
         </div>
 
         <div className="right-panel">

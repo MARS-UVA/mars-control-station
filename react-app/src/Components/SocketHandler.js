@@ -45,17 +45,69 @@ function Socket({ setGamePadStatus, setChartData, setLastDataPoint, timestamp, s
         };
       }, []);
 
+      const [lastDataRate, setLastDataRate] = React.useState(0);
+      useEffect(() => {
+        const ws = new WebSocket("ws://localhost:3001");
+        ws.binaryType = "arraybuffer";
+  
+        ws.onopen = () => {
+          const buffer = new Uint8Array([5]);
+          ws.send(buffer)
+          console.log('dataMonitor ws connected');
+        }
+  
+        ws.onmessage = (event) => {
+          const data = JSON.parse(event.data);
+          const globalValue = data.global;
+          console.log("Global data rate:", globalValue);
+          setLastDataRate(globalValue);
+        };
+        return() => {
+          ws.close();
+        };
+      }, []);
+
+      const gyroValuesRef = useRef(new Float32Array(4));
+      useEffect(() => {
+        const ws = new WebSocket("ws://localhost:3001");
+        ws.binaryType = "arraybuffer";
+  
+        ws.onopen = () => {
+          const buffer = new Uint8Array([6]);
+          ws.send(buffer)
+          console.log('gyroMonitory ws connected');
+        }
+  
+        ws.onmessage = (event) => {
+          const buffer = event.data;
+          let newValues = new Float32Array(buffer);
+          gyroValuesRef.current = newValues;
+        };
+        return() => {
+          ws.close();
+        };
+      }, []);
+
       useEffect(() => {
         const addNewData = () => {
           const motor_values = motorValuesRef.current;
+          const gyro_values = gyroValuesRef.current;
           setTimestamp((prevTime) => {
             const newTime = prevTime + 1;
             const newData = {
               time: newTime,
-              value1: motor_values[4],
-              value2: motor_values[5],
-              value3: 4.57 * (motor_values[6] + motor_values[7]) - 29.8,
-              value4: motor_values[8],
+              leftFrontWheel: motor_values[0],
+              rightFrontWheel: motor_values[1],
+              leftBackWheel: motor_values[2],
+              rightBackWheel: motor_values[3],
+              leftBucketDrum: motor_values[4],
+              rightBucketDrum: motor_values[5],
+              actuatorCapacity: 4.315 * (motor_values[6] + motor_values[7]) - 14.18,
+              actuatorHeight: motor_values[8],
+              globalDataRate: lastDataRate,
+              xGyro: gyro_values[0],
+              yGyro: gyro_values[1],
+              zGyro: gyro_values[2],
             };
     
             setChartData((prevData) => {

@@ -1,9 +1,32 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Camera } from "lucide-react";
+import Guidelines from "./Guidelines";
+
+const styles = {
+  container: {
+    margin: '10px 0', // Adds margin on top and bottom
+    position: 'relative',
+    width: '100%',
+    height: '50%'
+  },
+  cameraContainer: {
+    position: 'relative',
+    width: '100%',
+    height: '100%',
+    overflow: 'hidden',
+    backgroundColor: 'black',
+    borderRadius: '8px'
+  },
+  cameraFeed: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover'
+  }
+};
 
 // This component renders a panel with a webcam feed (currently showing laptop webcam)
-function WebcamPanel(props) {
-    const id = parseInt(props.id);
+function WebcamPanel({index, gamepadData}) {
+    const id = parseInt(index);
     //const [imageSrc, setImageSrc] = useState(null);
     const imgRef = useRef(null);
     const lastUrl = useRef(null);
@@ -43,13 +66,19 @@ function WebcamPanel(props) {
 
 
     return (
-    <>
-      <div className="panel">
-        <div className="webcam-container">
-          <img ref={imgRef} alt="Waiting for image" />
-        </div>
+    <div style={styles.container}>
+      {/* Camera feed container */}
+      <div style={styles.cameraContainer}>
+        <img 
+          ref={imgRef}
+          style={styles.cameraFeed}
+          alt="Camera Feed"
+        />
+        
+        {/* Overlay the parking guidelines */}
+        {gamepadData ? <Guidelines leftStick={gamepadData.leftStick} /> : <></>}
       </div>
-    </>
+    </div>
     )
 }
 
