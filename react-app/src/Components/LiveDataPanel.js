@@ -85,7 +85,7 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
           <div className="chart-space"><Chart dataKey="actuatorCapacity" />Drum Capacity: {round(lastDataPoint["actuatorCapacity"])} %</div>
           <div className="chart-space"><Chart dataKey="actuatorHeight" />Drum Height: {round(lastDataPoint["actuatorHeight"])} cm</div>
           <div className="chart-space"><Chart dataKey="globalDataRate" />Data Rate: {lastDataPoint["globalDataRate"]} Mbps</div>
-          <div className="chart-space" style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100px" }}><TiltMeter angleX={10} angleY={20} angleZ={45}/></div>
+          <div className="chart-space" style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100px" }}><TiltMeter angleX={lastDataPoint["xGyro"]} angleY={lastDataPoint["yGyro"]} angleZ={lastDataPoint["zGyro"]}/></div>
         </div>
 
         

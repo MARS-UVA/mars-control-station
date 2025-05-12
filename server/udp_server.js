@@ -18,7 +18,8 @@ let websockets = {
     motorCurrent: null,
     client: null,
     potentiometer: null,
-    dataRate: null
+    dataRate: null,
+    gyroRate: null
 };
 
 const dataRateMonitors = {
@@ -26,7 +27,8 @@ const dataRateMonitors = {
     image2: new DataRateMonitor(DATA_RATE_UPDATE_INTERVAL_MS),
     motorCurrent: new DataRateMonitor(DATA_RATE_UPDATE_INTERVAL_MS),
     client: new DataRateMonitor(DATA_RATE_UPDATE_INTERVAL_MS),
-    potentiometer: new DataRateMonitor(DATA_RATE_UPDATE_INTERVAL_MS)
+    potentiometer: new DataRateMonitor(DATA_RATE_UPDATE_INTERVAL_MS),
+    gyroData: new DataRateMonitor(DATA_RATE_UPDATE_INTERVAL_MS),
 };
 Object.values(dataRateMonitors).forEach(monitor => monitor.start());
 
@@ -80,6 +82,9 @@ webSocketServer.on('connection', (ws) => {
                 case 5:
                     websockets.dataRate = ws;
                     console.log("connected data rate ws");
+                case 6:
+                    websockets.gyroRate = ws;
+                    console.log("connected gyro ws");
                 default:
                     break;
             }
@@ -216,9 +221,20 @@ const motorFeedbackOnMessage = (data) => {
     }
 }
 
+const gyroOnMessage = (data) => {
+    const buffer = Buffer.concat(Object.values(data));
+    if(websockets.motorCurrent){
+        const messageBuf = buffer.subarray(0, 12);
+        dataRateMonitors.gyroData.recordReceived(messageBuf.length);
+        globalDataRateMonitor.recordReceived(messageBuf.length);
+        websockets.motorCurrent.send(messageBuf);
+    }
+}
+
 const imageSocket = new ServerSocket(2000, imageOnMessage);
 const bottomImageSocket = new ServerSocket(2026, image2OnMessage);
 const motorFeedbackSocket = new ServerSocket(2001, (motorFeedbackOnMessage));
+const gyroPort = new ServerSocket(5, gyroOnMessage); 
 const robotPosePort = new ServerSocket(2003, imageOnMessage);   // if time permits
 const obstaclePoesePort = new ServerSocket(2008, imageOnMessage);   // if time permits
 const pathPort = new ServerSocket(2025, imageOnMessage);    // if time permits

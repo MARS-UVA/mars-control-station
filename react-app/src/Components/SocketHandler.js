@@ -51,8 +51,7 @@ function Socket({ setGamePadStatus, setChartData, setLastDataPoint, timestamp, s
         ws.binaryType = "arraybuffer";
   
         ws.onopen = () => {
-          const id = 5;
-          const buffer = new Uint8Array([id]);
+          const buffer = new Uint8Array([5]);
           ws.send(buffer)
           console.log('dataMonitor ws connected');
         }
@@ -68,9 +67,31 @@ function Socket({ setGamePadStatus, setChartData, setLastDataPoint, timestamp, s
         };
       }, []);
 
+      const gyroValuesRef = useRef(new Float32Array(4));
+      useEffect(() => {
+        const ws = new WebSocket("ws://localhost:3001");
+        ws.binaryType = "arraybuffer";
+  
+        ws.onopen = () => {
+          const buffer = new Uint8Array([6]);
+          ws.send(buffer)
+          console.log('gyroMonitory ws connected');
+        }
+  
+        ws.onmessage = (event) => {
+          const buffer = event.data;
+          let newValues = new Float32Array(buffer);
+          gyroValuesRef.current = newValues;
+        };
+        return() => {
+          ws.close();
+        };
+      }, []);
+
       useEffect(() => {
         const addNewData = () => {
           const motor_values = motorValuesRef.current;
+          const gyro_values = gyroValuesRef.current;
           setTimestamp((prevTime) => {
             const newTime = prevTime + 1;
             const newData = {
@@ -84,6 +105,9 @@ function Socket({ setGamePadStatus, setChartData, setLastDataPoint, timestamp, s
               actuatorCapacity: 4.315 * (motor_values[6] + motor_values[7]) - 14.18,
               actuatorHeight: motor_values[8],
               globalDataRate: lastDataRate,
+              xGyro: gyro_values[0],
+              yGyro: gyro_values[1],
+              zGyro: gyro_values[2],
             };
     
             setChartData((prevData) => {

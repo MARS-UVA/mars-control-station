@@ -38,6 +38,9 @@ const App = () => {
     actuatorCapacity: Math.random() * 100,
     actuatorHeight: Math.random() * 100,
     globalDataRate: Math.random() * 100,
+    xGyro: 0.0,
+    yGyro: 0.0,
+    zGyro: 0.0,
   })));
   const [lastDataPoint, setLastDataPoint] = useState(chartData[chartData.length - 1]);
   const [valueData, setData] = useState("data");
