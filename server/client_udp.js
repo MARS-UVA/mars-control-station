@@ -30,7 +30,7 @@ ws.onmessage = (event) => {
     let jsonObj = JSON.parse(event.data);
     console.log(jsonObj);
 
-    const gamepadOut = `${jsonObj.buttons.x},${jsonObj.buttons.y},${jsonObj.buttons.a},${jsonObj.buttons.b},
+    const gamepadOut = `${jsonObj.state},${jsonObj.buttons.x},${jsonObj.buttons.y},${jsonObj.buttons.a},${jsonObj.buttons.b},
     ${jsonObj.buttons.lt},${jsonObj.buttons.rt},${jsonObj.buttons.lb},${jsonObj.buttons.rb},${jsonObj.buttons.dd},
     ${jsonObj.buttons.du},${jsonObj.buttons.l3},${jsonObj.buttons.r3},
     ${jsonObj.buttons.back},${jsonObj.buttons.start},${jsonObj.leftStick.x},${jsonObj.leftStick.y},${jsonObj.rightStick.x},
