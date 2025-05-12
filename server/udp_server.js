@@ -8,6 +8,8 @@ const MESSAGE_LENGTH = 1500;
 const HEADER_LENGTH = 10;
 const WS_PORT = 3001;
 
+const DATA_RATE_UPDATE_INTERVAL_MS = 1000;
+
 const webSocketServer = new WebSocket.Server({port: WS_PORT});
 
 let websockets = {
