@@ -132,7 +132,7 @@ class ServerSocket {
 
         // Event: On receiving a message
         this.server.on('message', (message, remote) => {
-            console.log(message.subarray(0, 10));
+            // console.log(message.subarray(0, 10));
             //console.log(`Received message from IP: ${remote.address} and port: ${remote.port}`);
             //console.log(`Msg from client: ${message.toString()}`);
 
@@ -141,8 +141,8 @@ class ServerSocket {
             const totalPackets = (message[3] << 8) | message[2];
             const chunkData = message.subarray(10);
 
-            console.log(`Received packet ${sequenceNumber + 1} of ${totalPackets}`);
-            console.log(chunkData.length);
+            // console.log(`Received packet ${sequenceNumber + 1} of ${totalPackets}`);
+            // console.log(chunkData.length);
             this.receivedChunks[sequenceNumber] = chunkData;
             const totalChunks = totalPackets;
             //Check if all packets have been received
@@ -184,7 +184,7 @@ class ServerSocket {
 }
 
 const imageOnMessage = (receivedChunks) => {
-    console.log("All chunks received. Reassembling image.");
+    console.log("Received top image");
     console.log(Object.keys(receivedChunks));
     const fullImage = Buffer.concat(Object.values(receivedChunks));
 
@@ -198,7 +198,7 @@ const imageOnMessage = (receivedChunks) => {
 }
 
 const image2OnMessage = (receivedChunks) => {
-    console.log("All chunks received. Reassembling image.");
+    console.log("Received bottom image");
     console.log(Object.keys(receivedChunks));
     const fullImage = Buffer.concat(Object.values(receivedChunks));
 
