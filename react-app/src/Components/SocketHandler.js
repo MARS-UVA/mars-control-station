@@ -45,7 +45,7 @@ function Socket({ setGamePadStatus, setChartData, setLastDataPoint, timestamp, s
         };
       }, []);
 
-      const [lastDataRate, setLastDataRate] = React.useState(0);
+      const [lastDataRate, setLastDataRate] = React.useState(0.0);
       useEffect(() => {
         const ws = new WebSocket("ws://localhost:3001");
         ws.binaryType = "arraybuffer";
@@ -60,7 +60,7 @@ function Socket({ setGamePadStatus, setChartData, setLastDataPoint, timestamp, s
           const data = JSON.parse(event.data);
           const globalValue = data.global;
           console.log("Global data rate:", globalValue);
-          setLastDataRate(globalValue);
+          setLastDataRate(globalValue.receiveRate + globalValue.sendRate);
         };
         return() => {
           ws.close();
