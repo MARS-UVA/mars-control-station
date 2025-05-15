@@ -125,23 +125,7 @@ function Socket({ setGamePadStatus, setChartData, setLastDataPoint, timestamp, s
         return () => clearInterval(intervalId);
       }, [setChartData, setLastDataPoint, setTimestamp]);
 
-      useEffect(() => {
-
-        const addData = () => {
-          // setData((prevData) => {
-          //   if(prevData.length>10) {return "data";}
-          //   return prevData + "."
-          // });
-        };
-
-        const intervalId = setInterval(addData, DATA_UPDATE_DELAY_MS);
-
-  
-  
-
-
-        return () => clearInterval(intervalId);
-      }, []);
+      
 
 }
 

@@ -229,11 +229,11 @@ const motorFeedbackOnMessage = (data) => {
 const gyroOnMessage = (data) => {
     console.log("GYRO MESSAGE RECIEVED");
     const buffer = Buffer.concat(Object.values(data));
-    if(websockets.motorCurrent){
+    if(websockets.gyroRate){
         const messageBuf = buffer.subarray(0, 12);
         dataRateMonitors.gyroData.recordReceived(messageBuf.length);
         globalDataRateMonitor.recordReceived(messageBuf.length);
-        websockets.motorCurrent.send(messageBuf);
+        websockets.gyroRate.send(messageBuf);
     }
 }
 
