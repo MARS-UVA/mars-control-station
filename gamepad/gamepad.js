@@ -109,6 +109,6 @@ setInterval(() => {
             buttons: getButtonObjectFromGamepad(gamepads[0])
         };
         document.getElementById('gamepad-text').textContent = JSON.stringify(output, null, 2);
-        console.log(JSON.stringify(output));
+        //console.log(JSON.stringify(output));
     }
 }, intervalTime);

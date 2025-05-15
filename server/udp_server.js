@@ -183,30 +183,34 @@ class ServerSocket {
 }
 
 const imageOnMessage = (receivedChunks) => {
-    console.log("Received top image");
-    console.log(Object.keys(receivedChunks));
+    //console.log("Received top image");
+    //console.log(Object.keys(receivedChunks));
     const fullImage = Buffer.concat(Object.values(receivedChunks));
 
     // Send to websocket
     if (websockets.image) {
         dataRateMonitors.image.recordReceived(fullImage.length);
         globalDataRateMonitor.recordReceived(fullImage.length);
+        console.log("data rate monitor for image1 recorded " + fullImage.length + " and calculated " + dataRateMonitors.image.calculateRates());
+        console.log("global data rate monitor recorded " + fullImage.length + " and calculated " + globalDataRateMonitor.calculateRates());
         websockets.image.send(fullImage);
-        console.log("sent image to client");
+        //console.log("sent image to client");
     }
 }
 
 const image2OnMessage = (receivedChunks) => {
-    console.log("Received bottom image");
-    console.log(Object.keys(receivedChunks));
+    //console.log("Received bottom image");
+    //console.log(Object.keys(receivedChunks));
     const fullImage = Buffer.concat(Object.values(receivedChunks));
 
     // Send to websocket
     if (websockets.image2) {
         dataRateMonitors.image2.recordReceived(fullImage.length);
         globalDataRateMonitor.recordReceived(fullImage.length);
+        console.log("data rate monitor for image2 recorded " + fullImage.length + " and calculated " + dataRateMonitors.image2.calculateRates());
+        console.log("global data rate monitor recorded " + fullImage.length + " and calculated " + globalDataRateMonitor.calculateRates());
         websockets.image2.send(fullImage);
-        console.log("sent image to client");
+        //console.log("sent image to client");
     }
 }
 
@@ -216,6 +220,8 @@ const motorFeedbackOnMessage = (data) => {
         const messageBuf = buffer.subarray(0, 36);
         dataRateMonitors.motorCurrent.recordReceived(messageBuf.length);
         globalDataRateMonitor.recordReceived(messageBuf.length);
+        console.log("data rate monitor recorder " + messageBuf.length + " and calculated " + dataRateMonitors.motorCurrent.calculateRates());
+        console.log("global data rate monitor recorded " + messageBuf.length + " and calculated " + globalDataRateMonitor.calculateRates());
         websockets.motorCurrent.send(messageBuf);
     }
 }

@@ -4,10 +4,10 @@ let gamepads = navigator.getGamepads()
 const ws = new WebSocket('ws://localhost:3001');
 ws.onopen = () => {
   ws.send(-1)
-  console.log('websocket connected');
+  //console.log('websocket connected');
 };
 ws.onclose = () => {
-  console.log('websocket closed');
+  //console.log('websocket closed');
 };
 
 window.addEventListener('gamepadconnected', e => {
@@ -123,7 +123,7 @@ setInterval(() => {
 
         // gamepadText.textContent = JSON.stringify(output, 2)
         let json = JSON.stringify(output);
-        console.log("sending data: " + json);
+        //console.log("sending data: " + json);
         ws.send(json);
     }
 }, intervalTime)

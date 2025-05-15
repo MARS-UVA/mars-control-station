@@ -24,11 +24,11 @@ const ws = new WebSocket("ws://localhost:3001");
 ws.onopen = () => {
     const buffer = Buffer.from([2]);
     ws.send(buffer)
-    console.log('ws connected');
+    //console.log('ws connected');
 };
 ws.onmessage = (event) => {
     let jsonObj = JSON.parse(event.data);
-    console.log(jsonObj);
+    //console.log(jsonObj);
 
     const gamepadOut = `${jsonObj.buttons.x},${jsonObj.buttons.y},${jsonObj.buttons.a},${jsonObj.buttons.b},
     ${jsonObj.buttons.lt},${jsonObj.buttons.rt},${jsonObj.buttons.lb},${jsonObj.buttons.rb},${jsonObj.buttons.dd},
@@ -37,7 +37,7 @@ ws.onmessage = (event) => {
     ${jsonObj.rightStick.y}`;
 
     let message = "pcktcontnt"+gamepadOut;
-    console.log(message);
+    //console.log(message);
     client(JETSON_IP, message);
 };
 
@@ -54,7 +54,7 @@ function client(ip, data) {
             socket.close();
             return;
         }
-        console.log('Message sent successfully');
+        //console.log('Message sent successfully');
         socket.close();
     });
 

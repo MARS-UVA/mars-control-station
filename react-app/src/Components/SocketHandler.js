@@ -53,13 +53,13 @@ function Socket({ setGamePadStatus, setChartData, setLastDataPoint, timestamp, s
         ws.onopen = () => {
           const buffer = new Uint8Array([5]);
           ws.send(buffer)
-          console.log('dataMonitor ws connected');
+          //console.log('dataMonitor ws connected');
         }
   
         ws.onmessage = (event) => {
           const data = JSON.parse(event.data);
           const globalValue = data.global;
-          console.log("Global data rate:", globalValue);
+          //console.log("Global data rate:", globalValue);
           setLastDataRate(globalValue.receiveRate + globalValue.sendRate);
         };
         return() => {
@@ -75,7 +75,7 @@ function Socket({ setGamePadStatus, setChartData, setLastDataPoint, timestamp, s
         ws.onopen = () => {
           const buffer = new Uint8Array([6]);
           ws.send(buffer)
-          console.log('gyroMonitory ws connected');
+          //console.log('gyroMonitory ws connected');
         }
   
         ws.onmessage = (event) => {

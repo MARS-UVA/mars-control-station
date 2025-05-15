@@ -39,7 +39,7 @@ function WebcamPanel({index, gamepadData}) {
       ws.onopen = () => {
         const buffer = new Uint8Array([id]);
         ws.send(buffer)
-        console.log('webcamPanel ws connected');
+        //console.log('webcamPanel ws connected');
       }
 
       ws.onmessage = (event) => {

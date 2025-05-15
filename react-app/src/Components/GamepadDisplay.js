@@ -8,7 +8,7 @@ import { getGamepadState } from '../gamepad/gamepad.js';
 const GamepadDisplay = ({ gamepadData }) => {
   if (!gamepadData) return null;
 
-  console.log(getGamepadState);
+  //console.log(getGamepadState);
 
   const { leftStick, rightStick, buttons } = gamepadData;
 
