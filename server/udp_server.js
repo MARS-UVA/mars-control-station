@@ -27,7 +27,6 @@ const dataRateMonitors = {
     image2: new DataRateMonitor(DATA_RATE_UPDATE_INTERVAL_MS),
     motorCurrent: new DataRateMonitor(DATA_RATE_UPDATE_INTERVAL_MS),
     client: new DataRateMonitor(DATA_RATE_UPDATE_INTERVAL_MS),
-    potentiometer: new DataRateMonitor(DATA_RATE_UPDATE_INTERVAL_MS),
     gyroData: new DataRateMonitor(DATA_RATE_UPDATE_INTERVAL_MS),
 };
 Object.values(dataRateMonitors).forEach(monitor => monitor.start());
@@ -38,12 +37,12 @@ globalDataRateMonitor.start();
 function sendDataRateUpdates() {
     if (websockets.dataRate) {
         const rates = {
-            global: globalDataRateMonitor.getCurrentRates(),
-            image: dataRateMonitors.image.getCurrentRates(),
-            image2: dataRateMonitors.image2.getCurrentRates(),
-            motorCurrent: dataRateMonitors.motorCurrent.getCurrentRates(),
-            client: dataRateMonitors.client.getCurrentRates(),
-            potentiometer: dataRateMonitors.potentiometer.getCurrentRates()
+            global: globalDataRateMonitor.calculateRates(),
+            image: dataRateMonitors.image.calculateRates(),
+            image2: dataRateMonitors.image2.calculateRates(),
+            motorCurrent: dataRateMonitors.motorCurrent.calculateRates(),
+            client: dataRateMonitors.client.calculateRates(),
+            gyroData: dataRateMonitors.gyroData.calculateRates(),
         };
         websockets.dataRate.send(JSON.stringify(rates));
     }

@@ -12,7 +12,7 @@ function GamepadPanel({ gamepadStatus, setGamepadStatus, gamepadData, setGamepad
     };
 
     const handleGamepadDisconnected = () => {
-      setGamepadStatus('No gamepad connected!');
+      setGamepadStatus('No gamepad s!');
       setGamepadData(null);
     };
 
