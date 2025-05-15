@@ -78,8 +78,8 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
         {/* <h2 className="panel-title">Live Data Panel</h2> */}
         {/* <h3 className="panel-title">Charts</h3> */}
         <div className="chart-grid">
-          <div className="chart-space"><MultiChart dataKey="wheels" />Left Wheels: {(round(lastDataPoint["leftFrontWheel"])+round(lastDataPoint["leftBackWheel"]))/2} A, <br></br> Right Wheels: {(round(lastDataPoint["rightFrontWheel"])+round(lastDataPoint["rightBackWheel"]))/2} A</div>
-          <div className="chart-space"><MultiChart dataKey="bucketDrum" />Drum Motors: {(round(lastDataPoint["leftBucketDrum"])+round(lastDataPoint["rightBucketDrum"]))/2} A</div>
+          <div className="chart-space"><MultiChart dataKey="wheels" />Left Wheels: {round((lastDataPoint["leftFrontWheel"]+lastDataPoint["leftBackWheel"]) / 2)} A, <br></br> Right Wheels: {round((lastDataPoint["rightFrontWheel"]+lastDataPoint["rightBackWheel"])/2)} A</div>
+          <div className="chart-space"><MultiChart dataKey="bucketDrum" />Drum Motors: {round((lastDataPoint["leftBucketDrum"]+lastDataPoint["rightBucketDrum"]) / 2)} A</div>
           {/* <div className="chart-space"><Chart dataKey="leftBucketDrum" />Left Bucket Drum Motor: {round(lastDataPoint["leftBucketDrum"])}</div>
           <div className="chart-space"><Chart dataKey="rightBucketDrum" />Right Bucket Drum Motor: {round(lastDataPoint["rightBucketDrum"])}</div> */}
           <div className="chart-space"><Chart dataKey="actuatorCapacity" />Drum Capacity: {round(lastDataPoint["actuatorCapacity"])} %</div>
