@@ -1,0 +1,4 @@
+*.out
+install/
+build/
+log/

@@ -3,23 +3,41 @@ import { Camera } from "lucide-react";
 
 // This component renders a panel with a webcam feed (currently showing laptop webcam)
 function WebcamPanel() {
-
-    const videoRef = useRef(null);
+    //const [imageSrc, setImageSrc] = useState(null);
+    const imgRef = useRef(null);
+    const lastUrl = useRef(null);
+    const socketRef = useRef(null);
 
     useEffect(() => {
-        if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-          navigator.mediaDevices
-            .getUserMedia({ video: true })
-            .then((stream) => {
-              if (videoRef.current) {
-                videoRef.current.srcObject = stream;
-              }
-            })
-            .catch((error) => {
-              console.error("Error accessing webcam:", error);
-            });
+      const ws = new WebSocket("ws://localhost:3001");
+      ws.binaryType = "arraybuffer";
+
+      ws.onopen = () => {
+        const buffer = new Uint8Array([0]);
+        ws.send(buffer)
+        console.log('webcamPanel ws connected');
+      }
+
+      ws.onmessage = (event) => {
+        const blob = new Blob([event.data], {type: 'image/jpeg'});
+        const newUrl = URL.createObjectURL(blob);
+        //setImageSrc(URL.createObjectURL(blob));
+
+        if(lastUrl.current) {
+          const oldUrl = lastUrl.current
+          requestAnimationFrame(() => URL.revokeObjectURL(oldUrl));
         }
-      }, []);
+        lastUrl.current = newUrl;
+
+        if(imgRef.current) {
+          imgRef.current.src = newUrl;
+        }
+      };
+      return() => {
+        ws.close();
+        if(lastUrl.current) URL.revokeObjectURL(lastUrl.current)
+      };
+    }, []);
 
 
 
@@ -27,10 +45,7 @@ function WebcamPanel() {
     <>
       <div className="panel">
         <div className="webcam-container">
-          <video ref={videoRef} autoPlay playsInline muted className="webcam" />
-          <div className="camera-icon">
-            <Camera size={20} />
-          </div>
+          <img ref={imgRef} alt="Waiting for image" />
         </div>
       </div>
     </>

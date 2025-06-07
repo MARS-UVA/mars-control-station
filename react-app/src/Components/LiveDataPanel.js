@@ -10,7 +10,7 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
   const Chart = ({ dataKey }) => (
     <ResponsiveContainer width="100%" height={100}>
       <LineChart data={chartData}>
-        <XAxis dataKey="time" />
+        <XAxis dataKey="time" ran/>
         <YAxis />
         <Line type="monotone" dataKey={dataKey} stroke="#8884d8" dot={false} isAnimationActive={false} />
         {/* <ReferenceLine y={maxValue} stroke="red" strokeWidth={1} /> */}
