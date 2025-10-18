@@ -14,7 +14,8 @@ let websockets = {
     image: null,
     motorCurrent: null,
     client: null,
-    potentiometer: null
+    potentiometer: null,
+    errorPanel: null
 };
 
 
@@ -44,6 +45,11 @@ webSocketServer.on('connection', (ws) => {
                     console.log("connected potentiometer ws");
                     const floats = new Float32Array([1, 1, 1, 1, 1]);
                     ws.send(floats.buffer);
+                    break;
+                case 4:
+                    websockets.errorPanel = ws;
+                    console.log("connected error panel ws");
+                    break;
                 default:
                     break;
             }
