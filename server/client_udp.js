@@ -1,6 +1,7 @@
 const dgram = require('dgram');
 const PORT = 8080;
 const WebSocket = require('ws');
+const JETSON_IP = process.env.JETSON_IP;
 
 function crc32bit(data) {
     let crc = 0xFFFFFFFF;
@@ -19,6 +20,7 @@ function crc32bit(data) {
 
 
 const ws = new WebSocket("ws://localhost:3001");
+
 ws.onopen = () => {
     const buffer = Buffer.from([2]);
     ws.send(buffer)
@@ -30,26 +32,30 @@ ws.onmessage = (event) => {
 
     const gamepadOut = `${jsonObj.buttons.x},${jsonObj.buttons.y},${jsonObj.buttons.a},${jsonObj.buttons.b},
     ${jsonObj.buttons.lt},${jsonObj.buttons.rt},${jsonObj.buttons.lb},${jsonObj.buttons.rb},${jsonObj.buttons.dd},
-    ${jsonObj.buttons.du},${jsonObj.buttons.dl}.${jsonObj.buttons.dr},${jsonObj.buttons.l3},${jsonObj.buttons.r3},
+    ${jsonObj.buttons.du},${jsonObj.buttons.l3},${jsonObj.buttons.r3},
     ${jsonObj.buttons.back},${jsonObj.buttons.start},${jsonObj.leftStick.x},${jsonObj.leftStick.y},${jsonObj.rightStick.x},
     ${jsonObj.rightStick.y}`;
 
     let message = "pcktcontnt"+gamepadOut;
-    client('172.25.153.79', message);
+    console.log(message);
+    client(JETSON_IP, message);
 };
 
 function client(ip, data) {
     // Create a UDP socket
     const socket = dgram.createSocket('udp4');
+    buffer = Buffer.from(data);
+    buffer.writeUInt16LE(buffer.length, 4)
 
     // Send the message to the server
-    socket.send(Buffer.from(data), PORT, ip, (err) => {
+    socket.send(buffer, PORT, ip, (err) => {
         if (err) {
             console.error('Error while sending message:', err.message);
             socket.close();
             return;
         }
         console.log('Message sent successfully');
+        socket.close();
     });
 
     // Listen for a response from the server

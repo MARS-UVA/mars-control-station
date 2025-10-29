@@ -10,7 +10,7 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
   const Chart = ({ dataKey }) => (
     <ResponsiveContainer width="100%" height={100}>
       <LineChart data={chartData}>
-        <XAxis dataKey="time" />
+        <XAxis dataKey="time" ran/>
         <YAxis />
         <Line type="monotone" dataKey={dataKey} stroke="#8884d8" dot={false} isAnimationActive={false} />
         {/* <ReferenceLine y={maxValue} stroke="red" strokeWidth={1} /> */}
@@ -20,8 +20,7 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
 
   
   const Lever = ({ value }) => (
-    <ResponsiveContainer Container width="100%">
-
+    <ResponsiveContainer Container width="100%" height={100}>
       <div className="lever">
         <div 
           className="lever-fill"
@@ -29,14 +28,12 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
         />
       </div>
 
-
       <div className="lever-value">
         {value.toFixed(1)}
       </div>
     </ResponsiveContainer>
   );
   // Ref Hook - useRef for accessing a DOM element or mutable value
-
   
 
 
@@ -56,7 +53,12 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
           <div className="chart-space"><Chart dataKey="value4" />Motor 4: {round(lastDataPoint["value4"])}</div>
         </div>
 
-        
+        <div className="lever-grid">
+          <div className="lever-space"><Lever value={lastDataPoint["value1"] / 100} label={`Motor 5: ${round(lastDataPoint["value1"])}`} /></div>
+          <div className="lever-space"><Lever value={lastDataPoint["value1"] / 100} label={`Motor 5: ${round(lastDataPoint["value1"])}`} /></div>
+          <div className="lever-space"><Lever value={lastDataPoint["value1"] / 100} label={`Motor 5: ${round(lastDataPoint["value1"])}`} /></div>
+          <div className="lever-space"><Lever value={lastDataPoint["value1"] / 100} label={`Motor 5: ${round(lastDataPoint["value1"])}`} /></div>
+        </div>
 
         {/* <div className="lever-grid">
           <div className="lever-space"><Lever value={lastDataPoint["value1"] / 100} /></div>
@@ -64,7 +66,6 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
           <div className="lever-space"><Lever value={lastDataPoint["value3"] / 100} /></div>
           <div className="lever-space"><Lever value={lastDataPoint["value3"] / 100} /></div>
         </div> */}
-
 
       </div>
     </>
