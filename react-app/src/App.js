@@ -10,11 +10,10 @@ import LiveDataPanel from "./Components/LiveDataPanel";
 import GamepadPanel from "./Components/GamepadPanel";
 import DriveStatePanel from "./Components/DriveStatePanel";
 import WebcamPanel from "./Components/WebcamPanel";
-import SocketHandler from "./Components/SocketHandler";
+import Socket from "./Components/Socket";
 import SingleLiveDataStream from "./Components/SingleLiveDataStream";
 import ActuatorDataDisplay from "./Components/ActuatorDataDisplay";
 
-import { useHotkeys } from 'react-hotkeys-hook';
 
 
 const App = () => {
@@ -45,34 +44,19 @@ const App = () => {
   const [lastDataPoint, setLastDataPoint] = useState(chartData[chartData.length - 1]);
   const [valueData, setData] = useState("data");
 
-  function handleESTOP () {
-    //handle ESTOP press
-  }
-
-  function handleAStopHotkey () {
-    if (driveState == "Autonomous Drive") {handleAutonomousStop()}
-  }
-
-  function handleAutonomousStop () {
-    //handle immediate switching out of autonomous drive 
-    setDriveState("Direct Drive")
-  }
-
-  useHotkeys('space', handleAStopHotkey );
-
   
 
   return (
     <div className="app-container">
       {/* <h1 className="title">MARS Web UI</h1> */}
-      <SocketHandler setGamePadStatus={setGamepadStatus} setChartData={setChartData} setLastDataPoint={setLastDataPoint} timestamp={timestamp} setTimestamp={setTimestamp} setData={setData}/>
+      <Socket setGamePadStatus={setGamepadStatus} setChartData={setChartData} setLastDataPoint={setLastDataPoint} timestamp={timestamp} setTimestamp={setTimestamp} setData={setData}/>
 
 
       <div className="content">
         <div className="left-panel">
           <GamepadPanel gamepadStatus={gamepadStatus} setGamepadStatus={setGamepadStatus} gamepadData={gamepadData} setGamepadData={setGamepadData}/>
 
-          <DriveStatePanel driveState={driveState} setDriveState={setDriveState} handleESTOP={handleESTOP} handleAutonomousStop={handleAutonomousStop}/>
+          <DriveStatePanel />
 
           <ActuatorDataDisplay />
         </div>

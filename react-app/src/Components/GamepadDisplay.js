@@ -3,12 +3,9 @@ If a gamepad is connected, this component displays what buttons are pressed on i
 */
 import React from 'react';
 import './GamepadDisplay.css';
-import { getGamepadState } from '../gamepad/gamepad.js';
 
 const GamepadDisplay = ({ gamepadData }) => {
   if (!gamepadData) return null;
-
-  //console.log(getGamepadState);
 
   const { leftStick, rightStick, buttons } = gamepadData;
 

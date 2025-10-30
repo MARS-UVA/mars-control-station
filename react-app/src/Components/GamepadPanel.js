@@ -42,6 +42,4 @@ function GamepadPanel({ gamepadStatus, setGamepadStatus, gamepadData, setGamepad
   );
 }
 
-
-
 export default GamepadPanel;
