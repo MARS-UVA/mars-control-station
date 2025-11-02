@@ -84,21 +84,6 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
           <div className="chart-space"><Chart dataKey="globalDataRate" />Data Rate: {lastDataPoint["globalDataRate"]} Mbps</div>
           <div className="chart-space" style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100px" }}><TiltMeter angleX={lastDataPoint["xGyro"]} angleY={lastDataPoint["yGyro"]} angleZ={lastDataPoint["zGyro"]}/></div>
         </div>
-
-        <div className="lever-grid">
-          <div className="lever-space"><Lever value={lastDataPoint["value1"] / 100} label={`Motor 5: ${round(lastDataPoint["value1"])}`} /></div>
-          <div className="lever-space"><Lever value={lastDataPoint["value1"] / 100} label={`Motor 5: ${round(lastDataPoint["value1"])}`} /></div>
-          <div className="lever-space"><Lever value={lastDataPoint["value1"] / 100} label={`Motor 5: ${round(lastDataPoint["value1"])}`} /></div>
-          <div className="lever-space"><Lever value={lastDataPoint["value1"] / 100} label={`Motor 5: ${round(lastDataPoint["value1"])}`} /></div>
-        </div>
-
-        {/* <div className="lever-grid">
-          <div className="lever-space"><Lever value={lastDataPoint["value1"] / 100} /></div>
-          <div className="lever-space"><Lever value={lastDataPoint["value2"] / 100} /></div>
-          <div className="lever-space"><Lever value={lastDataPoint["value3"] / 100} /></div>
-          <div className="lever-space"><Lever value={lastDataPoint["value3"] / 100} /></div>
-        </div> */}
-
       </div>
     </>
   );
