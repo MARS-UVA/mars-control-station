@@ -1,3 +1,9 @@
+/*
+Left side of current control station
+none of the buttons work and need to 
+implement in DriveStatePanel
+*/
+
 import React, { useState, useEffect } from "react";
 import SingleLiveDataStream from "./SingleLiveDataStream";
 
