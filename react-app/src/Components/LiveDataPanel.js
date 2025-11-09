@@ -47,20 +47,6 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
   );
 
   
-  const Lever = ({ value }) => (
-    <ResponsiveContainer Container width="100%" height={100}>
-      <div className="lever">
-        <div 
-          className="lever-fill"
-          style={{ height: `${value * 100}%` }}
-        />
-      </div>
-
-      <div className="lever-value">
-        {value.toFixed(1)}
-      </div>
-    </ResponsiveContainer>
-  );
   // Ref Hook - useRef for accessing a DOM element or mutable value
   
 

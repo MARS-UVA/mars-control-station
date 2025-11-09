@@ -75,17 +75,18 @@
 
 .right-panel {
   width: 27%;
+  height: 100%;
   padding: 10px;
   /* background-color: #d0d0d0; Optional for visual distinction */
 }
-
+/*changes the top left and right panels*/
 .panel {
   background-color: #ffffff;
   padding: 16px;
   border-radius: 8px;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
-
+/*changes the bottom left panels*/
 .data-stream-panel {
   padding: 10px;
   width: 100%;
@@ -99,13 +100,13 @@
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   transition: background-color 0.3s ease; /* Smooth transition for color changes */
 }
-
+/* changes fonts of all bottom left main panel text */
 .data-stream-name {
   font-size: 20px;
   color: #555;
   /* margin-bottom: 5px; */
 }
-
+/* changes lower fonts of the texts in panels affect by above thing*/
 .data-stream-value {
   font-size: 24px;
   font-weight: bold;
@@ -118,7 +119,7 @@
   flex-wrap: wrap;
   gap: 20px;
 }
-
+/*changes "Controls"*/
 .panel-title {
   text-align: center;
   margin-bottom: 8px;
@@ -162,7 +163,7 @@
   gap: 8px;
   margin-bottom: 16px;
 }
-
+/*changes text under "Controls" box*/
 .command-button {
   /* background-color: #2d3748; */
   background: none;
@@ -239,42 +240,7 @@
   padding: 10px;
   font-variant-numeric: tabular-nums;
 }
-.lever-space {
-  text-align: center;
-  padding: 10px;
-  font-variant-numeric: tabular-nums;
-}
 
-.lever-grid {
-  display: flex;
-  justify-content: center;
-  grid-template-columns: repeat(4, 1fr);
-}
-
-.lever {
-  height: 96px;
-  width: 4px;
-  background-color: #e2e8f0;
-  position: relative;
-  border-radius: 4px;
-}
-
-.lever-fill {
-  position: absolute;
-  bottom: 0;
-  width: 4px;
-  background-color: #2d3748;
-  border-radius: 4px;
-}
-
-.lever-value {
-  margin-top: 4px;
-  background-color: #2d3748;
-  color: #ffffff;
-  border-radius: 4px;
-  padding: 2px 4px;
-  font-size: 0.75rem;
-}
 
 .reading-grid {
   display: flex;
@@ -303,34 +269,8 @@
   white-space: pre-wrap; /* Allows wrapping of long lines */
   word-wrap: break-word; /* Breaks long words */
 }
-.lever-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
 
-.lever {
-  width: 50px;
-  height: 200px;
-  border: 1px solid #000;
-  position: relative;
-}
-
-.lever-fill {
-  width: 100%;
-  background-color: #8884d8;
-  position: absolute;
-  bottom: 0;
-}
-
-.lever-label {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  margin-top: 10px;
-}
-
+/* changes "Controls" panel*/
 .drive-panel-grid {
   display: flex;
   flex-direction: row;
