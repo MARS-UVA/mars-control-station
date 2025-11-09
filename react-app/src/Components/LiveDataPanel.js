@@ -2,7 +2,7 @@ import React from "react";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, ReferenceLine, CartesianGrid } from "recharts";
 import TiltMeter from "./TiltMeter";
 
-
+// Testing if Srijan can push
 // This component renders a panel with charts and live values
 function LiveDataPanel({ lastDataPoint, chartData }) {
   const round = num => (Math.round((num + Number.EPSILON) * 100) / 100).toFixed(2);
