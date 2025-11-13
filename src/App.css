@@ -1,0 +1,29 @@
+
+/* Fullscreen timer styles */
+.timer-screen {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+}
+
+.timer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.timer-display {
+  font-size: clamp(2.5rem, 10vw, 8rem);
+  margin: 0;
+  line-height: 1;
+  letter-spacing: 0.02em;
+}
+
+.timer-controls {
+  display: flex;
+  gap: 0.75rem;
+}
