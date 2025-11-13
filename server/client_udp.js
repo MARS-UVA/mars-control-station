@@ -18,8 +18,31 @@ function crc32bit(data) {
     return ~crc >>> 0; // Ensure the result is a positive integer
 }
 
-
 const ws = new WebSocket("ws://localhost:3001");
+
+function sendMessage(ip, command) { // Function to send UDP message to robot
+    if (!ip) {
+        console.error('No IP address provided'); // Fails if no IP is provided
+        return;
+    }
+    const socket = dgram.createSocket('udp4'); // Creates UDP4 socket
+    const payload = JSON.stringify({ command: command }); // Prepares payload of JSON type command
+    const buf = Buffer.from(payload); // Converts payload to buffer for UDP transmission
+
+    socket.send(buf, PORT, ip, (err) => { // Sends message
+        if (err) {
+            console.error('Error sending message:', err.message);
+        } else {
+            console.log('Message sent successfully');
+        }   
+        socket.close();
+    });
+
+    socket.on('error', (err) => { // Error handling
+        console.error('Socket error:', err.message);
+        socket.close();
+    });
+}
 
 ws.onopen = () => {
     const buffer = Buffer.from([2]);
@@ -27,8 +50,19 @@ ws.onopen = () => {
     //console.log('ws connected');
 };
 ws.onmessage = (event) => {
-    let jsonObj = JSON.parse(event.data);
-    //console.log(jsonObj);
+    console.log('Received ws message: ', event.data);
+    let jsonObj;
+    try {
+        jsonObj = JSON.parse(event.data);
+    } catch (e) {
+        // not JSON
+        console.error('Error parsing JSON:', e);
+        return;
+    }
+    if (jsonObj && jsonObj.type === 'command') {
+        sendMessage(JETSON_IP, jsonObj.cmd);
+        return;
+    }
 
     const gamepadOut = `${jsonObj.buttons.x},${jsonObj.buttons.y},${jsonObj.buttons.a},${jsonObj.buttons.b},
     ${jsonObj.buttons.lt},${jsonObj.buttons.rt},${jsonObj.buttons.lb},${jsonObj.buttons.rb},${jsonObj.buttons.dd},
@@ -78,7 +112,6 @@ if (process.argv.length !== 4) {
     console.error('Usage: node client.js <IP_ADDRESS> <DATA>');
     process.exit(1);
 }
-
 
 const ip = process.argv[2];
 const data = process.argv[3];
