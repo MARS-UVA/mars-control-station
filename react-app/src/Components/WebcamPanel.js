@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Camera, Pause, Play } from "lucide-react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { Camera, ChartNoAxesColumnDecreasing, Pause, Play } from "lucide-react";
 import Guidelines from "./Guidelines";
 
 const styles = {
@@ -32,14 +32,6 @@ const styles = {
     alignItems: "center",
     gap: "4px",
   },
-  cameraContainer: {
-    position: 'relative',
-    width: '100%',
-    height: '100%',
-    overflow: 'hidden',
-    backgroundColor: 'black',
-    borderRadius: '8px'
-  },
   cameraFeed: {
     width: '100%',
     height: '100%',
@@ -66,18 +58,16 @@ function WebcamPanel({index, gamepadData}) {
     const lastUrl = useRef(null);
     const socketRef = useRef(null);
     const [isPaused, setIsPaused] = useState(false);
-    useEffect(() => {
-      if(isPaused){
-        return;
-      }
+
+    const createSocket = useCallback(() => {
       const ws = new WebSocket("ws://localhost:3001");
       ws.binaryType = "arraybuffer";
 
       ws.onopen = () => {
         const buffer = new Uint8Array([id]);
-        ws.send(buffer)
+        ws.send(buffer);
         //console.log('webcamPanel ws connected');
-      }
+      };
 
       ws.onmessage = (event) => {
         const blob = new Blob([event.data], {type: 'image/jpeg'});
@@ -85,7 +75,7 @@ function WebcamPanel({index, gamepadData}) {
         //setImageSrc(URL.createObjectURL(blob));
 
         if(lastUrl.current) {
-          const oldUrl = lastUrl.current
+          const oldUrl = lastUrl.current;
           requestAnimationFrame(() => URL.revokeObjectURL(oldUrl));
         }
         lastUrl.current = newUrl;
@@ -94,26 +84,53 @@ function WebcamPanel({index, gamepadData}) {
           imgRef.current.src = newUrl;
         }
       };
+
+      return ws;
+    }, [id]);
+
+    useEffect(() => {
+      const ws = createSocket();
+      socketRef.current = ws;
       return() => {
-        ws.close();
+        if (ws && ws.readyState === WebSocket.OPEN) {
+          ws.close();
+        } else if (ws) {
+          ws.close();
+        }
         if(lastUrl.current) URL.revokeObjectURL(lastUrl.current)
       };
-    }, [isPaused, id]);
+    }, [createSocket]);
+    
+    const sendCommand = (cmd) => {
+        const payload = JSON.stringify({ type: 'command', cmd: cmd });
+        let ws = socketRef.current;
+        if (!ws) {
+          ws = createSocket();
+          socketRef.current = ws;
+          ws.addEventListener('open', () => {
+            try { ws.send(payload); } catch (e) { console.log(e);}
+          }, {once: true});
+          return;
+        }
+        else if (ws.readyState === WebSocket.OPEN) {
+          try { ws.send(payload); } catch (e) { console.log(e);}
+        }
+        else if (ws.readyState === WebSocket.CONNECTING) {
+          ws.addEventListener('open', () => {
+            try { ws.send(payload); } catch (e) { console.log(e);}
+          }, {once: true});
+        }
+      }
 
     const toggleFeed = () => {
       if(isPaused){
+        sendCommand('start_video');
         setIsPaused(false);
-      }
-      else{
-        // Stop receiving frames and clear image
-      if (socketRef.current) {
-        socketRef.current.close();
-        socketRef.current = null;
-      }
-      if (imgRef.current) {
-        imgRef.current.src = "";
-      }
-      setIsPaused(true);
+        console.log("resuming video");
+      } else {
+        sendCommand('stop_video');
+        setIsPaused(true);
+        console.log("pausing video");
       }
     }
 
