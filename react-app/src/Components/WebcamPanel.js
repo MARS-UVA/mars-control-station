@@ -18,7 +18,15 @@ const styles = {
     backgroundColor: "black",
     borderRadius: "8px",
   },
-  
+  pauseImage : {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    width: "50%",
+    height: "50%",
+    objectFit: "contain",
+  },
   toggleButton: {
     position: "absolute",
     top: "10px",
@@ -158,7 +166,7 @@ function WebcamPanel({index, gamepadData}) {
 
         {/* Overlay pause image when paused */}
          {isPaused && (
-          <img className="pause-image" src={pauseImage} alt={"Paused"}/>
+          <img className="pause-image" src={pauseImage} alt={"Paused"} style={styles.pauseImage} />
          )}
         {/* Overlay the parking guidelines */}
         {gamepadData ? <Guidelines leftStick={gamepadData.leftStick} /> : <></>}
