@@ -338,8 +338,8 @@
 }
 .timer-overlay {
   position: fixed;
-  bottom: 20px;
-  left: 20px;
+  bottom: 40px;
+  left: 1000px;
   background-color: #ffffff;
   padding: 15px;
   border-radius: 8px;
@@ -358,4 +358,5 @@
   color: #2d3748;
   margin-bottom: 8px;
   font-family: monospace; /* Critical for keeping numbers aligned */
+  cursor: grab;
 }

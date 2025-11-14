@@ -13,9 +13,8 @@ import WebcamPanel from "./Components/WebcamPanel";
 import Socket from "./Components/Socket";
 import SingleLiveDataStream from "./Components/SingleLiveDataStream";
 import ActuatorDataDisplay from "./Components/ActuatorDataDisplay";
+import Movable from "./Components/Movable";
 import Timer from "./Components/Timer";
-
-
 
 const App = () => {
 
@@ -70,8 +69,10 @@ const App = () => {
         <div className="right-panel">
           <LiveDataPanel lastDataPoint={lastDataPoint} timestamp={timestamp} chartData={chartData}/>
         </div>
-
-        <Timer />
+        <Movable>
+          <Timer/>
+        </Movable>
+        
       </div>
     </div>
   );
