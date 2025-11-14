@@ -1,6 +1,6 @@
 import React from 'react';
 import './GamepadDisplay.css';
-import ControllerSVG from '../xbox_one_black.svg';
+import ControllerSVG from '../assets/xbox_one_black.svg';
 
 const buttonPositions = {
   a:  { x: 500, y: 280 },
