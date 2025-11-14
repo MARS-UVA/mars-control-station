@@ -16,12 +16,24 @@
     text-align: center;
   }
   
-  .buttons {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-  
+ .button-overlay {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: rgba(255, 0, 0, 0.5);
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+}
+  .stick-overlay {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background-color: rgba(0, 0, 255, 0.5);
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+}
   .button {
     margin: 5px;
     padding: 10px;
@@ -29,8 +41,15 @@
     border-radius: 5px;
     background-color: #f9f9f9;
   }
-  
+
   .button.pressed {
     background-color: #4caf50;
     color: white;
   }
+
+  .controller-image {
+  width: 400px; /* or whatever size you want */
+  height: 300px; /* preserves aspect ratio */
+}
+
+#button-x { top: 0px; left: 0px; }
