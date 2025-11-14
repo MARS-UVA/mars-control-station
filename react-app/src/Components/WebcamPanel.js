@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Camera, ChartNoAxesColumnDecreasing, Pause, Play } from "lucide-react";
 import Guidelines from "./Guidelines";
+import pauseImage from '../assets/pause.jpg';
 
 const styles = {
   container: {
@@ -123,11 +124,16 @@ function WebcamPanel({index, gamepadData}) {
       }
 
     const toggleFeed = () => {
+      
+      
+      
       if(isPaused){
+        // Toggles the video feed on
         sendCommand('start_video');
         setIsPaused(false);
         console.log("resuming video");
       } else {
+        // Toggles the video feed off
         sendCommand('stop_video');
         setIsPaused(true);
         console.log("pausing video");
@@ -150,6 +156,10 @@ function WebcamPanel({index, gamepadData}) {
           {isPaused ? "Resume" : "Pause"}
         </button>
 
+        {/* Overlay pause image when paused */}
+         {isPaused && (
+          <img className="pause-image" src={pauseImage} alt={"Paused"}/>
+         )}
         {/* Overlay the parking guidelines */}
         {gamepadData ? <Guidelines leftStick={gamepadData.leftStick} /> : <></>}
       </div>
