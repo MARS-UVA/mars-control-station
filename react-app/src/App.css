@@ -336,10 +336,13 @@
   transform: scale(1.1);
   background-color: lightgray;
 }
+/* 
+TODO: Change right and bottom values to offset timer in the right and bottom screen
+*/
 .timer-overlay {
   position: fixed;
-  bottom: 40px;
-  left: 1000px;
+  bottom: 100px;
+  right: 20px;
   background-color: #ffffff;
   padding: 15px;
   border-radius: 8px;
