@@ -85,7 +85,7 @@ class ServerSocket {
     }
 }
 
-const motorFeedbackOnMessage = (data) => {
+const feedbackOnMessage = (data) => {
     const buffer = Buffer.concat(Object.values(data));
     if(websockets.motorCurrent){
         const messageBuf = buffer.subarray(0, 36);
@@ -94,17 +94,6 @@ const motorFeedbackOnMessage = (data) => {
         console.log("data rate monitor recorder " + messageBuf.length + " and calculated " + dataRateMonitors.motorCurrent.calculateRates());
         console.log("global data rate monitor recorded " + messageBuf.length + " and calculated " + globalDataRateMonitor.calculateRates());
         websockets.motorCurrent.send(messageBuf);
-    }
-}
-
-const gyroOnMessage = (data) => {
-    console.log("GYRO MESSAGE RECIEVED");
-    const buffer = Buffer.concat(Object.values(data));
-    if(websockets.gyroRate){
-        const messageBuf = buffer.subarray(0, 12);
-        dataRateMonitors.gyroData.recordReceived(messageBuf.length);
-        globalDataRateMonitor.recordReceived(messageBuf.length);
-        websockets.gyroRate.send(messageBuf);
     }
 }
 

@@ -9,19 +9,14 @@ const MESSAGE_LENGTH = 1500;
 const HEADER_LENGTH = 10;
 const WS_PORT = 3001;
 
-const DATA_RATE_UPDATE_INTERVAL_MS = 1000;
-
 const webSocketServer = new WebSocket.Server({port: WS_PORT});
 
 let websockets = {
-    image: null,
-    image2: null,
+    udpClient: null,
     motorCurrent: null,
-    client: null,
-    potentiometer: null,
-    dataRate: null,
     gyroRate: null
 };
+// 2 of each as we want 2 streams
 let webrtc = {
     rosSocket: [null, null],
     displaySocket: [null, null]
@@ -38,18 +33,8 @@ webSocketServer.on('connection', (ws) => {
                     console.log("connected motor current ws");
                     break;
                 case 2:
-                    websockets.client = ws;
+                    websockets.udpClient = ws;
                     console.log("connected client_udp ws");
-                    break;
-                case 3:
-                    websockets.potentiometer = ws;
-                    console.log("connected potentiometer ws");
-                    const floats = new Float32Array([1, 1, 1, 1, 1]);
-                    ws.send(floats.buffer);
-                    break;
-                case 5:
-                    websockets.dataRate = ws;
-                    console.log("connected data rate ws");
                     break;
                 case 6:
                     websockets.gyroRate = ws;
@@ -59,8 +44,12 @@ webSocketServer.on('connection', (ws) => {
                     const j = JSON.parse(msg);
                     if (j.role == 'ros') {
                         rosSocket[j.camID] = ws;
+                        ws.camID = j.camID;
+                        console.log("Webcam Feed Connected");
                     } else if (j.role == 'display') {
                         displaySocket[j.camID] = ws;
+                        ws.camID = j.camID;
+                        console.log("Display Component Connected");
                     }
                     break;
                 default:
@@ -68,8 +57,8 @@ webSocketServer.on('connection', (ws) => {
             }
             firstMessage = false;
         } else {
-            if(websockets.client) {
-                websockets.client.send(message);
+            if(websockets.udpClient) {
+                websockets.udpClient.send(message);
             }
         }
     });
@@ -80,5 +69,4 @@ webSocketServer.on('connection', (ws) => {
 });
 
 
-const motorFeedbackSocket = new ServerSocket(2001, (ServerSocket.motorFeedbackOnMessage));
-const gyroPort = new ServerSocket(2027, ServerSocket.gyroOnMessage);
+const feedbackSocket = new ServerSocket(2001, (ServerSocket.feedbackOnMessage));
