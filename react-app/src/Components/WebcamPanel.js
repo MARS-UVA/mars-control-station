@@ -1,5 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Camera } from "lucide-react";
+import React, { useEffect, useRef } from "react";
 import Guidelines from "./Guidelines";
 
 const styles = {
@@ -26,60 +25,105 @@ const styles = {
 
 // This component renders a panel with a webcam feed (currently showing laptop webcam)
 function WebcamPanel({index, gamepadData}) {
-    const id = parseInt(index);
-    //const [imageSrc, setImageSrc] = useState(null);
-    const imgRef = useRef(null);
-    const lastUrl = useRef(null);
-    const socketRef = useRef(null);
+  const videoRef = useRef(null);
+  const wsRef = useRef(null);
+  const pcRef = useRef(null);
+  const camID = parseInt(index);
 
-    useEffect(() => {
-      const ws = new WebSocket("ws://localhost:3001");
-      ws.binaryType = "arraybuffer";
+  useEffect(() => {
+    // Create PeerConnection
+    const pc = new RTCPeerConnection({
+      iceServers: [
+        { url: ["stun:stun.l.google.com:19302"] }
+      ]
+    });
+    pcRef.current = pc;
+    // Attach track to video element
+    pc.ontrack = (event) => {
+      console.log("received track");
+      if (videoRef.current) {
+        videoRef.current.srcObject = event.streams[0];
+      }
+    };
+    // Send ICE candidates to server
+    pc.onicecandidate = (event) => {
+      if(event.candidate) {
+        wsRef.current.send(JSON.stringify({
+          type: "candidate",
+          candidate: event.candidate,
+          camID: camID
+        }));
+      }
+    };
 
-      ws.onopen = () => {
-        const buffer = new Uint8Array([id]);
-        ws.send(buffer)
-        //console.log('webcamPanel ws connected');
+    // Connect to our websocket server
+    const ws = new WebSocket("ws://localhost:3001");
+    wsRef.current = ws;
+
+    ws.onopen = () => {
+      ws.send(JSON.stringify({
+        role: "display",
+        camID: camID
+      }));
+    };
+
+    // Handle messages
+    ws.onmessage = async (msg) => {
+      let data;
+      try {
+        data = JSON.parse(msg.data);
+      } catch (e) {
+        console.log("Invalid JSON from server", msg.data);
+        return;
       }
 
-      ws.onmessage = (event) => {
-        const blob = new Blob([event.data], {type: 'image/jpeg'});
-        const newUrl = URL.createObjectURL(blob);
-        //setImageSrc(URL.createObjectURL(blob));
+      // Handle SDP offer
+      if (data.type === "offer") {
+        console.log("received sdp offer");
+        await pc.setRemoteDescription(
+          new RTCSessionDescription(data.offer)
+        );
 
-        if(lastUrl.current) {
-          const oldUrl = lastUrl.current
-          requestAnimationFrame(() => URL.revokeObjectURL(oldUrl));
+        // Create webrtc answer
+        const answer = await pc.createAnswer();
+        await pc.setLocalDescription(answer);
+
+        // Send answer back
+        ws.send(JSON.stringify({
+          type: "answer",
+          answer: answer,
+          camID: camID
+        }));
+      }
+
+      // Handle remote ICE candidates
+      if (data.type === "candidate") {
+        try {
+          await pc.addIceCandidate(data.candidate);
+        } catch (e) {
+          console.error("Error adding ICE candidate", e);
         }
-        lastUrl.current = newUrl;
+      }
+    };
+  }, [camID]);
 
-        if(imgRef.current) {
-          imgRef.current.src = newUrl;
-        }
-      };
-      return() => {
-        ws.close();
-        if(lastUrl.current) URL.revokeObjectURL(lastUrl.current)
-      };
-    }, []);
-
-
-
-    return (
+  return (
     <div style={styles.container}>
       {/* Camera feed container */}
       <div style={styles.cameraContainer}>
         <img 
-          ref={imgRef}
+          ref={videoRef}
           style={styles.cameraFeed}
-          alt="Camera Feed"
+          autoPlay
+          playsInline
+          muted
         />
         
         {/* Overlay the parking guidelines */}
         {gamepadData ? <Guidelines leftStick={gamepadData.leftStick} /> : <></>}
       </div>
     </div>
-    )
+  )
 }
 
 export default WebcamPanel;

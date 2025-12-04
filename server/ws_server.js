@@ -43,19 +43,17 @@ webSocketServer.on('connection', (ws) => {
                     websockets.gyroRate = ws;
                     console.log("connected gyro ws");
                     break;
-                case 99:
-                    const j = JSON.parse(msg);
+                default:
+                    const j = JSON.parse(message);
                     if (j.role == 'ros') {
-                        rosSocket[j.camID] = ws;
+                        webrtc.rosSocket[j.camID] = ws;
                         ws.camID = j.camID;
                         console.log("Webcam Feed Connected");
                     } else if (j.role == 'display') {
-                        displaySocket[j.camID] = ws;
+                        webrtc.displaySocket[j.camID] = ws;
                         ws.camID = j.camID;
                         console.log("Display Component Connected");
                     }
-                    break;
-                default:
                     break;
             }
             firstMessage = false;
