@@ -21,7 +21,7 @@ class ServerSocket {
         this.ws = new WebSocket("ws://localhost:3001");
         this.ws.onopen = () => {
             const buffer = Buffer.from([0]);
-            ws.send(buffer)
+            this.ws.send(buffer)
             //console.log('ws connected');
         };
         

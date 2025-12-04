@@ -4,10 +4,8 @@ const WebSocket = require('ws');
 
 const ServerSocket = require('./udp_server');
 
-
-const MESSAGE_LENGTH = 1500;
-const HEADER_LENGTH = 10;
 const WS_PORT = 3001;
+
 
 const webSocketServer = new WebSocket.Server({port: WS_PORT});
 
@@ -32,6 +30,7 @@ webSocketServer.on('connection', (ws) => {
                 case 0:
                     websockets.udpServer = ws;
                     console.log("connected udp server ws");
+                    break;
                 case 1:
                     websockets.motorCurrent = ws;
                     console.log("connected motor current ws");
