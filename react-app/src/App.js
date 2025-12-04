@@ -4,6 +4,7 @@ Updates through socket connection
 */
 
 import React, {useState, useEffect} from "react";
+import Draggable from "react-draggable";
 
 import "./App.css";
 import LiveDataPanel from "./Components/LiveDataPanel";
@@ -69,10 +70,13 @@ const App = () => {
         <div className="right-panel">
           <LiveDataPanel lastDataPoint={lastDataPoint} timestamp={timestamp} chartData={chartData}/>
         </div>
-        <Movable>
+        <Draggable>
           <Timer/>
-        </Movable>
+        </Draggable>
         
+         {/* <Draggable>
+          <Timer/>
+        </Draggable> */}
       </div>
     </div>
   );

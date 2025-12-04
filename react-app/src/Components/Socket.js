@@ -22,7 +22,7 @@ function Socket({ setGamePadStatus, setChartData, setLastDataPoint, timestamp, s
           window.removeEventListener('gamepadconnected', handleGamepadConnected);
           window.removeEventListener('gamepaddisconnected', handleGamepadDisconnected);
         };
-      }, []);
+      }, [setGamePadStatus]);
 
       useEffect(() => {
         const MOTOR_NUM = 5;

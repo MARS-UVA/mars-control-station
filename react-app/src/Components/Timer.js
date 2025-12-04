@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import Draggable from 'react-draggable';
+import Movable from './Movable';
 import '../App.css';
+
 
 const Timer = () => {
   const [time, setTime] = useState(0); // Time in milliseconds
@@ -18,8 +21,8 @@ const Timer = () => {
     let interval = null;
     if (isActive) {
       interval = setInterval(() => {
-        setTime((prevTime) => prevTime + 10);
-      }, 10);
+        setTime((prevTime) => prevTime + 100);
+      }, 100);
     } else {
       clearInterval(interval);
     }
@@ -36,6 +39,7 @@ const Timer = () => {
   };
 
   return (
+    <Draggable>
     <div className="timer-overlay">
       <div className="timer-display">
         {formatTime(time)}
@@ -49,6 +53,7 @@ const Timer = () => {
         </button>
       </div>
     </div>
+    </Draggable>
   );
 };
 

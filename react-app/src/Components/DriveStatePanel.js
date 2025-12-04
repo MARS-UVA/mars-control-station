@@ -1,9 +1,9 @@
 /**
  * DriveStatePanel Component
- * 
+ *
  * This component renders a control panel with buttons to switch between different drive states
  * and an emergency stop (ESTOP) button.
- * 
+ *
  * Just the UI is actually there and the buttons do nothing as no functions are written
  * for them, need to write functions and implement them.
  */
