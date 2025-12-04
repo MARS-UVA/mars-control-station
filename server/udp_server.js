@@ -17,6 +17,13 @@ class ServerSocket {
         this.PORT = port;
         this.receivedChunks = {}
         this.packetCount = 0;
+
+        this.ws = new WebSocket("ws://localhost:3001");
+        this.ws.onopen = () => {
+            const buffer = Buffer.from([0]);
+            ws.send(buffer)
+            //console.log('ws connected');
+        };
         
         // Create a UDP socket
         this.server = dgram.createSocket('udp4');
@@ -87,14 +94,8 @@ class ServerSocket {
 
 const feedbackOnMessage = (data) => {
     const buffer = Buffer.concat(Object.values(data));
-    if(websockets.motorCurrent){
-        const messageBuf = buffer.subarray(0, 36);
-        dataRateMonitors.motorCurrent.recordReceived(messageBuf.length);
-        globalDataRateMonitor.recordReceived(messageBuf.length);
-        console.log("data rate monitor recorder " + messageBuf.length + " and calculated " + dataRateMonitors.motorCurrent.calculateRates());
-        console.log("global data rate monitor recorded " + messageBuf.length + " and calculated " + globalDataRateMonitor.calculateRates());
-        websockets.motorCurrent.send(messageBuf);
-    }
+    const messageBuf = buffer.subarray(0, 36);
+    this.ws.send(messageBuf);
 }
 
 module.exports = ServerSocket;

@@ -12,6 +12,7 @@ const WS_PORT = 3001;
 const webSocketServer = new WebSocket.Server({port: WS_PORT});
 
 let websockets = {
+    udpServer: null,
     udpClient: null,
     motorCurrent: null,
     gyroRate: null
@@ -28,6 +29,9 @@ webSocketServer.on('connection', (ws) => {
     ws.on('message', (message) => {
         if(firstMessage) {
             switch (message.readUInt8()) {
+                case 0:
+                    websockets.udpServer = ws;
+                    console.log("connected udp server ws");
                 case 1:
                     websockets.motorCurrent = ws;
                     console.log("connected motor current ws");
