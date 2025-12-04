@@ -1,108 +1,9 @@
 const fs = require('fs');
 const dgram = require('dgram');
 const WebSocket = require('ws');
-const DataRateMonitor = require('./DataRateMonitor');
-
 
 const MESSAGE_LENGTH = 1500;
 const HEADER_LENGTH = 10;
-const WS_PORT = 3001;
-
-const DATA_RATE_UPDATE_INTERVAL_MS = 1000;
-
-const webSocketServer = new WebSocket.Server({port: WS_PORT});
-
-let websockets = {
-    image: null,
-    image2: null,
-    motorCurrent: null,
-    client: null,
-    potentiometer: null,
-    dataRate: null,
-    gyroRate: null
-};
-
-const dataRateMonitors = {
-    image: new DataRateMonitor(DATA_RATE_UPDATE_INTERVAL_MS),
-    image2: new DataRateMonitor(DATA_RATE_UPDATE_INTERVAL_MS),
-    motorCurrent: new DataRateMonitor(DATA_RATE_UPDATE_INTERVAL_MS),
-    client: new DataRateMonitor(DATA_RATE_UPDATE_INTERVAL_MS),
-    gyroData: new DataRateMonitor(DATA_RATE_UPDATE_INTERVAL_MS),
-};
-Object.values(dataRateMonitors).forEach(monitor => monitor.start());
-
-const globalDataRateMonitor = new DataRateMonitor(DATA_RATE_UPDATE_INTERVAL_MS);
-globalDataRateMonitor.start();
-
-function sendDataRateUpdates() {
-    if (websockets.dataRate) {
-        const rates = {
-            global: globalDataRateMonitor.calculateRates(),
-            image: dataRateMonitors.image.calculateRates(),
-            image2: dataRateMonitors.image2.calculateRates(),
-            motorCurrent: dataRateMonitors.motorCurrent.calculateRates(),
-            client: dataRateMonitors.client.calculateRates(),
-            gyroData: dataRateMonitors.gyroData.calculateRates(),
-        };
-        websockets.dataRate.send(JSON.stringify(rates));
-    }
-}
-setInterval(sendDataRateUpdates, 1000);
-
-
-webSocketServer.on('connection', (ws) => {
-    let firstMessage = true;
-
-    ws.on('message', (message) => {
-        if(firstMessage) {
-            switch (message.readUInt8()) {
-                case 0:
-                    websockets.image = ws;
-                    console.log("connected webcam ws");
-                    break;
-                case 1:
-                    websockets.motorCurrent = ws;
-                    console.log("connected motor current ws");
-                    break;
-                case 2:
-                    websockets.client = ws;
-                    console.log("connected client_udp ws");
-                    break;
-                case 3:
-                    websockets.potentiometer = ws;
-                    console.log("connected potentiometer ws");
-                    const floats = new Float32Array([1, 1, 1, 1, 1]);
-                    ws.send(floats.buffer);
-                    break;
-                case 4:
-                    websockets.image2 = ws;
-                    console.log("connected second webcam ws");
-                    break;
-                case 5:
-                    websockets.dataRate = ws;
-                    console.log("connected data rate ws");
-                    break;
-                case 6:
-                    websockets.gyroRate = ws;
-                    console.log("connected gyro ws");
-                    break;
-                default:
-                    break;
-            }
-            firstMessage = false;
-        } else {
-            if(websockets.client) {
-                dataRateMonitors.client.recordSent(message.length);
-                globalDataRateMonitor.recordSent(message.length);
-                websockets.client.send(message);
-            }
-        }
-    });
-
-    ws.on('close', () => {
-        console.log('Disconnected Websocket client');
-    });
-});
 
 
 class ServerSocket {
@@ -184,38 +85,6 @@ class ServerSocket {
     }
 }
 
-const imageOnMessage = (receivedChunks) => {
-    //console.log("Received top image");
-    //console.log(Object.keys(receivedChunks));
-    const fullImage = Buffer.concat(Object.values(receivedChunks));
-
-    // Send to websocket
-    if (websockets.image) {
-        dataRateMonitors.image.recordReceived(fullImage.length);
-        globalDataRateMonitor.recordReceived(fullImage.length);
-        console.log("data rate monitor for image1 recorded " + fullImage.length + " and calculated " + dataRateMonitors.image.calculateRates());
-        console.log("global data rate monitor recorded " + fullImage.length + " and calculated " + globalDataRateMonitor.calculateRates());
-        websockets.image.send(fullImage);
-        //console.log("sent image to client");
-    }
-}
-
-const image2OnMessage = (receivedChunks) => {
-    //console.log("Received bottom image");
-    //console.log(Object.keys(receivedChunks));
-    const fullImage = Buffer.concat(Object.values(receivedChunks));
-
-    // Send to websocket
-    if (websockets.image2) {
-        dataRateMonitors.image2.recordReceived(fullImage.length);
-        globalDataRateMonitor.recordReceived(fullImage.length);
-        console.log("data rate monitor for image2 recorded " + fullImage.length + " and calculated " + dataRateMonitors.image2.calculateRates());
-        console.log("global data rate monitor recorded " + fullImage.length + " and calculated " + globalDataRateMonitor.calculateRates());
-        websockets.image2.send(fullImage);
-        //console.log("sent image to client");
-    }
-}
-
 const motorFeedbackOnMessage = (data) => {
     const buffer = Buffer.concat(Object.values(data));
     if(websockets.motorCurrent){
@@ -239,10 +108,4 @@ const gyroOnMessage = (data) => {
     }
 }
 
-const imageSocket = new ServerSocket(2000, imageOnMessage);
-const bottomImageSocket = new ServerSocket(2026, image2OnMessage);
-const motorFeedbackSocket = new ServerSocket(2001, (motorFeedbackOnMessage));
-const gyroPort = new ServerSocket(2027, gyroOnMessage); 
-const robotPosePort = new ServerSocket(2003, imageOnMessage);   // if time permits
-const obstaclePoesePort = new ServerSocket(2008, imageOnMessage);   // if time permits
-const pathPort = new ServerSocket(2025, imageOnMessage);    // if time permits
+module.exports = ServerSocket;
