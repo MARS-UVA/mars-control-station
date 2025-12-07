@@ -10,6 +10,28 @@ import SingleLiveDataStream from "./SingleLiveDataStream";
 const ActuatorDataDisplay = () => {
   const [direction, setDirection] = useState("DIG"); // Initial state for direction
 
+
+
+const actuatorButtonWidth = 105; // Position and style values for the actuator buttons
+const actuatorButtonX = 30;
+
+
+const actuatorDisplayX = 170; // Position and style values for the actuator value displays
+const actuatorDisplayWidth = 220; 
+const actuatorDisplayHeight = 33;
+
+const drumButtonX = 30; // Position and style values for the drum buttons
+const drumButtonWidth = 105;
+
+const drumDisplayX = 150; // Position and style values for the drum value displays
+const drumDisplayWidth = 70;
+const drumDisplayHeight = 95;
+
+
+
+
+
+
   // Function to randomly cycle through DIG, DUMP, and IDLE
   useEffect(() => {
     const directions = ["DIG", "DUMP", "IDLE"];
@@ -29,7 +51,7 @@ const ActuatorDataDisplay = () => {
       case "DUMP":
         return "lightblue";
       default:
-        return "white";
+        return "white"; 
     }
   };
 
@@ -37,65 +59,74 @@ const ActuatorDataDisplay = () => {
     <div className="actuator-data-display">
       {/* Bucket Drum Section */}
       <div className="actuator-section">
-        <h3>Bucket Drum</h3>
+        <h3
+          style={{ position: "fixed", left: 35, top: 475 + 70 }}>
+
+          Bucket Drum</h3>
         <div className="actuator-data">
           <div
-            className="data-stream-panel"
-            style={{ backgroundColor: getDirectionColor(direction) }}
+            // className="data-stream-panel"
+            // style={{ position: "fixed", top: 700, left: drumButtonX, displayWidth: drumDisplayWidth, displayHeight: drumDisplayHeight, backgroundColor: getDirectionColor(direction) }}
           >
-            <p className="data-stream-name">{"Spin"}</p>
-            <p className="data-stream-value">{direction}</p>
+            {/* <p className="data-stream-name">{"Spin"}</p> */}
+            {/* <p className="data-stream-value">{direction}</p> */}
           </div>
-          <SingleLiveDataStream dataStreamName="Capacity" currentVal="75%" />
-          <SingleLiveDataStream dataStreamName="Current" currentVal="12" />
+          <SingleLiveDataStream dataStreamName="Capacity" currentVal="75%" topCoord={535 + 70} leftCoord={drumDisplayX} displayWidth={drumDisplayWidth} displayHeight={drumDisplayHeight}  />
+          <SingleLiveDataStream dataStreamName="Current" currentVal="12" topCoord={535 + 70}  leftCoord={drumDisplayX + 100} displayWidth={drumDisplayWidth} displayHeight={drumDisplayHeight}  />
+          <SingleLiveDataStream dataStreamName="Spin" currentVal={direction} topCoord={535 + 70}  leftCoord={drumDisplayX + 200} displayWidth={drumDisplayWidth} displayHeight={drumDisplayHeight}  />
         </div>
         {/* Buttons for Bucket Drum */}
         <div className="actuator-buttons">
           <button
             className="actuator-button"
-            style={{ backgroundColor: "lightgreen", color: "black" }}
+            style={{ position: "fixed", top: 525 + 70 , left: drumButtonX, width: drumButtonWidth, backgroundColor: "lightgreen", color: "black" }}
           >
-            DIG
+          <strong>DIG</strong>
           </button>
           <button
             className="actuator-button"
-            style={{ backgroundColor: "lightblue", color: "Black" }}
+            style={{ position: "fixed", top: 570 + 70, left: drumButtonX, width: drumButtonWidth, backgroundColor: "lightblue", color: "Black" }}
           >
-            DUMP
+            <strong>DUMP</strong>
           </button>
           <button
             className="actuator-button"
-            style={{ backgroundColor: "lightcoral", color: "white" }}
+            style={{ position: "fixed", top: 615 + 70, left: drumButtonX, width: drumButtonWidth, backgroundColor: "lightcoral", color: "white" }}
           >
-            STOP
+            <strong> STOP </strong>
           </button>
         </div>
       </div>
 
       {/* Track Actuator Section */}
       <div className="actuator-section">
-        <h3>Track Actuator</h3>
+        <h3
+         style={{ position: "fixed", left: 35, top: 650 + 70 }}
+        >Track Actuator</h3>
         <div className="actuator-data">
-          <SingleLiveDataStream dataStreamName="Height (in)" currentVal="5" />
-          <SingleLiveDataStream dataStreamName="Current (A)" currentVal="15" />
+          <SingleLiveDataStream dataStreamName="Height (in): " currentVal="5" leftCoord={actuatorDisplayX} topCoord={710 + 70} displayWidth={actuatorDisplayWidth} displayHeight={actuatorDisplayHeight}/>
+          <SingleLiveDataStream dataStreamName="Current (A): " currentVal="15" leftCoord={actuatorDisplayX} topCoord={775 + 70} displayWidth={actuatorDisplayWidth} displayHeight={actuatorDisplayHeight} />
         </div>
         {/* Buttons for Track Actuator */}
         <div className="actuator-buttons">
           <button
             className="actuator-button"
-            style={{ backgroundColor: "#ff9999", color: "white" }} // Slightly red
+            style={{ position: "fixed", width: actuatorButtonWidth, left: actuatorButtonX, top: 700 +  70, backgroundColor: "#ff9999", color: "white" }} // Slightly red
           >
-            DIG
+            <strong>DIG</strong>
           </button>
           <button
             className="actuator-button"
+             style={{ position: "fixed", width: actuatorButtonWidth, left: actuatorButtonX, top: 745+ 70 }}
+          
           >
-            MID
+            <strong>MID</strong>
           </button>
           <button
             className="actuator-button"
+            style={{ position: "fixed", width: actuatorButtonWidth, left: actuatorButtonX, top: 790 + 70 }}
           >
-            TOP
+            <strong>TOP</strong>
           </button>
         </div>
       </div>

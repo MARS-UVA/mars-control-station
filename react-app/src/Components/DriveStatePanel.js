@@ -1,17 +1,29 @@
 /**
  * DriveStatePanel Component
- *
+ * 
  * This component renders a control panel with buttons to switch between different drive states
  * and an emergency stop (ESTOP) button.
- *
+ * 
  * Just the UI is actually there and the buttons do nothing as no functions are written
  * for them, need to write functions and implement them.
  */
 import React, { useState, useEffect } from 'react';
+const BUTTON_POSITIONS = {
+  'Auto Drive':   { top: 315+70,  left: 25 },
+  'Direct Drive': { top: 315+70, left: 160 },
+  'Reverse Drive':{ top: 395+70, left: 25 },
+  'Idle':         { top: 395+70, left: 160 },
+};
+const CommandButton = React.memo(({ label, active, onClick, style }) => (
 
-const CommandButton = React.memo(({ label, active, onClick }) => (
-  <button className={"command-button " + active} onClick={onClick}>
+
+  
+  <button className={"command-button " + active} onClick={onClick}  style = {style}>
+    
+    <h4 style ={{ }}>
     {label}
+    </h4>
+   
   </button>
 ));
 
@@ -45,14 +57,15 @@ function DriveStatePanel({ driveState, setDriveState, handleESTOP, handleAutonom
   // Render the component UI
   return (
     <div className="panel">
-      <h2 className="panel-title">Controls</h2>
+      <h2 className="panel-title"></h2>
       <div className="drive-panel-grid">
         {/* Left column for drive state buttons */}
-        <div className="drive-buttons-column">
+        <div className="drive-buttons-column" position = "fixed">
           {['Auto Drive', 'Direct Drive', 'Reverse Drive', 'Idle'].map((label, index) => (
             <CommandButton
               key={index}
               label={label}
+              style={BUTTON_POSITIONS[label]}
               active={label === driveState ? 'active' : ''}
               onClick={() => setDriveState(label)}
             />
@@ -66,12 +79,13 @@ function DriveStatePanel({ driveState, setDriveState, handleESTOP, handleAutonom
               <button
                 className="estop-button"
                 style={{
+                  left : 100, 
                   height: "5.25rem",
                   backgroundColor: estopSuccess ? "red" : "",
                 }}
                 onClick={handleESTOPWithFeedback}
               >
-                Soft STOP
+                Soft SIGMA
               </button>
               <button
                 className="estop-button"
@@ -90,10 +104,12 @@ function DriveStatePanel({ driveState, setDriveState, handleESTOP, handleAutonom
               className="estop-button"
               style={{
                 backgroundColor: estopSuccess ? "orange" : "",
+                height: "150px",
+                top : 385
               }}
               onClick={handleESTOPWithFeedback}
             >
-              Soft STOP
+              Soft <strong>STOP</strong>
             </button>
           )}
         </div>

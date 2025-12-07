@@ -112,6 +112,7 @@
 /*changes the bottom left panels*/
 .data-stream-panel {
   padding: 10px;
+  display: fixed;
   width: 100%;
   height: 100px;
   margin: 0px 5px;
@@ -126,12 +127,14 @@
 /* changes fonts of all bottom left main panel text */
 .data-stream-name {
   font-size: 20px;
+  display: fixed;
   color: #555;
   /* margin-bottom: 5px; */
 }
 /* changes lower fonts of the texts in panels affect by above thing*/
 .data-stream-value {
   font-size: 24px;
+  display: fixed;
   font-weight: bold;
   color: #000;
   margin-top: -20px;
@@ -183,18 +186,18 @@
 }
 /*changes text under "Controls" box*/
 .command-button {
-  /* background-color: #2d3748; */
-  background: none;
-  color: black;
+  background: white; 
+  color: black; /* font colors*/
   border-radius: 8px;
+  position: fixed;
+  width: 120px;
+  height: 70px;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  padding: 8px 8px;
-  font-size: 0.875rem;
+  font-size: 0.9rem;
   transition: background-color 0.3s;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   border: 1px solid #e2e8f0;
-  margin-bottom: 10px; /* Add spacing between buttons */
-}
+} 
 
 .command-button:hover {
   background-color: #4a5568;
@@ -207,17 +210,22 @@
 }
 
 .estop-button {
-  width: 100%;
-  height: 11.25rem;
+  width: 150px;
+  /*height : 150px; does nothing*/
+  left : 295px;
+  top : 315px;
   padding: 12px;
   background-color: #f56565;
   color: #ffffff;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  position : fixed;
+  font-size: 25px;
+  font-style: bold;
+  font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
   border-radius: 8px;
   border: 1px solid #e2e8f0;
   text-align: center;
   transition: background-color 0.3s;
-  /* margin-top: 10px; Add spacing between buttons in the right column */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 .estop-button:hover {
@@ -293,7 +301,7 @@
 
 /* changes "Controls" panel*/
 .drive-panel-grid {
-  display: flex;
+  display: fixed;
   flex-direction: row;
   justify-content: space-between;
   align-items: flex-start;
@@ -301,19 +309,19 @@
 }
 
 .drive-buttons-column {
-  display: flex;
+  display: fixed;
   flex-direction: column;
   width: 50%; /* Adjust as needed */
 }
 
 .estop-buttons-column {
-  display: flex;
+  display: fixed;
   flex-direction: column;
   width: 50%; /* Adjust as needed */
 }
 
 .actuator-data-display {
-  display: flex;
+  display: fixed;
   flex-direction: column;
 }
 
