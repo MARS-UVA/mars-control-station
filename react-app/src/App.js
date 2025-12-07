@@ -74,9 +74,9 @@ const App = () => {
           <Timer/>
         </Draggable>
         
-         {/* <Draggable>
+         {/* <Movable>
           <Timer/>
-        </Draggable> */}
+        </Movable> */}
       </div>
     </div>
   );

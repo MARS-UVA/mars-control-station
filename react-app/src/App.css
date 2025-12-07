@@ -215,9 +215,9 @@
   left : 295px;
   top : 315px;
   padding: 12px;
-  background-color: #f56565;
+  background-color:var(--accent-color2);
   color: #ffffff;
-  position : fixed;
+  position: fixed;
   font-size: 25px;
   font-style: bold;
   font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
@@ -226,10 +226,14 @@
   text-align: center;
   transition: background-color 0.3s;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  -webkit-transition: background-color 0.3s;
+  -moz-transition: background-color 0.3s;
+  -ms-transition: background-color 0.3s;
+  -o-transition: background-color 0.3s;
 }
 
 .estop-button:hover {
-  background-color: #e53e3e;
+  background-color: var(--accent-color2-hover);
 }
 
 /*
