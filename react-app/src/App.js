@@ -6,6 +6,7 @@ Updates through socket connection
 import React, {useState, useEffect} from "react";
 import Draggable from "react-draggable";
 
+import "./themes.css";
 import "./App.css";
 import LiveDataPanel from "./Components/LiveDataPanel";
 import GamepadPanel from "./Components/GamepadPanel";
