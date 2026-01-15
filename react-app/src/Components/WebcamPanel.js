@@ -7,8 +7,8 @@ const styles = {
   container: {
     margin: '10px 0', // Adds margin on top and bottom
     position: 'relative',
-    width: '750px',
-    height: '475px'
+    width: "100%",
+    height: '50%'
   },
   cameraContainer: {
     position: "relative",
