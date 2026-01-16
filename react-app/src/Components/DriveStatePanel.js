@@ -50,7 +50,7 @@ function DriveStatePanel({ driveState, setDriveState, handleESTOP, handleAutonom
 
   // Render the component UI
   return (
-    <div className="drive-panel" style={{flex: 1}}>
+    <div className="panel" style={{flex: 1}}>
       <h2 className="panel-title"></h2>
       <div className="drive-panel-grid">
         {/* Left column for drive state buttons */}
