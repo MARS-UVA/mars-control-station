@@ -24,13 +24,13 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
 
 
 
-  const maxValue = Math.max(...chartData.map(data => Math.max(data.leftFrontWheel, data.rightFrontWheel, data.leftBackWheel, data.rightBackWheel, data.leftBucketDrum, data.rightBucketDrum, data.actuatorCapacity, data.actuatorHeight)));
+  const maxValue = Math.max(...chartData.map(data => Math.max(data.leftFrontWheel, data.rightFrontWheel, data.leftBackWheel, data.rightBackWheel, data.leftBucketDrum, data.rightBucketDrum, /*data.actuatorCapacity,*/ data.actuatorHeight)));
   const Chart = memo(function ({ dataKey }) {return (
     <ResponsiveContainer width="100%" height={100} debounce={1000}>
       <LineChart data={chartData} margin={{ left: 0 }}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="time" ran/>
-        <YAxis label={dataKey === "actuatorCapacity" ? "%" : dataKey === "actuatorHeight" ? "cm" : dataKey === "globalDataRate" ? "Mbps" :"Value"} />
+        <YAxis label={/*dataKey === "actuatorCapacity" ? "%" :*/ dataKey === "actuatorHeight" ? "cm" : dataKey === "globalDataRate" ? "Mbps" :"Value"} />
         <Line type="monotone" dataKey={dataKey} stroke="#8884d8" dot={false} isAnimationActive={false} />
         {/* <ReferenceLine y={maxValue} stroke="red" strokeWidth={1} /> */}
       </LineChart>
@@ -81,7 +81,7 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
           <div className="chart-space"><MultiChart dataKey="bucketDrum" />Drum Motors: {round((lastDataPoint["leftBucketDrum"]+lastDataPoint["rightBucketDrum"]) / 2)} A</div>
           <div className="chart-space"><Chart dataKey="leftBucketDrum" />Left Bucket Drum Motor: {round(lastDataPoint["leftBucketDrum"])}</div>
           <div className="chart-space"><Chart dataKey="rightBucketDrum" />Right Bucket Drum Motor: {round(lastDataPoint["rightBucketDrum"])}</div>
-          <div className="chart-space"><Chart dataKey="actuatorCapacity" />Drum Capacity: {round(lastDataPoint["actuatorCapacity"])} %</div>
+          {/* <div className="chart-space"><Chart dataKey="actuatorCapacity" />Drum Capacity: {round(lastDataPoint["actuatorCapacity"])} %</div> */}
           <div className="chart-space"><Chart dataKey="actuatorHeight" />Drum Height: {round(lastDataPoint["actuatorHeight"])} cm</div>
           <div className="chart-space"><Chart dataKey="globalDataRate" />Data Rate: {lastDataPoint["globalDataRate"]} Mbps</div>
           <div className="chart-space" style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100px" }}><TiltMeter angleX={lastDataPoint["xGyro"]} angleY={lastDataPoint["yGyro"]} angleZ={lastDataPoint["zGyro"]}/></div>
