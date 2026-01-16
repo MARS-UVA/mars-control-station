@@ -77,14 +77,36 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
         {/* <h2 className="panel-title">Live Data Panel</h2> */}
         {/* <h3 className="panel-title">Charts</h3> */}
         <div className="chart-grid">
-          <div className="chart-space"><MultiChart dataKey="wheels" />Left Wheels: {round((lastDataPoint["leftFrontWheel"]+lastDataPoint["leftBackWheel"]) / 2)} A, <br></br> Right Wheels: {round((lastDataPoint["rightFrontWheel"]+lastDataPoint["rightBackWheel"])/2)} A</div>
-          <div className="chart-space"><MultiChart dataKey="bucketDrum" />Drum Motors: {round((lastDataPoint["leftBucketDrum"]+lastDataPoint["rightBucketDrum"]) / 2)} A</div>
-          <div className="chart-space"><Chart dataKey="leftBucketDrum" />Left Bucket Drum Motor: {round(lastDataPoint["leftBucketDrum"])}</div>
-          <div className="chart-space"><Chart dataKey="rightBucketDrum" />Right Bucket Drum Motor: {round(lastDataPoint["rightBucketDrum"])}</div>
+          <div className="chart-space">
+            <MultiChart dataKey="wheels" />
+            Left Wheels: {round((lastDataPoint["leftFrontWheel"]+lastDataPoint["leftBackWheel"]) / 2)} A, 
+            <br></br> 
+            Right Wheels: {round((lastDataPoint["rightFrontWheel"]+lastDataPoint["rightBackWheel"])/2)} A
+          </div>
+          <div className="chart-space">
+            <MultiChart dataKey="bucketDrum" />
+            Drum Motors: {round((lastDataPoint["leftBucketDrum"]+lastDataPoint["rightBucketDrum"]) / 2)} A
+          </div>
+          <div className="chart-space">
+            <Chart dataKey="leftBucketDrum" />
+            Left Bucket Drum Motor: {round(lastDataPoint["leftBucketDrum"])}
+          </div>
+          <div className="chart-space">
+            <Chart dataKey="rightBucketDrum" />
+            Right Bucket Drum Motor: {round(lastDataPoint["rightBucketDrum"])}
+          </div>
           {/* <div className="chart-space"><Chart dataKey="actuatorCapacity" />Drum Capacity: {round(lastDataPoint["actuatorCapacity"])} %</div> */}
-          <div className="chart-space"><Chart dataKey="actuatorHeight" />Drum Height: {round(lastDataPoint["actuatorHeight"])} cm</div>
-          <div className="chart-space"><Chart dataKey="globalDataRate" />Data Rate: {lastDataPoint["globalDataRate"]} Mbps</div>
-          <div className="chart-space" style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100px" }}><TiltMeter angleX={lastDataPoint["xGyro"]} angleY={lastDataPoint["yGyro"]} angleZ={lastDataPoint["zGyro"]}/></div>
+          <div className="chart-space">
+            <Chart dataKey="actuatorHeight" />
+            Drum Height: {round(lastDataPoint["actuatorHeight"])} cm
+          </div>
+          <div className="chart-space">
+            <Chart dataKey="globalDataRate" />
+            Data Rate: {lastDataPoint["globalDataRate"]} Mbps
+          </div>
+          <div className="chart-space" style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100px" }}>
+            <TiltMeter angleX={lastDataPoint["xGyro"]} angleY={lastDataPoint["yGyro"]} angleZ={lastDataPoint["zGyro"]}/>
+          </div>
         </div>
       </div>
     </>
