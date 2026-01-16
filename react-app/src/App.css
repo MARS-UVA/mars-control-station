@@ -82,10 +82,10 @@
 }
 /*changes the top left and right panels*/
 .panel {
-  background-color: #ffffff;
+  background-color: var(--panel-bg-color);
   padding: 16px;
   border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px var(--box-shadow-color);
 }
 /*changes the bottom left panels*/
 .data-stream-panel {
@@ -99,7 +99,7 @@
   margin-bottom: 10px;
   text-align: center;
   border-radius: 8px;  
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px var(--box-shadow-color);
   transition: background-color 0.3s ease; /* Smooth transition for color changes */
 }
 /* changes fonts of all bottom left main panel text */
@@ -173,17 +173,17 @@
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   font-size: 0.9rem;
   transition: background-color 0.3s;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px var(--box-shadow-color);
   border: 1px solid #e2e8f0;
 } 
 
 .command-button:hover {
-  background-color: #4a5568;
+  background-color: var(--secondary-color);
   color: white;
 }
 
 .command-button.active {
-  background-color: #2d3748;
+  background-color: var(--primary-color);
   color: white;
 }
 
@@ -203,7 +203,7 @@
   border: 1px solid #e2e8f0;
   text-align: center;
   transition: background-color 0.3s;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px var(--box-shadow-color);
   -webkit-transition: background-color 0.3s;
   -moz-transition: background-color 0.3s;
   -ms-transition: background-color 0.3s;
@@ -269,10 +269,10 @@
 
 .gamepad-status {
   text-align: center;
-  color: #718096;
+  color: var(--secondary-color);
 }
 .gamepad-data {
-  background-color: #f5f5f5;
+  background-color: var(--bg-color);
   border: 1px solid #ddd;
   padding: 10px;
   border-radius: 5px;
@@ -338,7 +338,7 @@
   font-size: 14px;
   background-color: white;
   border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px var(--box-shadow-color);
   border: 1px solid #ccc;
   transition: background-color 0.1s, transform 0.1s;
   -webkit-transition: background-color 0.1s, transform 0.1s;
@@ -361,7 +361,7 @@ TODO: Change right and bottom values to offset timer in the right and bottom scr
   background-color: #ffffff;
   padding: 15px;
   border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 6px var(--box-shadow-color);
   z-index: 1000;
   border: 1px solid #e2e8f0;
   display: flex;
