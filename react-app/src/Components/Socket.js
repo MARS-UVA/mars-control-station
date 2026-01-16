@@ -6,6 +6,8 @@ const DATA_WINDOW_WIDTH = 10000 / DATA_UPDATE_DELAY_MS;
 function Socket({ setGamePadStatus, setChartData, setLastDataPoint, timestamp, setTimestamp, setData: setData }) {
     const motorValuesRef = useRef(new Float32Array(4));
  
+    // Setups Gamepad connection status handling
+    // Creates event listeners for gamepad connection and disconnection
     useEffect(() => {
         const handleGamepadConnected = (e) => {
           setGamePadStatus(`Gamepad connected!: ${e.gamepad.id}`);
@@ -24,9 +26,10 @@ function Socket({ setGamePadStatus, setChartData, setLastDataPoint, timestamp, s
         };
       }, [setGamePadStatus]);
 
+      // On render finish, start a WebSocket connection to receive motor data
       useEffect(() => {
         const MOTOR_NUM = 5;
-        const ws = new WebSocket('ws://localhost:3001');
+        const ws = new WebSocket('ws://localhost:3001'); // Adjust the URL as needed
         ws.binaryType = 'arraybuffer';
         ws.onopen = () => {
           const buffer = new ArrayBuffer(4);
@@ -45,6 +48,7 @@ function Socket({ setGamePadStatus, setChartData, setLastDataPoint, timestamp, s
         };
       }, []);
 
+      // Find the data rate (receive + send time) and set it to lastDataRate
       const [lastDataRate, setLastDataRate] = React.useState(0.0);
       useEffect(() => {
         const ws = new WebSocket("ws://localhost:3001");
@@ -67,6 +71,7 @@ function Socket({ setGamePadStatus, setChartData, setLastDataPoint, timestamp, s
         };
       }, []);
 
+      // Set up Gyroscope data receiving via WebSocket
       const gyroValuesRef = useRef(new Float32Array(4));
       useEffect(() => {
         const ws = new WebSocket("ws://localhost:3001");
@@ -88,6 +93,7 @@ function Socket({ setGamePadStatus, setChartData, setLastDataPoint, timestamp, s
         };
       }, []);
 
+      // Periodically add new data points to chartData
       useEffect(() => {
         const addNewData = () => {
           const motor_values = motorValuesRef.current;
@@ -119,7 +125,8 @@ function Socket({ setGamePadStatus, setChartData, setLastDataPoint, timestamp, s
             return newTime;
           });
         };
-    
+        
+        // Updates with newData every DATA_UPDATE_DELAY_MS milliseconds
         const intervalId = setInterval(addNewData, DATA_UPDATE_DELAY_MS);
     
         return () => clearInterval(intervalId);
