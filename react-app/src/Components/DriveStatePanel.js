@@ -8,16 +8,22 @@
  * for them, need to write functions and implement them.
  */
 import React, { useState, useEffect } from 'react';
+const BUTTON_POSITIONS = {
+  'Auto Drive':   { top: 315+70,  left: 25 },
+  'Direct Drive': { top: 315+70, left: 160 },
+  'Reverse Drive':{ top: 395+70, left: 25 },
+  'Idle':         { top: 395+70, left: 160 },
+};
+const CommandButton = React.memo(({ label, active, onClick, style }) => (
 
-const CommandButton = React.memo(({ label, active, onClick}) => (
 
-
-  <button className={"command-button " + active} onClick={onClick}  style={{width: '100%', height: "100%", alignItems: 'center', justifyContent: 'center'}}>
-      
+  
+  <button className={"command-button " + active} onClick={onClick}  style = {style}>
+    
     <h4 style ={{ }}>
     {label}
     </h4>
-  
+   
   </button>
 ));
 
@@ -50,33 +56,20 @@ function DriveStatePanel({ driveState, setDriveState, handleESTOP, handleAutonom
 
   // Render the component UI
   return (
-    <div className="drive-panel" style={{flex: 1}}>
+    <div className="panel">
       <h2 className="panel-title"></h2>
       <div className="drive-panel-grid">
         {/* Left column for drive state buttons */}
         <div className="drive-buttons-column" position = "fixed">
-          <div className="drive-buttons-grid">
-          <CommandButton
-            label="Auto Drive"
-            active={"Auto Drive" === driveState ? 'active' : ''}
-            onClick={() => setDriveState("Auto Drive")}
-            />
+          {['Auto Drive', 'Direct Drive', 'Reverse Drive', 'Idle'].map((label, index) => (
             <CommandButton
-            label="Direct Drive"
-            active={"Direct Drive" === driveState ? 'active' : ''}
-            onClick={() => setDriveState("Direct Drive")}
+              key={index}
+              label={label}
+              style={BUTTON_POSITIONS[label]}
+              active={label === driveState ? 'active' : ''}
+              onClick={() => setDriveState(label)}
             />
-          <CommandButton
-            label="Reverse Drive"
-            active={"Reverse Drive" === driveState ? 'active' : ''}
-            onClick={() => setDriveState("Reverse Drive")}
-            />
-            <CommandButton
-            label="Idle"
-            active={"Idle" === driveState ? 'active' : ''}
-            onClick={() => setDriveState("Idle")}
-            />
-          </div>
+          ))}
         </div>
 
         {/* Right column for ESTOP buttons */}
@@ -110,7 +103,9 @@ function DriveStatePanel({ driveState, setDriveState, handleESTOP, handleAutonom
             <button
               className="estop-button"
               style={{
-                backgroundColor: estopSuccess ? "orange" : ""
+                backgroundColor: estopSuccess ? "orange" : "",
+                height: "150px",
+                top : 385
               }}
               onClick={handleESTOPWithFeedback}
             >

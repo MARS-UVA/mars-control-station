@@ -60,7 +60,7 @@ const App = () => {
 
           <DriveStatePanel />
 
-          <ActuatorDataDisplay />
+          <ActuatorDataDisplay lastDataPoint={lastDataPoint}/>
         </div>
 
         <div className="middle-panel">

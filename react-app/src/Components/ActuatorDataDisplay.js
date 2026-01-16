@@ -7,14 +7,13 @@ implement in DriveStatePanel
 import React, { useState, useEffect } from "react";
 import SingleLiveDataStream from "./SingleLiveDataStream";
 
-const ActuatorDataDisplay = () => {
+const ActuatorDataDisplay = ({lastDataPoint}) => {
+  const round = num => (Math.round((num + Number.EPSILON) * 100) / 100).toFixed(2);
+
   const [direction, setDirection] = useState("DIG"); // Initial state for direction
-
-
 
 const actuatorButtonWidth = 105; // Position and style values for the actuator buttons
 const actuatorButtonX = 30;
-
 
 const actuatorDisplayX = 170; // Position and style values for the actuator value displays
 const actuatorDisplayWidth = 220; 
@@ -26,10 +25,6 @@ const drumButtonWidth = 105;
 const drumDisplayX = 150; // Position and style values for the drum value displays
 const drumDisplayWidth = 70;
 const drumDisplayHeight = 95;
-
-
-
-
 
 
   // Function to randomly cycle through DIG, DUMP, and IDLE
@@ -71,7 +66,7 @@ const drumDisplayHeight = 95;
             {/* <p className="data-stream-name">{"Spin"}</p> */}
             {/* <p className="data-stream-value">{direction}</p> */}
           </div>
-          <SingleLiveDataStream dataStreamName="Capacity" currentVal="75%" topCoord={535 + 70} leftCoord={drumDisplayX} displayWidth={drumDisplayWidth} displayHeight={drumDisplayHeight}  />
+          <SingleLiveDataStream dataStreamName="Capacity" currentVal={round(lastDataPoint["actuatorCapacity"])}  topCoord={535 + 70} leftCoord={drumDisplayX} displayWidth={drumDisplayWidth} displayHeight={drumDisplayHeight}  />
           <SingleLiveDataStream dataStreamName="Current" currentVal="12" topCoord={535 + 70}  leftCoord={drumDisplayX + 100} displayWidth={drumDisplayWidth} displayHeight={drumDisplayHeight}  />
           <SingleLiveDataStream dataStreamName="Spin" currentVal={direction} topCoord={535 + 70}  leftCoord={drumDisplayX + 200} displayWidth={drumDisplayWidth} displayHeight={drumDisplayHeight}  />
         </div>
