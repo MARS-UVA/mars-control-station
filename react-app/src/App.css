@@ -59,19 +59,16 @@
 }
 
 .left-panel {
-  flex: auto;
   display: flex;
   flex-direction: column;
   gap: 16px;
   width: 27%;
   padding: 10px;
-  
+  height: 100%;
   /* background-color: #f0f0f0; Optional for visual distinction */
 }
 
 .middle-panel {
-  display: flex;
-  flex-direction: column;
   width: 46%;
   padding: 10px;
   /* background-color: #e0e0e0; Optional for visual distinction */
@@ -85,8 +82,6 @@
 }
 /*changes the top left and right panels*/
 .panel {
-  flex: 2;
-  display: flex;
   background-color: #ffffff;
   padding: 16px;
   border-radius: 8px;
@@ -172,8 +167,9 @@
   background: white; 
   color: black; /* font colors*/
   border-radius: 8px;
-  width: fit-content;
-  height: 100%;
+  position: fixed;
+  width: 120px;
+  height: 70px;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
   font-size: 0.9rem;
   transition: background-color 0.3s;
@@ -192,14 +188,14 @@
 }
 
 .estop-button {
-  flex: 1;
-  width: 100%;
-  height: 100%;
+  width: 150px;
+  /*height : 150px; does nothing*/
   left : 295px;
   top : 315px;
   padding: 12px;
   background-color:var(--accent-color2);
   color: #ffffff;
+  position: fixed;
   font-size: 25px;
   font-style: bold;
   font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
@@ -287,44 +283,27 @@
 
 /* changes "Controls" panel*/
 .drive-panel-grid {
-  flex: auto;
-  display: flex;
+  display: fixed;
   flex-direction: row;
   justify-content: space-between;
-  align-items: stretch;
+  align-items: flex-start;
   gap: 20px; /* Optional spacing between columns */
 }
 
 .drive-buttons-column {
-  flex: auto;
-  display: flex;
+  display: fixed;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  width: 60%; /* Adjust as needed */
-  height: 100%;
-}
-.drive-buttons-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  grid-template-rows: repeat(2, 1fr);
-  gap: 1rem;
-  width: 100%;
-  height: 100%;
+  width: 50%; /* Adjust as needed */
 }
 
 .estop-buttons-column {
-  display: flex;
-  flex: 1;
+  display: fixed;
   flex-direction: column;
-  gap: 1rem;
-  width: 40%; /* Adjust as needed */
-  height: 100%;
+  width: 50%; /* Adjust as needed */
 }
 
 .actuator-data-display {
-  display: flex;
-  flex: 3;
+  display: fixed;
   flex-direction: column;
 }
 
