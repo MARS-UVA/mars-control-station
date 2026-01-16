@@ -17,5 +17,11 @@
   --secondary-color: #a0aec0;
 }
 [data-theme="colorblind"] {
-  --accent-color1: #FFC20A;
+  --accent-color1: #735DEE; /* Ourple */
+  --accent-color2: #5b8dfc; /* Bloo */
+  --accent-color3: #DD207E; /* Magenta */
+  --accent-color4: #FE5F01; /* Orang */
+  --accent-color5: #ffaf10; /* Yerlow */
+
+  
 }

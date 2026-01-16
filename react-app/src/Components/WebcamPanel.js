@@ -110,10 +110,10 @@ function WebcamPanel({index, gamepadData}) {
       };
     }, [createSocket]);
     
-    const sendCommand = (cmd) => {
-        const payload = JSON.stringify({ type: 'command', cmd: cmd });
+    const sendCommand = (cmd) => { // Used to pause
+        const payload = JSON.stringify({ type: 'command', cmd: cmd }); // JSON command to the robot
         let ws = socketRef.current;
-        if (!ws) {
+        if (!ws) { // Set up the websocket if it's not running
           ws = createSocket();
           socketRef.current = ws;
           ws.addEventListener('open', () => {
@@ -121,10 +121,10 @@ function WebcamPanel({index, gamepadData}) {
           }, {once: true});
           return;
         }
-        else if (ws.readyState === WebSocket.OPEN) {
-          try { ws.send(payload); } catch (e) { console.log(e);}
+        else if (ws.readyState === WebSocket.OPEN) { 
+          try { ws.send(payload); } catch (e) { console.log(e);} // Once opened, send the payload
         }
-        else if (ws.readyState === WebSocket.CONNECTING) {
+        else if (ws.readyState === WebSocket.CONNECTING) { // Wait if the socket is still connecting
           ws.addEventListener('open', () => {
             try { ws.send(payload); } catch (e) { console.log(e);}
           }, {once: true});
@@ -132,9 +132,7 @@ function WebcamPanel({index, gamepadData}) {
       }
 
     const toggleFeed = () => {
-      
-      
-      
+
       if(isPaused){
         // Toggles the video feed on
         sendCommand('start_video');
