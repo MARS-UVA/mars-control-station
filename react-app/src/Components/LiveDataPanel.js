@@ -2,31 +2,13 @@ import React, {useMemo, memo, useEffect} from "react";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, ReferenceLine, CartesianGrid } from "recharts";
 import TiltMeter from "./TiltMeter";
 
-const debounce = 10000;
 // This component renders a panel with charts and live values
 function LiveDataPanel({ lastDataPoint, chartData }) {
   const round = num => (Math.round((num + Number.EPSILON) * 100) / 100).toFixed(2);
-  //  useEffect(() => {
-  //   const intervalMs = 250; // update numeric/display values every 250ms
-  //   const t = setInterval(() => {
-  //     setDisplayPoint(lastDataPoint);
-  //   }, intervalMs);
-  //   return () => clearInterval(t);
-  // }, []);
-
-  // useEffect(() => {
-  //   const intervalMs = 500; // update charts less often
-  //   const t = setInterval(() => {
-  //     setDisplayChart(chartData, 200);
-  //   }, intervalMs);
-  //   return () => clearInterval(t);
-  // }, []);
-
-
 
   const maxValue = Math.max(...chartData.map(data => Math.max(data.leftFrontWheel, data.rightFrontWheel, data.leftBackWheel, data.rightBackWheel, data.leftBucketDrum, data.rightBucketDrum, /*data.actuatorCapacity,*/ data.actuatorHeight)));
   const Chart = memo(function ({ dataKey }) {return (
-    <ResponsiveContainer width="100%" height={100} debounce={1000}>
+    <ResponsiveContainer width="100%" height={100}>
       <LineChart data={chartData} margin={{ left: 0 }}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="time" ran/>
@@ -66,13 +48,11 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
   );
 });
 
-  
   // Ref Hook - useRef for accessing a DOM element or mutable value
 
   // Render the component UI
   return (
     <>
-      
       <div className="panel">
         {/* <h2 className="panel-title">Live Data Panel</h2> */}
         {/* <h3 className="panel-title">Charts</h3> */}
