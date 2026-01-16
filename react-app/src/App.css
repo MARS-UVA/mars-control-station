@@ -85,7 +85,16 @@
 }
 /*changes the top left and right panels*/
 .panel {
-  flex: 2;
+  flex: 3;
+  display: flex;
+  background-color: #ffffff;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.drive-panel {
+  flex: 1;
   display: flex;
   background-color: #ffffff;
   padding: 16px;
