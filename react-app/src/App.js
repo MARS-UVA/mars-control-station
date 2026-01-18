@@ -17,6 +17,7 @@ import SingleLiveDataStream from "./Components/SingleLiveDataStream";
 import ActuatorDataDisplay from "./Components/ActuatorDataDisplay";
 import Movable from "./Components/Movable";
 import Timer from "./Components/Timer";
+import ThemeChanger from "./Components/ThemeChanger";
 
 const App = () => {
 
@@ -78,6 +79,7 @@ const App = () => {
          {/* <Movable>
           <Timer/>
         </Movable> */}
+        <ThemeChanger/>
       </div>
     </div>
   );
