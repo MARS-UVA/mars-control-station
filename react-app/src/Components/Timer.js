@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Draggable from 'react-draggable';
 import Movable from './Movable';
-import '../App.css';
+  
 
 
 const Timer = () => {
@@ -45,10 +45,10 @@ const Timer = () => {
         {formatTime(time)}
       </div>
       <div className="timer-controls">
-        <button className="timer-button" onClick={toggle}>
+        <button className="timer-button-start" onClick={toggle}>
           {isActive ? 'Pause' : 'Start'}
         </button>
-        <button className="timer-button" onClick={reset}>
+        <button className="timer-button-reset" onClick={reset}>
           Reset
         </button>
       </div>

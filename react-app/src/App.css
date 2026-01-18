@@ -141,8 +141,8 @@
 .webcam-container {
   position: relative;
   aspect-ratio: 16 / 9;
-  background-color: var(--bg-color);
-  color: var(--primary-color);
+  background-color: #000000;
+  color: #ffffff;
   font-size: 72px;
   border-radius: 8px;
   overflow: hidden;
@@ -161,8 +161,6 @@
   position: absolute;
   top: 8px;
   left: 8px;
-  background-color: var(--bg-color);
-  color: var(--primary-color);
   border-radius: 50%;
   padding: 4px;
 }
@@ -379,7 +377,7 @@ TODO: Change right and bottom values to offset timer in the right and bottom scr
   background-color: var(--bg-color);
   padding: 15px;
   border-radius: 8px;
-  box-shadow: 0 4px 6px var(--box-shadow-color);
+  box-shadow: var(--box-shadow-color);
   z-index: 1000;
   border: 1px solid #e2e8f0;
   display: flex;
@@ -396,6 +394,24 @@ TODO: Change right and bottom values to offset timer in the right and bottom scr
   font-family: monospace; /* Critical for keeping numbers aligned */
   cursor: grab;
   background-color: var(--bg-color);
+}
+
+.timer-button-start {
+  background-color: var(--bg-color);
+  color: var(--primary-color); 
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.timer-button-reset {
+  background-color: var(--bg-color);
+  color: var(--primary-color);
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
 }
 
 .theme-button {
