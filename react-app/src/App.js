@@ -9,7 +9,7 @@ import Draggable from "react-draggable";
 import "./themes.css";
 import "./App.css";
 import LiveDataPanel from "./Components/LiveDataPanel";
-import GamepadPanel from "./Components/GamepadPanel";
+import GamepadPanel from "./gamepad/GamepadPanel";
 import DriveStatePanel from "./Components/DriveStatePanel";
 import WebcamPanel from "./Components/WebcamPanel";
 import Socket from "./Components/Socket";

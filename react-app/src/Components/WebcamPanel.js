@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Camera, ChartNoAxesColumnDecreasing, Pause, Play } from "lucide-react";
-import Guidelines from "./Guidelines";
+import Guidelines from "../gamepad/Guidelines";
 import pauseImage from '../assets/touchedNpaused.png';
 
 const styles = {

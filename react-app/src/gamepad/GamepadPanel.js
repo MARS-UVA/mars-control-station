@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getGamepadState} from '../gamepad/gamepad';
+import { getGamepadState} from './gamepad';
 import GamepadDisplay from './GamepadDisplay';
 // renders the gamepad panel
 function GamepadPanel({ gamepadStatus, setGamepadStatus, gamepadData, setGamepadData }) {
