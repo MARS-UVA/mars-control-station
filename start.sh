@@ -1,6 +1,11 @@
 #!/bin/bash
 
-SSID="Team_39"
+# make computer recognize LT and RT on gamepad as digital inputs
+sudo xboxdrv \
+  --trigger-as-button \
+  --deadzone 50 &
+
+SSID="Team_02"
 PASSWORD="marsuva!"
 
 if [ $# -eq 0 ]; then
