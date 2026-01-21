@@ -73,19 +73,19 @@ const drumDisplayHeight = 95;
         {/* Buttons for Bucket Drum */}
         <div className="actuator-buttons">
           <button
-            className="actuator-button"
+            className="actuator-button-dig"
             style={{ position: "fixed", top: 525 + 70 , left: drumButtonX, width: drumButtonWidth, backgroundColor: "lightgreen", color: "black" }}
           >
           <strong>DIG</strong>
           </button>
           <button
-            className="actuator-button"
+            className="actuator-button-dump"
             style={{ position: "fixed", top: 570 + 70, left: drumButtonX, width: drumButtonWidth, backgroundColor: "lightblue", color: "Black" }}
           >
             <strong>DUMP</strong>
           </button>
           <button
-            className="actuator-button"
+            className="actuator-button-stop"
             style={{ position: "fixed", top: 615 + 70, left: drumButtonX, width: drumButtonWidth, backgroundColor: "lightcoral", color: "white" }}
           >
             <strong> STOP </strong>
@@ -105,20 +105,20 @@ const drumDisplayHeight = 95;
         {/* Buttons for Track Actuator */}
         <div className="actuator-buttons">
           <button
-            className="actuator-button"
+            className="actuator-button-dig2"
             style={{ position: "fixed", width: actuatorButtonWidth, left: actuatorButtonX, top: 700 +  70, backgroundColor: "#ff9999", color: "white" }} // Slightly red
           >
             <strong>DIG</strong>
           </button>
           <button
-            className="actuator-button"
+            className="actuator-button-mid"
              style={{ position: "fixed", width: actuatorButtonWidth, left: actuatorButtonX, top: 745+ 70 }}
           
           >
             <strong>MID</strong>
           </button>
           <button
-            className="actuator-button"
+            className="actuator-button-top"
             style={{ position: "fixed", width: actuatorButtonWidth, left: actuatorButtonX, top: 790 + 70 }}
           >
             <strong>TOP</strong>
