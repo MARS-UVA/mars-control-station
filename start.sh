@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # make computer recognize LT and RT on gamepad as digital inputs
+sudo rmmod xpad
 sudo xboxdrv \
   --trigger-as-button \
   --deadzone 50 &
