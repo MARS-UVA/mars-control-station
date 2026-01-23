@@ -1,6 +1,6 @@
 import React from 'react';
 import './GamepadDisplay.css';
-import ControllerSVG from '../assets/xbox_one_black.svg';
+import RealControllerPNG from '../assets/logitechF710.png';
 
 const buttonPositions = {
   a:  { x: 500, y: 280 },
@@ -44,7 +44,7 @@ const GamepadDisplay = ({ gamepadData }) => {
       </div>
 
       <div className="controller-container">
-        <img src={ControllerSVG} alt="Xbox Controller" className="controller-image" />
+        <img src={RealControllerPNG} alt="Logitech Controller" className="controller-image" />
 
         {Object.entries(buttons).map(([button, value]) => {
           const pos = buttonPositions[button];

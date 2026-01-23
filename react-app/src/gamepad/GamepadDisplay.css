@@ -47,10 +47,50 @@
     color: white;
   }
 
-  .controller-image {
-  
-  width: 400px; /* or whatever size you want */
-  height: 300px; /* preserves aspect ratio */
+/* container: make overlays position relative and allow uniform scaling */
+.controller-container {
+  position: relative;
+  width: 360px;           /* base width; reduce to make smaller */
+  height: auto;
+  margin: 0 auto;
+  transform: scale(0.85); /* scale the whole controller + overlays */
+  transform-origin: top center;
 }
+
+/* image fills the container so scaling works cleanly */
+.controller-image {
+  width: 90%;
+  height: auto;
+  display: block;
+}
+
+/* tighten spacing for the stick readouts */
+.sticks {
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  margin-bottom: 6px; /* reduced from 20px */
+  gap: px;
+}
+
+.stick {
+  text-align: center;
+  margin: 0;
+  font-size: 0.9rem;    /* smaller text */
+}
+
+.stick h3 {
+  margin: 0 0 4px 0;
+  font-size: 0.95rem;
+}
+
+.stick p {
+  margin: 0;
+  font-size: 0.85rem;
+}
+
+/* smaller overlay dots so they look proportional at reduced scale */
+.button-overlay { width: 14px; height: 14px; }
+.stick-overlay  { width: 20px; height: 20px; }
 
 #button-x { top: 0px; left: 0px; }

@@ -208,6 +208,15 @@
   color: var(--primary-color);
 }
 
+.panel {
+  padding: 12px; /* slightly smaller panel padding */
+}
+
+.gamepad-status {
+  margin: 0 0 6px 0; /* remove large top/bottom margins */
+  font-size: 0.95rem;
+}
+
 /* changes "Controls" panel*/
 .drive-panel-grid {
   display: fixed;
