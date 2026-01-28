@@ -4,26 +4,26 @@
     align-items: center;
     font-family: Arial, sans-serif;
   }
-  
+
   .sticks {
     display: flex;
     justify-content: space-around;
     width: 100%;
     margin-bottom: 20px;
   }
-  
+
   .stick {
     text-align: center;
   }
-  
+
  .button-overlay {
     position: absolute;
+    
     width: 20px;
     height: 20px;
     border-radius: 50%;
     background-color: var(--accent-color2-hover);
     pointer-events: none;
-    transform: translate(-50%, -50%);
 }
   .stick-overlay {
     position: absolute;
@@ -49,11 +49,11 @@
 
 /* container: make overlays position relative and allow uniform scaling */
 .controller-container {
-  position: relative;
-  width: 360px;           /* base width; reduce to make smaller */
+  position: relative; 
+  width: 360px;
   height: auto;
   margin: 0 auto;
-  transform: scale(0.85); /* scale the whole controller + overlays */
+  transform: scale(0.85);
   transform-origin: top center;
 }
 

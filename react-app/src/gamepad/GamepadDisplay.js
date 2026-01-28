@@ -1,28 +1,35 @@
 import React from 'react';
 import './GamepadDisplay.css';
 import RealControllerPNG from '../assets/logitechF710.png';
+// import { buttonPositions, stickPositions } from './positions'; 
 
-const buttonPositions = {
-  a:  { x: 500, y: 280 },
-  b:  { x: 540, y: 240 },
-  x:  { x: 460, y: 240 },
-  y:  { x: 500, y: 200 },
-  du: { x: 220, y: 240 },
-  dd: { x: 220, y: 300 },
-  dl: { x: 180, y: 270 },
-  dr: { x: 260, y: 270 },
-  lb: { x: 140, y: 40 },
-  rb: { x: 460, y: 40 },
-  lt: { x: 140, y: 10 },
-  rt: { x: 460, y: 10 },
-  l3: { x: 180, y: 300 },
-  r3: { x: 420, y: 340 },
+
+// === Overlay Coordinates ===
+// Beautiful hardcoded positions because the control station is a fixed screen size / resolution!
+export const buttonPositions = {
+  a:  { x: 253, y: 98 },
+  b:  { x: 276, y: 75 },
+  x:  { x: 230, y: 75 }, // These might be swapped? or else my controller is cooked
+  y:  { x: 253, y: 50 },
+
+  du: { x: 67, y: 55 },
+  dd: { x: 67, y: 90 },
+  dl: { x: 50, y: 72 },
+  dr: { x: 85, y: 72 },
+
+  lb: { x: 70, y: 0 },
+  rb: { x: 260, y: 0 },
+  lt: { x: 30, y: 0 }, // I can't seem to put these any higher. Hope it's fine.
+  rt: { x: 300, y: 0 },
+  l3: { x: 115, y: 130 },
+  r3: { x: 210, y: 130 },
 };
 
-const stickPositions = {
-  leftStick: { left: 150, top: 220 },
-  rightStick: { left: 420, top: 300 },
+export const stickPositions = {
+  leftStick: { x: 121, y: 133 },
+  rightStick: { x: 215, y: 133 },
 };
+
 
 const GamepadDisplay = ({ gamepadData }) => {
   if (!gamepadData) return null;
@@ -55,6 +62,7 @@ const GamepadDisplay = ({ gamepadData }) => {
               key={button}
               className={`button-overlay ${value > 0 ? 'pressed' : ''}`}
               style={{
+                position: 'absolute',
                 left: `${pos.x}px`,
                 top: `${pos.y}px`,
                 backgroundColor: `rgba(255, 0, 0, ${0.3 + 0.7 * value})`,
@@ -67,16 +75,16 @@ const GamepadDisplay = ({ gamepadData }) => {
           id="left-stick"
           className="stick-overlay"
           style={{
-            left: `${stickPositions.leftStick.left + leftStick.x * 20}px`,
-            top: `${stickPositions.leftStick.top + leftStick.y * 20}px`,
+            left: `${stickPositions.leftStick.x + leftStick.x * 20}px`,
+            top: `${stickPositions.leftStick.y + leftStick.y * 20}px`,
           }}
         />
         <div
           id="right-stick"
           className="stick-overlay"
           style={{
-            left: `${stickPositions.rightStick.left + rightStick.x * 20}px`,
-            top: `${stickPositions.rightStick.top + rightStick.y * 20}px`,
+            left: `${stickPositions.rightStick.x + rightStick.x * 20}px`,
+            top: `${stickPositions.rightStick.y + rightStick.y * 20}px`,
           }}
         />
       </div>

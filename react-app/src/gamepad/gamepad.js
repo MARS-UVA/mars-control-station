@@ -1,3 +1,19 @@
+// load positions from GamepadDisplay.js asynchronously to avoid HMR/circular-init issues
+let buttonPositions = {};
+let stickPositions = {};
+
+(async function loadPositions() {
+  try {
+    const mod = await import('./GamepadDisplay');
+    buttonPositions = mod.buttonPositions || {};
+    stickPositions = mod.stickPositions || {};
+  } catch (err) {
+    console.error('Failed to load gamepad positions from GamepadDisplay:', err);
+  }
+})();
+
+
+
 // === WebSocket Setup ===
 const ws = new WebSocket('ws://localhost:3001');
 
@@ -65,30 +81,7 @@ function getRightStickFromGamepad(gp) {
   return { x: gp.axes[2], y: -gp.axes[3] };
 }
 
-// === Overlay Coordinates ===
-const buttonPositions = {
-  a:  { x: 500, y: 280 },
-  b:  { x: 540, y: 240 },
-  x:  { x: 460, y: 240 },
-  y:  { x: 500, y: 200 },
 
-  du: { x: 220, y: 240 },
-  dd: { x: 220, y: 300 },
-  dl: { x: 180, y: 270 },
-  dr: { x: 260, y: 270 },
-
-  lb: { x: 140, y: 40 },
-  rb: { x: 460, y: 40 },
-  lt: { x: 140, y: 10 },
-  rt: { x: 460, y: 10 },
-  l3: { x: 180, y: 300 },
-  r3: { x: 420, y: 340 },
-};
-
-const stickPositions = {
-  leftStick: { x: 150, y: 220 },
-  rightStick: { x: 420, y: 300 },
-};
 
 // === Gamepad State ===
 function getGamepadState(index = 0) {
@@ -101,7 +94,7 @@ function getGamepadState(index = 0) {
   };
 }
 
-// === Visual Overlay Updates ===
+//=== Visual Overlay Updates ===
 function updateButtonOverlays(buttons) {
   for (const [btn, value] of Object.entries(buttons)) {
     const overlay = document.getElementById(`button-${btn}`);
@@ -134,9 +127,9 @@ setInterval(() => {
   const state = getGamepadState(0);
   if (!state) return;
 
-  // Update on-screen overlays
-  updateButtonOverlays(state.buttons);
-  updateStickOverlays(state.leftStick, state.rightStick);
+  // // Update on-screen overlays
+  // updateButtonOverlays(state.buttons);
+  // updateStickOverlays(state.leftStick, state.rightStick);
 
   // Send to server
   if (ws.readyState === WebSocket.OPEN) {
