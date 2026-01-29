@@ -13,17 +13,21 @@ function ThemeToggle() {
     }
   }, [theme]);
 
-  const nextTheme = () => {
-    const index = THEMES.indexOf(theme);
-    const nextIndex = (index + 1) % THEMES.length;
-    setTheme(THEMES[nextIndex]);
-  };
-
   return (
-    <button className = "theme-button" onClick={nextTheme}>
-      Theme: {theme}
-    </button>
+    <div className="theme-changer">
+      <label>
+        <select
+          value={theme} // ...force the select's value to match the state variable...
+          onChange={e => setTheme(e.target.value)} // ... and update the state variable on any change!
+        >
+          <option value="default">Default</option>
+          <option value="dark">Dark Mode</option>
+          <option value="colorblind">Colorblind Mode</option>
+        </select>
+      </label>
+    </div>
   );
 }
 
 export default ThemeToggle;
+

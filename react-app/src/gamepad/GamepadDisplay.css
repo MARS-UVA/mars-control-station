@@ -34,6 +34,14 @@
     pointer-events: none;
     transform: translate(-50%, -50%);
 }
+
+
+/* change color when L3/R3 pressed */
+.stick-overlay.pressed {
+  background-color: rgba(0, 200, 0, 0.95);
+  box-shadow: 0 0 8px rgba(0, 200, 0, 0.6);
+}
+
   .button {
     margin: 5px;
     padding: 10px;

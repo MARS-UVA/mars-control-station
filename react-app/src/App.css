@@ -406,7 +406,7 @@ TODO: Change right and bottom values to offset timer in the right and bottom scr
   border: 1px solid #e2e8f0;
 }
 
-.theme-button {
+.theme-changer {
   position: fixed;
   bottom: 8px;
   left: 8px;

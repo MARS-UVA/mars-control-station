@@ -18,8 +18,8 @@ export const buttonPositions = {
   dr: { x: 85, y: 72 },
 
   lb: { x: 70, y: 0 },
-  rb: { x: 260, y: 0 },
-  lt: { x: 30, y: 0 }, // I can't seem to put these any higher. Hope it's fine.
+  rb: { x: 255, y: 0 },
+  lt: { x: 25, y: 0 }, // I can't seem to put these any higher. Hope it's fine.
   rt: { x: 300, y: 0 },
   l3: { x: 115, y: 130 },
   r3: { x: 210, y: 130 },
@@ -73,7 +73,7 @@ const GamepadDisplay = ({ gamepadData }) => {
 
         <div
           id="left-stick"
-          className="stick-overlay"
+          className={`stick-overlay ${buttons.l3 > 0 ? 'pressed' : ''}`}
           style={{
             left: `${stickPositions.leftStick.x + leftStick.x * 20}px`,
             top: `${stickPositions.leftStick.y + leftStick.y * 20}px`,
@@ -81,7 +81,7 @@ const GamepadDisplay = ({ gamepadData }) => {
         />
         <div
           id="right-stick"
-          className="stick-overlay"
+          className={`stick-overlay ${buttons.r3 > 0 ? 'pressed' : ''}`}
           style={{
             left: `${stickPositions.rightStick.x + rightStick.x * 20}px`,
             top: `${stickPositions.rightStick.y + rightStick.y * 20}px`,
