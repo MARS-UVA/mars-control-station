@@ -27,7 +27,7 @@ const CommandButton = React.memo(({ label, active, onClick, style }) => (
   </button>
 ));
 
-function DriveStatePanel({ driveState, setDriveState, handleESTOP, handleAutonomousStop }) {
+function DriveStatePanel({ driveState, setDriveState, handle, handleAutonomousStop }) {
   const [estopSuccess, setEstopSuccess] = useState(false); // State to track the success indication
 
   const handleESTOPWithFeedback = () => {
