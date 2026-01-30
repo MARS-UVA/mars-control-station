@@ -3,13 +3,13 @@
     flex-direction: column;
     align-items: center;
     font-family: Arial, sans-serif;
-  }
+    }
 
   .sticks {
     display: flex;
     justify-content: space-around;
     width: 100%;
-    margin-bottom: 20px;
+    margin-bottom: 25px;
   }
 
   .stick {
@@ -18,7 +18,6 @@
 
  .button-overlay {
     position: absolute;
-    
     width: 20px;
     height: 20px;
     border-radius: 50%;
@@ -38,8 +37,7 @@
 
 /* change color when L3/R3 pressed */
 .stick-overlay.pressed {
-  background-color: rgba(0, 200, 0, 0.95);
-  box-shadow: 0 0 8px rgba(0, 200, 0, 0.6);
+  background-color: var(accent-color1-hover);
 }
 
   .button {
@@ -59,10 +57,11 @@
 .controller-container {
   position: relative; 
   width: 360px;
-  height: auto;
+  height: 200px;
   margin: 0 auto;
   transform: scale(0.85);
   transform-origin: top center;
+  overflow: hidden;
 }
 
 /* image fills the container so scaling works cleanly */
@@ -70,15 +69,6 @@
   width: 90%;
   height: auto;
   display: block;
-}
-
-/* tighten spacing for the stick readouts */
-.sticks {
-  display: flex;
-  justify-content: space-around;
-  width: 100%;
-  margin-bottom: 6px; /* reduced from 20px */
-  gap: px;
 }
 
 .stick {
