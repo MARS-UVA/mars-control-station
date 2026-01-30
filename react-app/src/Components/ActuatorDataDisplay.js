@@ -39,7 +39,7 @@ const drumDisplayHeight = 95;
   }, []);
 
   // Determine background color based on the direction
-  const getDirectionColor = (direction) => {
+  /*const getDirectionColor = (direction) => {
     switch (direction) {
       case "DIG":
         return "lightgreen";
@@ -48,7 +48,7 @@ const drumDisplayHeight = 95;
       default:
         return "white"; 
     }
-  };
+  };*/
 
   return (
     <div className="actuator-data-display">
@@ -74,19 +74,19 @@ const drumDisplayHeight = 95;
         <div className="actuator-buttons">
           <button
             className="actuator-button-dig"
-            style={{ position: "fixed", top: 525 + 70 , left: drumButtonX, width: drumButtonWidth, backgroundColor: "lightgreen", color: "black" }}
+            style={{ position: "fixed", top: 525 + 70 , left: drumButtonX, width: drumButtonWidth}}
           >
           <strong>DIG</strong>
           </button>
           <button
             className="actuator-button-dump"
-            style={{ position: "fixed", top: 570 + 70, left: drumButtonX, width: drumButtonWidth, backgroundColor: "lightblue", color: "Black" }}
+            style={{ position: "fixed", top: 570 + 70, left: drumButtonX, width: drumButtonWidth}}
           >
             <strong>DUMP</strong>
           </button>
           <button
             className="actuator-button-stop"
-            style={{ position: "fixed", top: 615 + 70, left: drumButtonX, width: drumButtonWidth, backgroundColor: "lightcoral", color: "white" }}
+            style={{ position: "fixed", top: 615 + 70, left: drumButtonX, width: drumButtonWidth}}
           >
             <strong> STOP </strong>
           </button>
@@ -106,14 +106,13 @@ const drumDisplayHeight = 95;
         <div className="actuator-buttons">
           <button
             className="actuator-button-dig2"
-            style={{ position: "fixed", width: actuatorButtonWidth, left: actuatorButtonX, top: 700 +  70, backgroundColor: "#ff9999", color: "white" }} // Slightly red
+            style={{ position: "fixed", width: actuatorButtonWidth, left: actuatorButtonX, top: 700 +  70}}
           >
             <strong>DIG</strong>
           </button>
           <button
             className="actuator-button-mid"
-             style={{ position: "fixed", width: actuatorButtonWidth, left: actuatorButtonX, top: 745+ 70 }}
-          
+            style={{ position: "fixed", width: actuatorButtonWidth, left: actuatorButtonX, top: 745 + 70 }}
           >
             <strong>MID</strong>
           </button>

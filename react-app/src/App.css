@@ -56,7 +56,7 @@
   width: 100%;
   height: 100px;
   margin: 0px 5px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-color);
   border-radius: 5px;
   margin-bottom: 10px;
   text-align: center;
@@ -140,9 +140,9 @@
   font-size: 0.9rem;
   transition: background-color 0.3s;
   box-shadow: 0 4px 6px var(--box-shadow-color);
-  border: 1px solid #e2e8f0;
-  
-} 
+  border: 1px solid var(--border-color);
+
+}
 
 .command-button:hover {
   background-color: var(--secondary-color);
@@ -160,14 +160,14 @@
   left : 295px;
   top : 315px;
   padding: 12px;
-  background-color:var(--accent-color2);
+  background-color:var(--accent-color3);
   color: var(--primary-color);
   position: fixed;
   font-size: 25px;
   font-style: bold;
   font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
   border-radius: 8px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-color);
   text-align: center;
   transition: background-color 0.3s;
   box-shadow: 0 4px 6px var(--box-shadow-color);
@@ -178,7 +178,7 @@
 }
 
 .estop-button:hover {
-  background-color: var(--accent-color2-hover);
+  background-color: var(--accent-color3-hover);
 }
 
 .chart-grid {
@@ -199,7 +199,7 @@
 }
 .gamepad-data {
   background-color: var(--bg-color);
-  border: 1px solid #ddd;
+  border: 1px solid var(--border-color);
   padding: 10px;
   border-radius: 5px;
   font-family: monospace;
@@ -270,12 +270,22 @@
 }
 
 .actuator-button-dig:hover, 
+.actuator-button-dig2:hover{
+  transform: scale(1.1);
+  background-color: var(--accent-color1-hover);
+  color: var(--primary-color);
+}
 .actuator-button-dump:hover,
+.actuator-button-mid:hover{
+  transform: scale(1.1);
+  background-color: var(--accent-color2-hover);
+  color: var(--primary-color);
+}
 .actuator-button-stop:hover,
-.actuator-button-dig2:hover,
-.actuator-button-mid:hover,
 .actuator-button-top:hover {
   transform: scale(1.1);
+  background-color: var(--accent-color3-hover);
+  color: var(--primary-color);
 }
 
 
@@ -286,9 +296,9 @@
   background-color: var(--accent-color3);
   border-radius: 8px;
   box-shadow: 0 4px 6px var(--box-shadow-color);
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-color);
   color: var(--primary-color);
-
+  background-color: var(--accent-color1);
 }
 
 .actuator-button-dump{
@@ -298,8 +308,9 @@
   background-color: var(--accent-color1);
   border-radius: 8px;
   box-shadow: 0 4px 6px var(--box-shadow-color);
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-color);
   color: var(--primary-color);
+  background-color: var(--accent-color2);
 }
 
 .actuator-button-stop{
@@ -309,8 +320,9 @@
   background-color: var(--bg-color);
   border-radius: 8px;
   box-shadow: 0 4px 6px var(--box-shadow-color);
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-color);
   color: var(--primary-color);
+  background-color: var(--accent-color3);
 }
 
 .actuator-button-dig2{
@@ -320,8 +332,9 @@
   background-color: var(--bg-color);
   border-radius: 8px;
   box-shadow: 0 4px 6px var(--box-shadow-color);
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-color);
   color: var(--primary-color);
+  background-color: var(--accent-color1);
 }
 
 .actuator-button-mid{
@@ -331,8 +344,9 @@
   background-color: var(--bg-color);
   border-radius: 8px;
   box-shadow: 0 4px 6px var(--box-shadow-color);
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-color);
   color: var(--primary-color);
+  background-color: var(--accent-color2);
 }
 
 .actuator-button-top{
@@ -342,20 +356,11 @@
   background-color: var(--bg-color);
   border-radius: 8px;
   box-shadow: 0 4px 6px var(--box-shadow-color);
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-color);
   color: var(--primary-color);
+  background-color: var(--accent-color3);
 }
 
-.actuator-button-dig{
-  padding: 10px 20px;
-  margin: 5px;
-  font-size: 14px;
-  background-color: var(--bg-color);
-  border-radius: 8px;
-  box-shadow: 0 4px 6px var(--box-shadow-color);
-  border: 1px solid #ccc;
-  color: var(--primary-color);
-}
 
 /* 
 TODO: Change right and bottom values to offset timer in the right and bottom screen
@@ -369,7 +374,7 @@ TODO: Change right and bottom values to offset timer in the right and bottom scr
   border-radius: 8px;
   box-shadow: var(--box-shadow-color);
   z-index: 1000;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -393,7 +398,7 @@ TODO: Change right and bottom values to offset timer in the right and bottom scr
   padding: 8px 16px;
   border-radius: 4px;
   cursor: pointer;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-color);
 }
 
 .timer-button-reset {
@@ -403,7 +408,7 @@ TODO: Change right and bottom values to offset timer in the right and bottom scr
   padding: 8px 16px;
   border-radius: 4px;
   cursor: pointer;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--border-color);
 }
 
 .theme-changer {
