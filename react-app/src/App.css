@@ -9,6 +9,12 @@
   color: var(--primary-color);
 }
 
+html, body {
+  overflow: hidden;
+  height: 100%;
+  margin: 0;
+}
+
 .content {
   display: flex;
   flex-direction: row;
