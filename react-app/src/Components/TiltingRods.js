@@ -114,7 +114,7 @@ export default function TiltingRods() {
         />
       </div>
 
-      <div className="right-rod">
+      <div className="right-rod">   
         <span>Right Rod Angle</span>
         <span>{angleB}°</span>
         <input
