@@ -76,7 +76,7 @@ const GamepadDisplay = ({ gamepadData }) => {
           className={`stick-overlay ${buttons.l3 > 0 ? 'pressed' : ''}`}
           style={{
             left: `${stickPositions.leftStick.x + leftStick.x * 20}px`,
-            top: `${stickPositions.leftStick.y + leftStick.y * 20}px`,
+            top: `${stickPositions.leftStick.y - leftStick.y * 20}px`,
           }}
         />
         <div
@@ -84,7 +84,7 @@ const GamepadDisplay = ({ gamepadData }) => {
           className={`stick-overlay ${buttons.r3 > 0 ? 'pressed' : ''}`}
           style={{
             left: `${stickPositions.rightStick.x + rightStick.x * 20}px`,
-            top: `${stickPositions.rightStick.y + rightStick.y * 20}px`,
+            top: `${stickPositions.rightStick.y - rightStick.y * 20}px`,
           }}
         />
       </div>
