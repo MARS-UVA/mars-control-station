@@ -37,15 +37,15 @@
 
 /* change color when L3/R3 pressed */
 .stick-overlay.pressed {
-  background-color: var(accent-color1-hover);
+  background-color: var(--accent-color1-hover);
 }
 
   .button {
     margin: 5px;
     padding: 10px;
-    border: 1px solid #ccc;
+    border: 1px solid var(--border-color);
     border-radius: 5px;
-    background-color: var(--pannel-bg-color);
+    background-color: var(--panel-bg-color);
   }
 
   .button.pressed {
