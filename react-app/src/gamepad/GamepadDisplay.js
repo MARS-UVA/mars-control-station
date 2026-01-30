@@ -12,8 +12,8 @@ export const buttonPositions = {
   x:  { x: 230, y: 75 }, // These might be swapped? or else my controller is cooked
   y:  { x: 253, y: 50 },
 
-  du: { x: 67, y: 55 },
-  dd: { x: 67, y: 90 },
+  du: { x: 69, y: 55 },
+  dd: { x: 69, y: 90 },
   dl: { x: 50, y: 72 },
   dr: { x: 85, y: 72 },
 
@@ -65,7 +65,7 @@ const GamepadDisplay = ({ gamepadData }) => {
                 position: 'absolute',
                 left: `${pos.x}px`,
                 top: `${pos.y}px`,
-                backgroundColor: `rgba(255, 0, 0, ${0.3 + 0.7 * value})`,
+                backgroundColor: `rgba(255, 0, 0, ${0 + value})`,
               }}
             />
           );
