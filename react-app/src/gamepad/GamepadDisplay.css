@@ -29,7 +29,7 @@
     width: 30px;
     height: 30px;
     border-radius: 50%;
-    background-color: var(--accent-color1);
+    background-color: var(--accent-color3);
     pointer-events: none;
     transform: translate(-50%, -50%);
 }
@@ -37,7 +37,7 @@
 
 /* change color when L3/R3 pressed */
 .stick-overlay.pressed {
-  background-color: var(--accent-color1-hover);
+  background-color: var(--accent-color3-hover);
 }
 
   .button {

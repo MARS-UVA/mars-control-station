@@ -370,11 +370,12 @@ TODO: Change right and bottom values to offset timer in the right and bottom scr
   bottom: 100px;
   right: 20px;
   background-color: var(--bg-color);
+  box-shadow: 1px solid var(--box-shadow-color);
   padding: 15px;
   border-radius: 8px;
   box-shadow: var(--box-shadow-color);
   z-index: 1000;
-  border: 1px solid var(--border-color);
+  border: 2px solid var(--border-color);
   display: flex;
   flex-direction: column;
   align-items: center;
