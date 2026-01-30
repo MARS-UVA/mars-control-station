@@ -84,9 +84,9 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
             <Chart dataKey="globalDataRate" />
             Data Rate: {lastDataPoint["globalDataRate"]} Mbps
           </div>
-          <div className="chart-space" style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100px" }}>
+          {/*<div className="chart-space" style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100px" }}>
             <TiltMeter angleX={lastDataPoint["xGyro"]} angleY={lastDataPoint["yGyro"]} angleZ={lastDataPoint["zGyro"]}/>
-          </div>
+          </div> */}
         </div>
       </div>
     </>

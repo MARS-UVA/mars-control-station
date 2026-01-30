@@ -18,6 +18,7 @@ import ActuatorDataDisplay from "./Components/ActuatorDataDisplay";
 import Movable from "./Components/Movable";
 import Timer from "./Components/Timer";
 import ThemeChanger from "./Components/ThemeChanger";
+import TiltingRods from "./Components/TiltingRods";
 
 const App = () => {
 
@@ -71,6 +72,7 @@ const App = () => {
 
         <div className="right-panel">
           <LiveDataPanel lastDataPoint={lastDataPoint} timestamp={timestamp} chartData={chartData}/>
+          <TiltingRods/>
         </div>
         <Draggable>
           <Timer/>
