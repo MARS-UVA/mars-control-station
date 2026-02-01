@@ -26,6 +26,8 @@ const App = () => {
   const [gamepadStatus, setGamepadStatus] = useState('No gamepad connected!');
   const [gamepadData, setGamepadData] = useState(null);
   const [driveState, setDriveState] = useState('Idle');
+  const [camera0Active, setCamera0Active] = useState(true);
+  const [camera4Active, setCamera4Active] = useState(true);
 
   
   const [timestamp, setTimestamp] = useState(0);
@@ -47,6 +49,7 @@ const App = () => {
   })));
   const [lastDataPoint, setLastDataPoint] = useState(chartData[chartData.length - 1]);
   const [valueData, setData] = useState("data");
+  
 
   
 
@@ -66,8 +69,8 @@ const App = () => {
         </div>
 
         <div className="middle-panel">
-          <WebcamPanel index="0" gamepadData={gamepadData}/>
-          <WebcamPanel index="4" gamepadData={null}/>
+          <WebcamPanel index="0" gamepadData={gamepadData} cameraActive={camera0Active} setCameraActive={setCamera0Active}/>
+          <WebcamPanel index="4" gamepadData={null} cameraActive={camera4Active} setCameraActive={setCamera4Active}/>
         </div>
 
         <div className="right-panel">
