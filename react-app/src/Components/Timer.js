@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import Draggable from 'react-draggable';
-import Movable from './Movable';
   
 
 
