@@ -15,7 +15,6 @@ import WebcamPanel from "./Components/WebcamPanel";
 import Socket from "./Components/Socket";
 import SingleLiveDataStream from "./Components/SingleLiveDataStream";
 import ActuatorDataDisplay from "./Components/ActuatorDataDisplay";
-import Movable from "./Components/Movable";
 import Timer from "./Components/Timer";
 import ThemeChanger from "./Components/ThemeChanger";
 import TiltingRods from "./Components/TiltingRods";
@@ -78,9 +77,6 @@ const App = () => {
           <Timer/>
         </Draggable>
         
-         {/* <Movable>
-          <Timer/>
-        </Movable> */}
         <ThemeChanger/>
       </div>
     </div>
