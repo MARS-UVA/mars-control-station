@@ -38,18 +38,6 @@ const drumDisplayHeight = 95;
     return () => clearInterval(interval); // Cleanup interval on component unmount
   }, []);
 
-  // Determine background color based on the direction
-  /*const getDirectionColor = (direction) => {
-    switch (direction) {
-      case "DIG":
-        return "lightgreen";
-      case "DUMP":
-        return "lightblue";
-      default:
-        return "white"; 
-    }
-  };*/
-
   return (
     <div className="actuator-data-display">
       {/* Bucket Drum Section */}
