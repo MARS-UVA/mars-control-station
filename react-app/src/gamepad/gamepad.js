@@ -1,140 +1,123 @@
-// load positions from GamepadDisplay.js asynchronously to avoid HMR/circular-init issues
-let buttonPositions = {};
-let stickPositions = {};
+let gamepads = navigator.getGamepads()
+let isTransmissionActive = true; // New control flag
 
-(async function loadPositions() {
-  try {
-    const mod = await import('./GamepadDisplay');
-    buttonPositions = mod.buttonPositions || {};
-    stickPositions = mod.stickPositions || {};
-  } catch (err) {
-    console.error('Failed to load gamepad positions from GamepadDisplay:', err);
-  }
-})();
-
-
-
-// === WebSocket Setup ===
 const ws = new WebSocket('ws://localhost:3001');
-
 ws.onopen = () => {
-  console.log('WebSocket connected');
-  ws.send(JSON.stringify({ type: 'init' }));
+  ws.send(-1)
+  //console.log('websocket connected');
 };
-
 ws.onclose = () => {
-  console.log('WebSocket disconnected');
+  //console.log('websocket closed');
 };
 
-// === Gamepad Tracking ===
-let gamepads = navigator.getGamepads();
+window.addEventListener('gamepadconnected', e => {
+    gamepads = navigator.getGamepads()
+})
+window.addEventListener('gamepaddisconnected', e => {
+    gamepads = navigator.getGamepads()
+})
 
-window.addEventListener('gamepadconnected', () => {
-  console.log('Gamepad connected');
-  gamepads = navigator.getGamepads();
-});
-
-window.addEventListener('gamepaddisconnected', () => {
-  console.log('Gamepad disconnected');
-  gamepads = navigator.getGamepads();
-});
-
-// === Utility: Browser Detection (optional) ===
 function detectBrowser() {
-  const ua = navigator.userAgent;
-  if (/chrome|chromium|crios/i.test(ua)) return "Chrome";
-  if (/firefox|fxios/i.test(ua)) return "Firefox";
-  if (/safari/i.test(ua)) return "Safari";
-  if (/msie|trident/i.test(ua)) return "Internet Explorer";
-  if (/edge\/\d+/i.test(ua)) return "Microsoft Edge";
-  if (/opera|opr/i.test(ua)) return "Opera";
-  return "Unknown";
+    const userAgent = navigator.userAgent;
+  
+    if (userAgent.match(/chrome|chromium|crios/i)) {
+      return "Chrome";
+    } else if (userAgent.match(/firefox|fxios/i)) {
+      return "Firefox";
+    } else if (userAgent.match(/safari/i)) {
+      return "Safari";
+    } else if (userAgent.match(/msie|trident/i)) {
+      return "Internet Explorer";
+    } else if (userAgent.match(/edge\/\d+/i)) {
+      return "Microsoft Edge";
+    } else if (userAgent.match(/opera|opr/i)) {
+      return "Opera";
+    } else {
+      return "Unknown";
+    }
+  }
+  
+
+/**
+ * * @param {Gamepad} gamepad 
+ * @returns 
+ */
+const getButtonObjectFromGamepad = (gamepad) => {
+    return {
+        x: gamepad.buttons[2].value,
+        y: gamepad.buttons[3].value,
+        a: gamepad.buttons[0].value,
+        b: gamepad.buttons[1].value,
+        lt: gamepad.buttons[6].value,
+        rt: gamepad.buttons[7].value,
+        lb: gamepad.buttons[4].value,
+        rb: gamepad.buttons[5].value,
+        dd: gamepad.buttons[13].value,
+        du: gamepad.buttons[12].value,
+        dr: gamepad.buttons[15].value,
+        dl: gamepad.buttons[14].value,
+        l3: gamepad.buttons[10].value,
+        r3: gamepad.buttons[11].value,
+        back: gamepad.buttons[8].value,
+        start: gamepad.buttons[9].value,
+    }
 }
 
-// === Input Parsing ===
-function getButtonObjectFromGamepad(gp) {
-  return {
-    a: gp.buttons[0].value,
-    b: gp.buttons[1].value,
-    x: gp.buttons[2].value,
-    y: gp.buttons[3].value,
-    lb: gp.buttons[4].value,
-    rb: gp.buttons[5].value,
-    lt: gp.buttons[6].value,
-    rt: gp.buttons[7].value,
-    back: gp.buttons[8].value,
-    start: gp.buttons[9].value,
-    l3: gp.buttons[10].value,
-    r3: gp.buttons[11].value,
-    du: gp.buttons[12].value,
-    dd: gp.buttons[13].value,
-    dl: gp.buttons[14].value,
-    dr: gp.buttons[15].value,
-  };
+const getLeftStickFromGamepad = (gamepad) => {
+    return {
+        x: gamepad.axes[0],
+        y: -gamepad.axes[1]
+    }
 }
 
-function getLeftStickFromGamepad(gp) {
-  return { x: gp.axes[0], y: -gp.axes[1] };
+const getRightStickFromGamepad = (gamepad) => {
+    return {
+        x: gamepad.axes[2],
+        y: -gamepad.axes[3]
+    }
 }
 
-function getRightStickFromGamepad(gp) {
-  return { x: gp.axes[2], y: -gp.axes[3] };
-}
+const gamepadText = document.getElementById('gamepad-text')
 
+const intervalTime = 30
 
-
-// === Gamepad State ===
 function getGamepadState(index = 0) {
-  const gp = navigator.getGamepads()[index];
-  if (!gp) return null;
-  return {
-    leftStick: getLeftStickFromGamepad(gp),
-    rightStick: getRightStickFromGamepad(gp),
-    buttons: getButtonObjectFromGamepad(gp),
-  };
+    // Add safety check in case gamepad is disconnected but index is requested
+    if (!gamepads[index]) return null;
+    return {
+            leftStick: getLeftStickFromGamepad(gamepads[index]),
+            rightStick: getRightStickFromGamepad(gamepads[index]),
+            buttons: getButtonObjectFromGamepad(gamepads[index])
+        } 
 }
 
-//=== Visual Overlay Updates ===
-function updateButtonOverlays(buttons) {
-  for (const [btn, value] of Object.entries(buttons)) {
-    const overlay = document.getElementById(`button-${btn}`);
-    const pos = buttonPositions[btn];
-    if (!overlay || !pos) continue;
-
-    overlay.style.left = `${pos.x}px`;
-    overlay.style.top = `${pos.y}px`;
-    overlay.style.backgroundColor = `rgba(255, 0, 0, ${0.3 + 0.7 * value})`;
-  }
+// New helper to control transmission from React
+function setTransmissionActive(isActive) {
+    isTransmissionActive = isActive;
 }
 
-function updateStickOverlays(left, right) {
-  const leftOverlay = document.getElementById('left-stick');
-  const rightOverlay = document.getElementById('right-stick');
-
-  if (leftOverlay) {
-    leftOverlay.style.left = `${stickPositions.leftStick.x + left.x * 20}px`;
-    leftOverlay.style.top = `${stickPositions.leftStick.y + left.y * 20}px`;
-  }
-
-  if (rightOverlay) {
-    rightOverlay.style.left = `${stickPositions.rightStick.x + right.x * 20}px`;
-    rightOverlay.style.top = `${stickPositions.rightStick.y + right.y * 20}px`;
-  }
+// New helper to send recorded data over the existing socket
+function sendCustomGamepadState(state) {
+    if (ws.readyState === WebSocket.OPEN) {
+        let json = JSON.stringify(state);
+        ws.send(json);
+    }
 }
 
-// === Polling Loop ===
 setInterval(() => {
-  const state = getGamepadState(0);
-  if (!state) return;
+    gamepads = navigator.getGamepads()
 
-  // // Update on-screen overlays
-  // updateButtonOverlays(state.buttons);
-  // updateStickOverlays(state.leftStick, state.rightStick);
+    // Only send live data if transmission is active
+    if (gamepads[0] != null && isTransmissionActive) {
+        const output = {
+            leftStick: getLeftStickFromGamepad(gamepads[0]),
+            rightStick: getRightStickFromGamepad(gamepads[0]),
+            buttons: getButtonObjectFromGamepad(gamepads[0])
+        } 
 
-  // Send to server
-  if (ws.readyState === WebSocket.OPEN) {
-    ws.send(JSON.stringify(state));
-  }
-}, 30);
+        let json = JSON.stringify(output);
+        ws.send(json);
+    }
+}, intervalTime)
 
-export { getGamepadState };
+export { getGamepadState, setTransmissionActive, sendCustomGamepadState }
