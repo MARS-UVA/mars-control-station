@@ -60,13 +60,13 @@ const styles = {
 };
 
 // This component renders a panel with a webcam feed (currently showing laptop webcam)
-function WebcamPanel({index, gamepadData}) {
+function WebcamPanel({index, gamepadData, cameraActive, setCameraActive}) {
     const id = parseInt(index);
     //const [imageSrc, setImageSrc] = useState(null);
     const imgRef = useRef(null);
     const lastUrl = useRef(null);
     const socketRef = useRef(null);
-    const [isPaused, setIsPaused] = useState(false);
+    
 
     const createSocket = useCallback(() => {
       const ws = new WebSocket("ws://localhost:3001");
@@ -133,15 +133,15 @@ function WebcamPanel({index, gamepadData}) {
 
     const toggleFeed = () => {
 
-      if(isPaused){
+      if(cameraActive){
         // Toggles the video feed on
         sendCommand('start_video');
-        setIsPaused(false);
+        setCameraActive(false);
         console.log("resuming video");
       } else {
         // Toggles the video feed off
         sendCommand('stop_video');
-        setIsPaused(true);
+        setCameraActive(true);
         console.log("pausing video");
       }
     }
@@ -158,12 +158,12 @@ function WebcamPanel({index, gamepadData}) {
 
         {/* Toggle button */}
         <button style={styles.toggleButton} onClick={toggleFeed}>
-          {isPaused ? <Play size={16} /> : <Pause size={16} />}
-          {isPaused ? "Resume" : "Pause"}
+          {!cameraActive ? <Play size={16} /> : <Pause size={16} />}
+          {!cameraActive ? "Resume" : "Pause"}
         </button>
 
         {/* Overlay pause image when paused */}
-         {isPaused && (
+         {!cameraActive && (
           <img className="pause-image" src={pauseImage} alt={"Paused"} style={styles.pauseImage} />
          )}
         {/* Overlay the parking guidelines */}
