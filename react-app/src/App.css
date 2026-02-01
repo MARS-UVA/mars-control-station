@@ -21,7 +21,7 @@ html, body {
   color: var(--primary-color);
   width: 100%;
   height: 100%;
-  
+  position: relative;
 }
 
 .left-panel {
@@ -372,24 +372,25 @@ html, body {
 TODO: Change right and bottom values to offset timer in the right and bottom screen
 */
 .timer-overlay {
-  position: fixed;
-  bottom: 100px;
-  right: 20px;
+  position: absolute;         /* was fixed */
+  right: 30%;                 /* aligns with camera edge */
+  top: 50%;                   /* vertical center */
+  transform: translateY(-50%);
+
   background-color: var(--bg-color);
-  box-shadow: 1px solid var(--box-shadow-color);
-  padding: 15px;
+  padding: 8px 10px;          /* thinner */
   border-radius: 8px;
-  box-shadow: var(--box-shadow-color);
-  z-index: 1000;
-  border: 2px solid var(--border-color);
+  border: 1px solid var(--border-color);
+
   display: flex;
   flex-direction: column;
   align-items: center;
-  min-width: 180px; /* Increased width for milliseconds */
-}
 
+  min-width: 140px;           /* thinner width */
+  z-index: 50;
+}
 .timer-display {
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   font-weight: bold;
   color: var(--primary-color);
   margin-bottom: 8px;
@@ -412,10 +413,12 @@ TODO: Change right and bottom values to offset timer in the right and bottom scr
   background-color: var(--bg-color);
   color: var(--primary-color);
   border: none;
-  padding: 8px 16px;
+  padding: 4px 10px;
+  font-size: 0.75rem;
   border-radius: 4px;
   cursor: pointer;
   border: 1px solid var(--border-color);
+  margin: 2px 0;
 }
 
 .theme-changer {
