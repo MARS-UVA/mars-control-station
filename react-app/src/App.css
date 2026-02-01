@@ -135,7 +135,7 @@ html, body {
   
 }
 /*changes text under "Controls" box*/
-.command-button {
+.command-button-record{
   background-color: var(--bg-color);
   color: var(--primary-color);
   border-radius: 8px;
@@ -149,38 +149,59 @@ html, body {
   border: 1px solid var(--border-color);
 
 }
-
-.command-button:hover {
-  background-color: var(--secondary-color);
+.command-button-record:hover {
+  background-color: var(--accent-color1-hover);
   color: var(--primary-color);
 }
-
-.command-button.active {
+.command-button-record.active {
   background-color: var(--accent-color1);
   color: var(--primary-color);
 }
-
-.estop-button {
-  width: 150px;
-  /*height : 150px; does nothing*/
-  left : 295px;
-  top : 315px;
-  padding: 12px;
-  background-color:var(--accent-color3);
+.command-button-run{
+  background-color: var(--bg-color);
   color: var(--primary-color);
-  position: fixed;
-  font-size: 25px;
-  font-style: bold;
-  font-family:'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
   border-radius: 8px;
-  border: 1px solid var(--border-color);
-  text-align: center;
+  position: fixed;
+  width: 120px;
+  height: 150px;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-size: 0.9rem;
   transition: background-color 0.3s;
   box-shadow: 0 4px 6px var(--box-shadow-color);
-  -webkit-transition: background-color 0.3s;
-  -moz-transition: background-color 0.3s;
-  -ms-transition: background-color 0.3s;
-  -o-transition: background-color 0.3s;
+  border: 1px solid var(--border-color);
+
+}
+.command-button-run:hover {
+  background-color: var(--accent-color2-hover);
+  color: var(--primary-color);
+}
+.command-button-run.active {
+  background-color: var(--accent-color2);
+  color: var(--primary-color);
+}
+
+.command-button-reset{
+  background-color: var(--bg-color);
+  color: var(--primary-color);
+  border-radius: 8px;
+  position: fixed;
+  width: 120px;
+  height: 150px;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  font-size: 0.9rem;
+  transition: background-color 0.3s;
+  box-shadow: 0 4px 6px var(--box-shadow-color);
+  border: 1px solid var(--border-color);
+
+}
+.command-button-reset:hover {
+  background-color: var(--accent-color3-hover);
+  color: var(--primary-color);
+}
+
+.command-button-reset.active {
+  background-color: var(--accent-color3);
+  color: var(--primary-color);
 }
 
 

@@ -1,9 +1,6 @@
 /**
  * DriveStatePanel Component
  * 
- * This component renders a control panel with buttons to switch between different drive states
- * and an emergency stop (ESTOP) button.
- * 
  * Just the UI is actually there and the buttons do nothing as no functions are written
  * for them, need to write functions and implement them.
  */
@@ -13,9 +10,15 @@ const BUTTON_POSITIONS = {
   'Run Inputs': { top: 315+70, left: 170 },
   'Reset Recording': { top: 315+70, left: 315 },
 };
-const CommandButton = React.memo(({ label, active, onClick, style }) => (
+const BUTTON_CLASSES = {
+  'Record Inputs': 'command-button-record',
+  'Run Inputs': 'command-button-run',
+  'Reset Recording': 'command-button-reset',
+};
+const CommandButton = React.memo(({ label, className, onClick, style }) => (
 
-  <button className={"command-button " + active} 
+
+  <button className={className}
   onClick={onClick}  
   style = {style}>
     
@@ -44,21 +47,19 @@ function DriveStatePanel() {
   // Render the component UI
   return (
     <div>
-      <h2 className="panel-title"></h2>
+      <h2 className="panel-title">Drive State Panel</h2>
       <div className="drive-panel-grid">
-        <div className="drive-buttons-column" position = "fixed">
           {['Record Inputs', 'Run Inputs', 'Reset Recording'].map((label, index) => (
             <CommandButton
-              key={index}
-              label={label}
-              style={BUTTON_POSITIONS[label]}
-              active={modes[label] ? 'active' : ''}
-              onClick={() => toggleMode(label, modes, setModes)}
+              key={label}
+            label={label}
+            className={`${BUTTON_CLASSES[label]} ${modes[label] ? 'active' : ''}`}
+            style={{ ...BUTTON_POSITIONS[label], position: 'fixed' }}
+            onClick={() => toggleMode(label)}
             />
           ))}
         </div>
       </div>
-    </div>
   );
 }
 
