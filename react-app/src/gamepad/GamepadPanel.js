@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { getGamepadState, setTransmissionActive, sendCustomGamepadState } from '../gamepad/gamepad';
 import GamepadDisplay from './GamepadDisplay';
 
-function GamepadPanel({ gamepadStatus, setGamepadStatus, gamepadData, setGamepadData }) {
+function GamepadPanel({ gamepadStatus, setGamepadStatus, gamepadData, setGamepadData, camera0Active, camera4Active }) {
   // Recording State
   const [isRecording, setIsRecording] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -76,7 +76,7 @@ function GamepadPanel({ gamepadStatus, setGamepadStatus, gamepadData, setGamepad
           setGamepadData(frame);
           
           // Send data to the rover (WebSocket)
-          sendCustomGamepadState(frame);
+          sendCustomGamepadState({...frame, camera0Active: camera0Active, camera4Active: camera4Active}  );
 
           playbackIndexRef.current += 1;
         }
@@ -87,7 +87,7 @@ function GamepadPanel({ gamepadStatus, setGamepadStatus, gamepadData, setGamepad
     }
 
     return () => clearInterval(playbackInterval);
-  }, [isPlaying]);
+  }, [isPlaying, camera0Active, camera4Active]);
 
   const handleStartRecording = () => {
     setRecordedMacros([]);
