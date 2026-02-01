@@ -66,8 +66,8 @@ const drumDisplayHeight = 95;
             {/* <p className="data-stream-name">{"Spin"}</p> */}
             {/* <p className="data-stream-value">{direction}</p> */}
           </div>
-          <SingleLiveDataStream dataStreamName="Capacity" currentVal={round(lastDataPoint["actuatorCapacity"])}  topCoord={535 + 70} leftCoord={drumDisplayX} displayWidth={drumDisplayWidth} displayHeight={drumDisplayHeight}  />
-          <SingleLiveDataStream dataStreamName="Current" currentVal="12" topCoord={535 + 70}  leftCoord={drumDisplayX + 100} displayWidth={drumDisplayWidth} displayHeight={drumDisplayHeight}  />
+          {/*<SingleLiveDataStream dataStreamName="Capacity" currentVal={round(lastDataPoint["actuatorCapacity"])}  topCoord={535 + 70} leftCoord={drumDisplayX} displayWidth={drumDisplayWidth} displayHeight={drumDisplayHeight}  />*/}
+          {/*<SingleLiveDataStream dataStreamName="Current" currentVal="12" topCoord={535 + 70}  leftCoord={drumDisplayX + 100} displayWidth={drumDisplayWidth} displayHeight={drumDisplayHeight}  />*/}
           <SingleLiveDataStream dataStreamName="Spin" currentVal={direction} topCoord={535 + 70}  leftCoord={drumDisplayX + 200} displayWidth={drumDisplayWidth} displayHeight={drumDisplayHeight}  />
         </div>
         {/* Buttons for Bucket Drum */}

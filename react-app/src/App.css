@@ -424,11 +424,58 @@ TODO: Change right and bottom values to offset timer in the right and bottom scr
 .theme-changer {
   position: fixed;
   bottom: 8px;
-  left: 8px;
+  left: 35px;
   background-color: var(--panel-bg-color);
   color: var(--primary-color);
-  padding: 8px 12px;
+  padding: 0px 0px;
   border-radius: 6px;
   width: auto;
   height: auto;
 }
+.hb {
+  font-family: system-ui, sans-serif;
+}
+
+
+.hb__top {
+  display: fixed;
+  justify-content: space-between;
+  font-size: 12px;
+  margin-bottom: 6px;
+  opacity: 0.9;
+}
+
+
+.hb__track {
+  position: relative;
+  background: #134341;         /* dark gray */
+  border: 2px solid #000;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+
+.hb__fill {
+  height: 100%;
+  width: 0%;
+
+
+
+
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+
+
+  transition: width 220ms ease-out;
+  will-change: width;
+
+
+}
+
+
+.meter_fill{
+
+
+  height: 2;
+}
+
