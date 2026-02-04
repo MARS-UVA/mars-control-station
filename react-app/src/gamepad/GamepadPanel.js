@@ -88,7 +88,7 @@ function GamepadPanel({ gamepadStatus, setGamepadStatus, gamepadData, setGamepad
     }
 
     return () => clearInterval(playbackInterval);
-  }, [isPlaying, camera0Active, camera4Active]);
+  }, [isPlaying]);
 
   // Handlers
   const handleStartRecording = () => {
@@ -132,7 +132,7 @@ function GamepadPanel({ gamepadStatus, setGamepadStatus, gamepadData, setGamepad
             />
             <CommandButton
               label={`Run Inputs (${recordedMacros.length})`}
-              className={BUTTON_CLASSES['Play'].active}
+              className={BUTTON_CLASSES['Play']}
               style={{ ...BUTTON_POSITIONS['Play'], position: 'fixed' }}
               onClick={handleStartPlayback}
               disabled={recordedMacros.length === 0}
@@ -152,7 +152,7 @@ function GamepadPanel({ gamepadStatus, setGamepadStatus, gamepadData, setGamepad
           <CommandButton
             label="Stop Recording"
             className={BUTTON_CLASSES['Record']}
-            style={{ ...BUTTON_POSITIONS['Record'], position: 'fixed'}}
+            style={{ ...BUTTON_POSITIONS['Record'], position: 'fixed', backgroundColor: '#ffcccc' }}
             onClick={handleStopRecording}
           />
         )}
