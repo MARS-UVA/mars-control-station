@@ -88,7 +88,7 @@ function GamepadPanel({ gamepadStatus, setGamepadStatus, gamepadData, setGamepad
     }
 
     return () => clearInterval(playbackInterval);
-  }, [isPlaying]);
+  }, [isPlaying, camera0Active, camera4Active]);
 
   // Handlers
   const handleStartRecording = () => {
