@@ -47,7 +47,7 @@ function DriveStatePanel() {
   // Render the component UI
   return (
     <div>
-      <h2 className="panel-title">Drive State Panel</h2>
+      <h2 className="panel-title">Goon Panel</h2>
       <div className="drive-panel-grid">
           {['Record Inputs', 'Run Inputs', 'Reset Recording'].map((label, index) => (
             <CommandButton

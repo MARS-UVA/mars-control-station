@@ -63,7 +63,7 @@ const App = () => {
         <div className="left-panel">
           <GamepadPanel gamepadStatus={gamepadStatus} setGamepadStatus={setGamepadStatus} gamepadData={gamepadData} setGamepadData={setGamepadData}/>
 
-          <DriveStatePanel />
+
           <DisplayMeter current={80} total={100} left = {155} top = {580} height = {40} width = {180} label="Current" /> {/*ADD THE METHODS OF GETTING THESE VALUES!!*/}
           <DisplayMeter current={80} total={100} left = {155} top = {655} height = {40} width = {180} label="Capacity" />
           <ActuatorDataDisplay lastDa0taPoint={lastDataPoint}/>
