@@ -11,6 +11,7 @@
   --accent-color2-hover: #f9ecaa;
   --accent-color3: #6f9f9c;
   --accent-color3-hover: #83b4b1;
+  --neutral-color-hover: #e4e4e7;
   --font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
 
@@ -27,7 +28,7 @@
   --accent-color3: #6f9f9c;
   --accent-color3-hover: #589690;
 }
-[data-theme="colorblind"] {
+[data-theme="colorblind-light"] {
   --accent-color1: rgb(130, 116, 209); /* Ourple */
   --accent-color1-hover: #604dc8;
   --accent-color2: #6b97f6; /* Bloo */
@@ -36,6 +37,21 @@
   --accent-color3-hover: #b30b5f;
   --accent-color4: #FE5F01; /* Orang */
   --accent-color5: #ffaf10; /* Yerlow */
-
-  
 }
+[data-theme="colorblind-dark"] {
+  --accent-color1: rgb(130, 116, 209); /* Ourple */
+  --accent-color1-hover: #604dc8;
+  --accent-color2: #6b97f6; /* Bloo */
+  --accent-color2-hover: #3571f4;
+  --accent-color3: #d54b90; /* Magenta */
+  --accent-color3-hover: #b30b5f;
+  --accent-color4: #FE5F01; /* Orang */
+  --accent-color5: #ffaf10; /* Yerlow */
+  --bg-color: #1a202c;
+  --panel-bg-color: #2d3748;
+  --border-color: #71738e;
+  --primary-color: #edf2f7;
+  --secondary-color: #a0aec0;
+}
+
+

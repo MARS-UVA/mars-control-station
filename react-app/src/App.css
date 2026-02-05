@@ -150,7 +150,7 @@ html, body {
 
 }
 .command-button-record:hover {
-  background-color: var(--accent-color1-hover);
+  background-color: var(--neutral-color-hover);
   color: var(--primary-color);
 }
 .command-button-record.active {
@@ -172,7 +172,7 @@ html, body {
 
 }
 .command-button-run:hover {
-  background-color: var(--accent-color2-hover);
+  background-color: var(--neutral-color-hover);
   color: var(--primary-color);
 }
 .command-button-run.active {
@@ -195,7 +195,7 @@ html, body {
 
 }
 .command-button-reset:hover {
-  background-color: var(--accent-color3-hover);
+  background-color: var(--neutral-color-hover);
   color: var(--primary-color);
 }
 
@@ -493,7 +493,7 @@ TODO: Change right and bottom values to offset timer in the right and bottom scr
 
 .meter_fill{
 
-
   height: 2;
+  
 }
 

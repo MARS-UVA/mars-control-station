@@ -22,7 +22,8 @@ function ThemeToggle() {
         >
           <option value="default">Default</option>
           <option value="dark">Dark Mode</option>
-          <option value="colorblind">Colorblind Mode</option>
+          <option value="colorblind-light">Colorblind Light Mode</option>
+          <option value ="colorblind-dark">Colorblind Dark Mode</option>
         </select>
       </label>
     </div>
