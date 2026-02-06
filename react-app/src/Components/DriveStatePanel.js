@@ -16,16 +16,12 @@ const BUTTON_CLASSES = {
   'Reset Recording': 'command-button-reset',
 };
 const CommandButton = React.memo(({ label, className, onClick, style }) => (
-
-
   <button className={className}
-  onClick={onClick}  
+  onClick={onClick}
   style = {style}>
-    
     <h4>
     {label}
     </h4>
-   
   </button>
 ));
 

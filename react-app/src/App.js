@@ -19,6 +19,7 @@ import Timer from "./Components/Timer";
 import ThemeChanger from "./Components/ThemeChanger";
 import TiltingRods from "./Components/TiltingRods";
 import DisplayMeter from "./Components/DisplayMeter";
+import RightButtonPanel from "./Components/RightButtonPanel";
 
 const App = () => {
 
@@ -34,6 +35,7 @@ const App = () => {
   const [chartData, setChartData] = useState(Array.from({ length: 1 }, (_, i) => ({
     
     time: i,
+    // goon mode? ACTIVATED
     leftFrontWheel: Math.random() * 100,
     rightFrontWheel: Math.random() * 100,
     leftBackWheel: Math.random() * 100,
@@ -62,11 +64,9 @@ const App = () => {
       <div className="content">
         <div className="left-panel">
           <GamepadPanel gamepadStatus={gamepadStatus} setGamepadStatus={setGamepadStatus} gamepadData={gamepadData} setGamepadData={setGamepadData} camera0Active={camera0Active} camera4Active={camera4Active}/>
-
-
           <DisplayMeter current={80} total={100} left = {155} top = {580} height = {40} width = {180} label="Current" /> {/*ADD THE METHODS OF GETTING THESE VALUES!!*/}
           <DisplayMeter current={80} total={100} left = {155} top = {655} height = {40} width = {180} label="Capacity" />
-          <ActuatorDataDisplay lastDa0taPoint={lastDataPoint}/>
+          <ActuatorDataDisplay lastDataPoint={lastDataPoint}/>
         </div>
 
         <div className="middle-panel">
@@ -76,12 +76,12 @@ const App = () => {
 
         <div className="right-panel">
           <LiveDataPanel lastDataPoint={lastDataPoint} timestamp={timestamp} chartData={chartData}/>
+          <RightButtonPanel></RightButtonPanel>
           <TiltingRods/>
         </div>
         <Draggable>
           <Timer/>
         </Draggable>
-        
         <ThemeChanger/>
       </div>
     </div>
