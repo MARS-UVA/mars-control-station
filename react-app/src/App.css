@@ -223,6 +223,8 @@ html, body {
 .gamepad-status {
   text-align: center;
   color: var(--primary-color);
+  margin: 0 0 6px 0; /* remove large top/bottom margins */
+  font-size: 1.2rem; /* slightly larger font size, as per CDR recommendation */
 }
 .gamepad-data {
   background-color: var(--bg-color);
@@ -239,34 +241,6 @@ html, body {
   padding: 12px; /* slightly smaller panel padding */
 }
 
-.gamepad-status {
-  margin: 0 0 6px 0; /* remove large top/bottom margins */
-  font-size: 0.95rem;
-}
-
-/* changes "Controls" panel*/
-.drive-panel-grid {
-  display: fixed;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 20px; /* Optional spacing between columns */
-  
-}
-
-.drive-buttons-column {
-  display: fixed;
-  flex-direction: column;
-  width: 50%; /* Adjust as needed */
-  
-}
-
-.estop-buttons-column {
-  display: fixed;
-  flex-direction: column;
-  width: 50%; /* Adjust as needed */
-  
-}
 
 .actuator-data-display {
   display: fixed;
@@ -400,6 +374,8 @@ html, body {
   display: flex;
   flex-direction: row;
   max-height: calc(100vh - 32px);
+  justify-content: space-between;
+  align-items: flex-start;
 }
 
 .command-button-sstop{
