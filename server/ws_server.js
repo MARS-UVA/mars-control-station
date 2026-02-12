@@ -3,6 +3,7 @@ const dgram = require('dgram');
 const WebSocket = require('ws');
 
 const ServerSocket = require('./udp_server');
+const SignalingServer = require('./signaling_server')
 
 const WS_PORT = 3001;
 
