@@ -30,14 +30,13 @@ const doFunction = label => {
     <div>
       <h2 className="panel-title">Control Panel</h2>
       <div className="drive-panel-grid">
-          {['STOP', 'Dig Auto', 'Dump Auto'].map((label) => (
-            <CommandButton
-            key={label}
-            label={label}
-            className={`${BUTTON_CLASSES[label]}`}
-            onClick={() => doFunction(label)}
-            />
-          ))}
+        <div className='drive-panel-stop-col'>
+          <CommandButton key = 'STOP' label = 'STOP' className = 'command-button-sstop' onClick = {() => doFunction('STOP')}></CommandButton>
+        </div>
+        <div className='drive-panel-other-col'>
+          <CommandButton key = 'Dig Auto' label = 'Dig Auto' className = 'command-button-digauto' onClick = {() => doFunction('Dig Auto')}></CommandButton>
+          <CommandButton key = 'Dump Auto' label = 'Dump Auto' className = 'command-button-dumpauto' onClick = {() => doFunction('Dump Auto')}></CommandButton>
+        </div>
         </div>
       </div>
   );

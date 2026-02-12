@@ -44,7 +44,7 @@ html, body {
 
 .right-panel {
   width: 27%;
-  height: 1%;
+  height: 100%;
   padding: 10px;
   /* background-color: #d0d0d0; Optional for visual distinction */
 }
@@ -135,78 +135,6 @@ html, body {
   
 }
 /*changes text under "Controls" box*/
-.command-button-record{
-  background-color: var(--bg-color);
-  color: var(--primary-color);
-  border-radius: 8px;
-  position: fixed;
-  width: 120px;
-  height: 150px;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  font-size: 0.9rem;
-  transition: background-color 0.3s;
-  box-shadow: 0 4px 6px var(--box-shadow-color);
-  border: 1px solid var(--border-color);
-
-}
-.command-button-record:hover {
-  transform: scale(1.05);
-  background-color: var(--neutral-color-hover);
-  color: var(--primary-color);
-}
-.command-button-record.active {
-  background-color: var(--accent-color1);
-  color: var(--primary-color);
-}
-.command-button-run{
-  background-color: var(--bg-color);
-  color: var(--primary-color);
-  border-radius: 8px;
-  position: fixed;
-  width: 120px;
-  height: 150px;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  font-size: 0.9rem;
-  transition: background-color 0.3s;
-  box-shadow: 0 4px 6px var(--box-shadow-color);
-  border: 1px solid var(--border-color);
-
-}
-.command-button-run:hover {
-  transform: scale(1.05);
-  background-color: var(--neutral-color-hover);
-  color: var(--primary-color);
-}
-.command-button-run.active {
-  background-color: var(--accent-color2);
-  color: var(--primary-color);
-}
-
-.command-button-reset{
-  background-color: var(--bg-color);
-  color: var(--primary-color);
-  border-radius: 8px;
-  position: fixed;
-  width: 120px;
-  height: 150px;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  font-size: 0.9rem;
-  transition: background-color 0.3s;
-  box-shadow: 0 4px 6px var(--box-shadow-color);
-  border: 1px solid var(--border-color);
-
-}
-.command-button-reset:hover {
-  transform: scale(1.05);
-  background-color: var(--neutral-color-hover);
-  color: var(--primary-color);
-}
-
-.command-button-reset.active {
-  background-color: var(--accent-color3);
-  color: var(--primary-color);
-}
-
 
 .chart-grid {
   display: grid;
@@ -370,61 +298,67 @@ html, body {
   background-color: var(--bg-color);
 }
 .drive-panel-grid {
-  gap: 24px; /* increased gap for better spacing */
-  display: flex;
-  flex-direction: row;
-  max-height: calc(100vh - 32px);
+  gap: 16px; /* increased gap for better spacing */
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: max(fit-content, 200px);
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: stretch;
 }
 
-.command-button-sstop{
-  width: 150px;
-  height: 120px;
-  padding: 12px;
-  background-color: var(--accent-color1);
-  color: var(--primary-color);
+.drive-panel-stop-col {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.drive-panel-other-col {
+  display: flex;
+  flex-direction: column;
+  gap:16px;
+  align-items: center;
+  justify-content: center;
+}
+
+/* common square button behavior */
+.command-button {
+  width: 100%;
+  display: flex;
+  margin: 0;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  box-sizing: border-box;
+}
+/* keep visual styles for variants, but remove fixed width/height */
+.command-button-sstop,
+.command-button-digauto,
+.command-button-dumpauto {
+  width: 100%;
+  height: 100%;
+  position: relative;
   border-radius: 8px;
-  font-size: 1.3rem;
-  text-align: center;
+  font-size: 1.1rem;
   box-shadow: 0 4px 6px var(--box-shadow-color);
   border: 1px solid var(--border-color);
 }
+
+/* variant colors (preserve your existing color vars) */
+.command-button-sstop { background-color: var(--accent-color1);}
+.command-button-digauto { background-color: var(--accent-color2); }
+.command-button-dumpauto { background-color: var(--accent-color3); }
+
 .command-button-sstop:hover{
   transform: scale(1.05);
   background-color: var(--accent-color1-hover);
   color: var(--primary-color);
-}
-.command-button-digauto{
-  width: 150px;
-  height: 120px;
-  padding: 12px;
-  background-color: var(--accent-color2);
-  color: var(--primary-color);
-  border-radius: 8px;
-  font-size: 1.2rem;
-  text-align: center;
-  box-shadow: 0 4px 6px var(--box-shadow-color);
-  border: 1px solid var(--border-color);
-
 }
 .command-button-digauto:hover{
   transform: scale(1.05);
   background-color: var(--accent-color2-hover);
   color: var(--primary-color);
 }
-.command-button-dumpauto{
-  width: 150px;
-  height: 120px;
-  padding: 12px;
-  font-size: 1.2rem;
-  background-color: var(--accent-color3);
-  color: var(--primary-color);
-  border-radius: 8px;
-  text-align: center;
-  box-shadow: 0 4px 6px var(--box-shadow-color);
-  border: 1px solid var(--border-color);
-}
+
 .command-button-dumpauto:hover{
   transform: scale(1.05);
   background-color: var(--accent-color3-hover);

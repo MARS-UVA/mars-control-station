@@ -92,3 +92,68 @@
 .stick-overlay  { width: 20px; height: 20px; }
 
 #button-x { top: 0px; left: 0px; }
+
+
+.controller-record-buttons {
+  gap: 24px; /* increased gap for better spacing */
+  display: flex;
+  flex-direction: row;
+  max-height: calc(100vh - 32px);
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-top: 16px;
+}
+
+.command-button {
+  width: 100%;
+  display: flex;
+  margin: 0;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  box-sizing: border-box;
+}
+
+.command-button-record,
+.command-button-run,
+.command-button-reset {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  box-shadow: 0 4px 6px var(--box-shadow-color);
+  border: 1px solid var(--border-color);
+}
+
+
+.command-button-record:hover {
+  transform: scale(1.05);
+  background-color: var(--neutral-color-hover);
+  color: var(--primary-color);
+}
+.command-button-record.active {
+  background-color: var(--accent-color1);
+  color: var(--primary-color);
+}
+.command-button-run:hover {
+  transform: scale(1.05);
+  background-color: var(--neutral-color-hover);
+  color: var(--primary-color);
+}
+.command-button-run.active {
+  background-color: var(--accent-color2);
+  color: var(--primary-color);
+}
+
+.command-button-reset:hover {
+  transform: scale(1.05);
+  background-color: var(--neutral-color-hover);
+  color: var(--primary-color);
+}
+
+.command-button-reset.active {
+  background-color: var(--accent-color3);
+  color: var(--primary-color);
+}
+

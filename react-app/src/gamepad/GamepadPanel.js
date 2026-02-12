@@ -127,20 +127,17 @@ function GamepadPanel({ gamepadStatus, setGamepadStatus, gamepadData, setGamepad
             <CommandButton
               label="Record Inputs"
               className={BUTTON_CLASSES['Record']}
-              style={{ ...BUTTON_POSITIONS['Record'], position: 'fixed' }}
               onClick={handleStartRecording}
             />
             <CommandButton
               label={`Run Inputs (${recordedMacros.length})`}
               className={BUTTON_CLASSES['Play']}
-              style={{ ...BUTTON_POSITIONS['Play'], position: 'fixed' }}
               onClick={handleStartPlayback}
               disabled={recordedMacros.length === 0}
             />
             <CommandButton
               label="Reset Recording"
               className={BUTTON_CLASSES['Reset']}
-              style={{ ...BUTTON_POSITIONS['Reset'], position: 'fixed' }}
               onClick={resetRecording}
               disabled={recordedMacros.length === 0}
             />
@@ -152,7 +149,7 @@ function GamepadPanel({ gamepadStatus, setGamepadStatus, gamepadData, setGamepad
           <CommandButton
             label="Stop Recording"
             className={BUTTON_CLASSES['Record']}
-            style={{ ...BUTTON_POSITIONS['Record'], position: 'fixed', backgroundColor: '#ffcccc' }}
+            style={{backgroundColor: '#ffcccc' }}
             onClick={handleStopRecording}
           />
         )}
@@ -162,7 +159,7 @@ function GamepadPanel({ gamepadStatus, setGamepadStatus, gamepadData, setGamepad
           <CommandButton
             label="Stop Playback"
             className={BUTTON_CLASSES['Play']}
-            style={{ ...BUTTON_POSITIONS['Play'], position: 'fixed', backgroundColor: '#ccffcc' }}
+            style={{backgroundColor: '#ccffcc' }}
             onClick={handleStopPlayback}
           />
         )}
