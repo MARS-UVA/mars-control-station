@@ -23,107 +23,111 @@ const styles = {
   }
 };
 
-// This component renders a panel with a webcam feed (currently showing laptop webcam)
-function WebcamPanel({index, gamepadData}) {
+/**
+ * WebRTC Player Component
+ * @param {string} signalingPort - The WS Port for the Signaling Server
+ * @param {object} gamepadData - For the guidelines overlay
+ */
+function WebcamPanel({signalingPort, index}) {
   const videoRef = useRef(null);
   const wsRef = useRef(null);
   const pcRef = useRef(null);
   const camID = parseInt(index);
+  const signalingUrl = `ws://localhost:${signalingPort}`
 
   useEffect(() => {
-    // Create PeerConnection
-    const pc = new RTCPeerConnection({
-      iceServers: [
-        { url: ["stun:stun.l.google.com:19302"] }
-      ]
-    });
+    // Initialize PeerConnection
+    const config = {
+      iceServers: [{urls: 'stun:stun.l.google.com:19302'}]
+    };
+    const pc = new RTCPeerConnection(config);
     pcRef.current = pc;
-    // Attach track to video element
-    pc.ontrack = (event) => {
-      console.log("received track");
-      if (videoRef.current) {
-        videoRef.current.srcObject = event.streams[0];
-      }
-    };
-    // Send ICE candidates to server
-    pc.onicecandidate = (event) => {
-      if(event.candidate) {
-        wsRef.current.send(JSON.stringify({
-          type: "candidate",
-          candidate: event.candidate,
-          camID: camID
-        }));
-      }
-    };
 
-    // Connect to our websocket server
-    const ws = new WebSocket("ws://localhost:3001");
+    // Initialize WebSocket
+    const ws = new WebSocket(signalingUrl);
     wsRef.current = ws;
 
-    ws.onopen = () => {
-      ws.send(JSON.stringify({
-        role: "display",
-        camID: camID
-      }));
+    // WebRTC Event Handlers
+    pc.ontrack = (event) => {
+      console.log(`[${signalingUrl}] Track received`);
+      if(videoRef.current) {
+        videoRef.current.srcObject = event.streams[0]
+      }
     };
 
-    // Handle messages
-    ws.onmessage = async (msg) => {
-      let data;
+    pc.onicecandidate = (event) => {
+      if(event.candidate && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ ice: event.candidate }));
+      }
+    }
+
+    // Websocket Event Handlers
+    ws.onopen = () => {
+      console.log(`[${signalingUrl}] Connected to Signaling Server`);
+      // Announce presence to the server
+      ws.send(JSON.stringify({ cmd: 'HELLO_FROM_VIEWER' }));
+    };
+
+    ws.onmessage = async (event) => {
+      let msg;
       try {
-        data = JSON.parse(msg.data);
+        msg = JSON.parse(event.data);
       } catch (e) {
-        console.log("Invalid JSON from server", msg.data);
+        console.error('Invalid JSON: ', event.data);
         return;
       }
-
-      // Handle SDP offer
-      if (data.type === "offer") {
-        console.log("received sdp offer");
-        await pc.setRemoteDescription(
-          new RTCSessionDescription(data.offer)
-        );
-
-        // Create webrtc answer
-        const answer = await pc.createAnswer();
-        await pc.setLocalDescription(answer);
-
-        // Send answer back
-        ws.send(JSON.stringify({
-          type: "answer",
-          answer: answer,
-          camID: camID
-        }));
+      
+      // Streamer Announcement
+      if(msg.cmd == 'HELLO_FROM_STREAMER') {
+        console.log(`[${signalingUrl}] Streamer joined. Resending Hello`)
+        ws.send(JSON.stringify({ cmd: 'HELLO_FROM_VIEWER' }));
       }
-
-      // Handle remote ICE candidates
-      if (data.type === "candidate") {
+      // Handle SDP Offers
+      else if(msg.sdp) {
+        if(msg.sdp.type === 'offer') {
+          console.log(`[${signalingUrl}] Received Offer`);
+          try {
+            await pc.setRemoteDescription(new RTCSessionDescription(msg.sdp));
+            const answer = await pc.createAnswer();
+            await pc.setLocalDescription(answer);
+            // Send answer back to robot
+            ws.send(JSON.stringify({ sdp: { type: 'answer', sdp: answer.sdp } }));
+          } catch (e) {
+            console.error('SDP Error', e);
+          }
+        }
+      }
+      // Handle ICE
+      else if(msg.ice) {
         try {
-          await pc.addIceCandidate(data.candidate);
+          await pc.addIceCandidate(new RTCIceCandidate(msg.ice));
         } catch (e) {
-          console.error("Error adding ICE candidate", e);
+          console.error('ICE Error:', e);
         }
       }
     };
-  }, [camID]);
+
+    // Cleanup
+    return () => {
+      if(ws.readyState === WebSocket.OPEN) ws.close();
+      if(pc.signalingState !== 'closed') pc.close();
+    };
+  }, [signalingPort, index]);
 
   return (
     <div style={styles.container}>
-      {/* Camera feed container */}
       <div style={styles.cameraContainer}>
-        <img 
+        <video 
           ref={videoRef}
           style={styles.cameraFeed}
           autoPlay
           playsInline
+          controls={false} // Hide controls
           muted
         />
-        
-        {/* Overlay the parking guidelines */}
-        {gamepadData ? <Guidelines leftStick={gamepadData.leftStick} /> : <></>}
       </div>
     </div>
-  )
+  );
 }
 
 export default WebcamPanel;

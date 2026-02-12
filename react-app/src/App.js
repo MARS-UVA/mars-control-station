@@ -62,8 +62,8 @@ const App = () => {
         </div>
 
         <div className="middle-panel">
-          <WebcamPanel index="0" gamepadData={gamepadData}/>
-          <WebcamPanel index="4" gamepadData={null}/>
+          <WebcamPanel signalingPort="6767" index="0" />
+          <WebcamPanel signalingPort="6969" index="4" />
         </div>
 
         <div className="right-panel">

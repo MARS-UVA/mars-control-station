@@ -6,6 +6,9 @@ const ServerSocket = require('./udp_server');
 
 const WS_PORT = 3001;
 
+const FEEDBACK_PORT = 2001;
+const SIGNALING_PORT = 6767;
+
 
 const webSocketServer = new WebSocket.Server({port: WS_PORT});
 
@@ -14,11 +17,6 @@ let websockets = {
     udpClient: null,
     motorCurrent: null,
     gyroRate: null
-};
-// 2 of each as we want 2 streams
-let webrtc = {
-    rosSocket: [null, null],
-    displaySocket: [null, null]
 };
 
 webSocketServer.on('connection', (ws) => {
@@ -44,16 +42,6 @@ webSocketServer.on('connection', (ws) => {
                     console.log("connected gyro ws");
                     break;
                 default:
-                    const j = JSON.parse(message);
-                    if (j.role == 'ros') {
-                        webrtc.rosSocket[j.camID] = ws;
-                        ws.camID = j.camID;
-                        console.log("Webcam Feed Connected");
-                    } else if (j.role == 'display') {
-                        webrtc.displaySocket[j.camID] = ws;
-                        ws.camID = j.camID;
-                        console.log("Display Component Connected");
-                    }
                     break;
             }
             firstMessage = false;
@@ -69,5 +57,5 @@ webSocketServer.on('connection', (ws) => {
     });
 });
 
-
-const feedbackSocket = new ServerSocket(2001, (ServerSocket.feedbackOnMessage));
+const feedbackSocket = new ServerSocket(FEEDBACK_PORT, (ServerSocket.feedbackOnMessage));
+const signalingServer = new SignalingServer(SIGNALING_PORT);
