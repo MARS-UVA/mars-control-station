@@ -339,6 +339,7 @@ html, body {
   font-size: 2.5rem;
   box-shadow: 0 4px 6px var(--box-shadow-color);
   border: 1px solid var(--border-color);
+  color: var(--primary-color)
 }
 .command-button-digauto,
 .command-button-dumpauto {
@@ -349,6 +350,7 @@ html, body {
   font-size: 1.5rem;
   box-shadow: 0 4px 6px var(--box-shadow-color);
   border: 1px solid var(--border-color);
+  color: var(--primary-color)
 }
 
 /* variant colors (preserve your existing color vars) */
