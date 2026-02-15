@@ -12,7 +12,7 @@ class SignalingServer {
 
         // Initialize websocket server
         this.server = new WebSocket.Server({ port: this.PORT});
-        console.log('Signaling Server running on ws://${this.port}')
+        console.log(`Signaling Server running on ws://${this.PORT}`)
 
         // On client connection
         this.server.on('connection', (ws, req) => {
@@ -22,7 +22,7 @@ class SignalingServer {
 
     handleConnection(ws, req) {
     const remoteAddress = req.socket.remoteAddress;
-    console.log('Signaling Client connected: ${remoteAddress}');
+    console.log(`Signaling Client connected: ${remoteAddress}`);
 
     // Received message from client
     ws.on('message', (message) => {
@@ -31,7 +31,7 @@ class SignalingServer {
 
     // Connection Closed
     ws.on('close', () => {
-        console.log('Signaling Client disconnected: ${remoteAddress}');
+        console.log(`Signaling Client disconnected: ${remoteAddress}`);
     })
 
     // Error

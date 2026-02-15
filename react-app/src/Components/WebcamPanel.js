@@ -1,129 +1,155 @@
 import React, { useEffect, useRef } from "react";
-import Guidelines from "./Guidelines";
+import Guidelines from "./Guidelines"; // Assuming this exists
 
 const styles = {
   container: {
-    margin: '10px 0', // Adds margin on top and bottom
-    position: 'relative',
+    margin: '10px 0',
     width: '100%',
-    height: '50%'
+    height: '50%',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center'
   },
   cameraContainer: {
     position: 'relative',
     width: '100%',
     height: '100%',
     overflow: 'hidden',
-    backgroundColor: 'black',
-    borderRadius: '8px'
+    backgroundColor: '#000',
+    borderRadius: '8px',
+    boxShadow: '0 4px 6px rgba(0,0,0,0.3)'
   },
   cameraFeed: {
     width: '100%',
     height: '100%',
-    objectFit: 'cover'
+    objectFit: 'cover',
+    display: 'block'
+  },
+  overlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    pointerEvents: 'none',
+    zIndex: 10
   }
 };
 
-/**
- * WebRTC Player Component
- * @param {string} signalingPort - The WS Port for the Signaling Server
- * @param {object} gamepadData - For the guidelines overlay
- */
-function WebcamPanel({signalingPort, index}) {
+function WebcamPanel({ signalingPort, gamepadData, index }) {
   const videoRef = useRef(null);
   const wsRef = useRef(null);
   const pcRef = useRef(null);
-  const camID = parseInt(index);
-  const signalingUrl = `ws://localhost:${signalingPort}`
+  
+  // Change this to ip of signaling server if not on same computer
+  const signalingUrl = `ws://localhost:${signalingPort}`;
 
   useEffect(() => {
-    // Initialize PeerConnection
-    const config = {
-      iceServers: [{urls: 'stun:stun.l.google.com:19302'}]
-    };
-    const pc = new RTCPeerConnection(config);
+    const pc = new RTCPeerConnection({
+      iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+    });
+    
+    pc.addTransceiver('video', { direction: 'recvonly' });
+    
     pcRef.current = pc;
+    
+    let candidateQueue = [];
+    let isRemoteSet = false;
 
-    // Initialize WebSocket
     const ws = new WebSocket(signalingUrl);
     wsRef.current = ws;
 
     // WebRTC Event Handlers
     pc.ontrack = (event) => {
       console.log(`[${signalingUrl}] Track received`);
-      if(videoRef.current) {
-        videoRef.current.srcObject = event.streams[0]
+      if (videoRef.current) {
+        videoRef.current.srcObject = event.streams[0];
+        videoRef.current.play().catch(e => console.error("Autoplay failed:", e));
       }
     };
 
     pc.onicecandidate = (event) => {
-      if(event.candidate && ws.readyState === WebSocket.OPEN) {
+      if (event.candidate && ws.readyState === WebSocket.OPEN) {
         ws.send(JSON.stringify({ ice: event.candidate }));
       }
-    }
+    };
 
-    // Websocket Event Handlers
+    // WebSocket Event Handlers
     ws.onopen = () => {
-      console.log(`[${signalingUrl}] Connected to Signaling Server`);
-      // Announce presence to the server
+      console.log(`[Cam ${index}] Connected to ${signalingUrl}`);
       ws.send(JSON.stringify({ cmd: 'HELLO_FROM_VIEWER' }));
     };
 
     ws.onmessage = async (event) => {
+      let data = event.data;
+
+      if (data instanceof Blob) {
+        data = await data.text();
+      }
+
       let msg;
       try {
-        msg = JSON.parse(event.data);
+        msg = JSON.parse(data);
       } catch (e) {
-        console.error('Invalid JSON: ', event.data);
+        console.error("JSON Parse Error:", e);
         return;
       }
-      
-      // Streamer Announcement
-      if(msg.cmd == 'HELLO_FROM_STREAMER') {
-        console.log(`[${signalingUrl}] Streamer joined. Resending Hello`)
+
+      if (msg.cmd === 'HELLO_FROM_STREAMER') {
         ws.send(JSON.stringify({ cmd: 'HELLO_FROM_VIEWER' }));
-      }
-      // Handle SDP Offers
-      else if(msg.sdp) {
-        if(msg.sdp.type === 'offer') {
-          console.log(`[${signalingUrl}] Received Offer`);
-          try {
-            await pc.setRemoteDescription(new RTCSessionDescription(msg.sdp));
-            const answer = await pc.createAnswer();
-            await pc.setLocalDescription(answer);
-            // Send answer back to robot
-            ws.send(JSON.stringify({ sdp: { type: 'answer', sdp: answer.sdp } }));
-          } catch (e) {
-            console.error('SDP Error', e);
-          }
-        }
-      }
-      // Handle ICE
-      else if(msg.ice) {
+      } 
+      else if (msg.sdp && msg.sdp.type === 'offer') {
+        console.log("Received Offer - Setting Remote Description");
         try {
-          await pc.addIceCandidate(new RTCIceCandidate(msg.ice));
+          await pc.setRemoteDescription(new RTCSessionDescription(msg.sdp));
+          isRemoteSet = true;
+          
+          // Add candidates that arrived while waiting
+          console.log(`Processing ${candidateQueue.length} queued candidates`);
+          while (candidateQueue.length > 0) {
+             const c = candidateQueue.shift();
+             await pc.addIceCandidate(new RTCIceCandidate(c));
+          }
+
+          const answer = await pc.createAnswer();
+          await pc.setLocalDescription(answer);
+          ws.send(JSON.stringify({ sdp: { type: 'answer', sdp: answer.sdp } }));
         } catch (e) {
-          console.error('ICE Error:', e);
+          console.error(`[Cam ${index}] SDP Error:`, e);
+        }
+      } 
+      else if (msg.ice) {
+        try {
+          if (isRemoteSet) {
+             console.log("Adding ICE Candidate directly");
+             await pc.addIceCandidate(new RTCIceCandidate(msg.ice));
+          } else {
+             console.log("Queueing ICE Candidate (Remote not set yet)");
+             candidateQueue.push(msg.ice);
+          }
+        } catch (e) {
+          console.error(`[Cam ${index}] ICE Error:`, e);
         }
       }
     };
 
     // Cleanup
     return () => {
-      if(ws.readyState === WebSocket.OPEN) ws.close();
-      if(pc.signalingState !== 'closed') pc.close();
+      if (ws.readyState === WebSocket.OPEN) ws.close();
+      if (pc.signalingState !== 'closed') pc.close();
     };
   }, [signalingPort, index]);
 
   return (
     <div style={styles.container}>
       <div style={styles.cameraContainer}>
-        <video 
+        <video
           ref={videoRef}
           style={styles.cameraFeed}
           autoPlay
           playsInline
-          controls={false} // Hide controls
           muted
+          controls={false}
         />
       </div>
     </div>
