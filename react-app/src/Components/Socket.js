@@ -108,6 +108,7 @@ function Socket({ setGamePadStatus, setChartData, setLastDataPoint, timestamp, s
               back_right_wheel_current: motor_values[3],
               front_drum_current: motor_values[4],
               back_drum_current: motor_values[5],
+              // actuatorCapacity: 4.315 * (motor_values[6] + motor_values[7]) - 14.18, uncertain if calculations need to be changed
               front_actuator_current: motor_values[6],
               back_actuator_current: motor_values[7],
               main_battery_voltage: motor_values[8],
