@@ -44,7 +44,6 @@ const drumDisplayHeight = 95;
       <div className="actuator-section">
         <h3
           style={{ position: "fixed", left: 35, top: 475 + 70 }}>
-
           Bucket Drum</h3>
         <div className="actuator-data">
           <div
@@ -58,27 +57,6 @@ const drumDisplayHeight = 95;
           {/*<SingleLiveDataStream dataStreamName="Current" currentVal="12" topCoord={535 + 70}  leftCoord={drumDisplayX + 100} displayWidth={drumDisplayWidth} displayHeight={drumDisplayHeight}  />*/}
           <SingleLiveDataStream dataStreamName="Spin" currentVal={direction} topCoord={535 + 70}  leftCoord={drumDisplayX + 200} displayWidth={drumDisplayWidth} displayHeight={drumDisplayHeight}  />
         </div>
-        {/* Buttons for Bucket Drum */}
-        <div className="actuator-buttons">
-          <button
-            className="actuator-button-dig"
-            style={{ position: "fixed", top: 525 + 70 , left: drumButtonX, width: drumButtonWidth}}
-          >
-          <strong>DIG</strong>
-          </button>
-          <button
-            className="actuator-button-dump"
-            style={{ position: "fixed", top: 570 + 70, left: drumButtonX, width: drumButtonWidth}}
-          >
-            <strong>DUMP</strong>
-          </button>
-          <button
-            className="actuator-button-stop"
-            style={{ position: "fixed", top: 615 + 70, left: drumButtonX, width: drumButtonWidth}}
-          >
-            <strong> STOP </strong>
-          </button>
-        </div>
       </div>
 
       {/* Track Actuator Section */}
@@ -89,27 +67,6 @@ const drumDisplayHeight = 95;
         <div className="actuator-data">
           <SingleLiveDataStream dataStreamName="Height (in): " currentVal="5" leftCoord={actuatorDisplayX} topCoord={710 + 70} displayWidth={actuatorDisplayWidth} displayHeight={actuatorDisplayHeight}/>
           <SingleLiveDataStream dataStreamName="Current (A): " currentVal="15" leftCoord={actuatorDisplayX} topCoord={775 + 70} displayWidth={actuatorDisplayWidth} displayHeight={actuatorDisplayHeight} />
-        </div>
-        {/* Buttons for Track Actuator */}
-        <div className="actuator-buttons">
-          <button
-            className="actuator-button-dig2"
-            style={{ position: "fixed", width: actuatorButtonWidth, left: actuatorButtonX, top: 700 +  70}}
-          >
-            <strong>DIG</strong>
-          </button>
-          <button
-            className="actuator-button-mid"
-            style={{ position: "fixed", width: actuatorButtonWidth, left: actuatorButtonX, top: 745 + 70 }}
-          >
-            <strong>MID</strong>
-          </button>
-          <button
-            className="actuator-button-top"
-            style={{ position: "fixed", width: actuatorButtonWidth, left: actuatorButtonX, top: 790 + 70 }}
-          >
-            <strong>TOP</strong>
-          </button>
         </div>
       </div>
     </div>
