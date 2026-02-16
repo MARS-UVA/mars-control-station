@@ -36,7 +36,7 @@ class SignalingServer {
 
     // Error
     ws.on('error', (e) => {
-        console.error('Signaling Clinet error: ${e}')
+        console.error(`Signaling Client error: ${e}`)
     })
 }
 
