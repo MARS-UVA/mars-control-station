@@ -81,9 +81,11 @@ webSocketServer.on('connection', (ws) => {
                 case 5:
                     websockets.dataRate = ws;
                     console.log("connected data rate ws");
+                    break;
                 case 6:
                     websockets.gyroRate = ws;
                     console.log("connected gyro ws");
+                    break;
                 default:
                     break;
             }
