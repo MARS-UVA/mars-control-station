@@ -30,9 +30,9 @@ setInterval(() => {
     const commandOutput = getRobotState(); // Get the commands sent to the robot from robotState.js
 
     const uiState = {
-    type: 'uiState',
-    gamepad: gamepadOutput,
-    commands: commandOutput // build elsewhere when UI issues commands
+      type: 'uiState',
+      gamepad: gamepadOutput,
+      commands: commandOutput
     };
     ws.send(JSON.stringify(uiState)); // Sends the jit to the websocket
 }, intervalTime)

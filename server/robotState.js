@@ -40,7 +40,15 @@ export function setStopState(input) {
 export function getRobotState() {
     return {
         pause: isPaused,
-        dig: isDigging,
-        dump: isDumping
+        currentState : curState
     }
 }
+export var curState = ROBOT_STATES.IDLE;
+
+
+export const ROBOT_STATES = Object.freeze({
+    IDLE,
+    DIG,
+    DUMP,
+    STOP
+});

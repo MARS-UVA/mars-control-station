@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import { setDigState, setDumpState, setStopState, getDigState, getDumpState, getStopState} from '../../../server/robotState';
+import { setDigState, setDumpState, setStopState, getDigState, getDumpState, getStopState, curState, ROBOT_STATES} from '../../../server/robotState';
 
 const BUTTON_CLASSES = {
   'STOP': 'command-button-sstop',
@@ -20,9 +20,9 @@ const CommandButton = React.memo(({ label, className, onClick, style }) => (
 function RightButtonPanel() {
 
 const doFunction = label => {
-    if (label.toLowerCase() === 'stop')   setStopState(true);
-    else if (label.toLowerCase() === 'dig auto')   setDigState(!getDigState());
-    else if (label.toLowerCase() === 'dump auto')   setDumpState(!getDumpState());
+    if (label.toLowerCase() === 'stop')   curState = ROBOT_STATES.STOP;
+    else if (label.toLowerCase() === 'dig auto')   curState = ROBOT_STATES.DIG;
+    else if (label.toLowerCase() === 'dump auto')   curState = ROBOT_STATES.DUMP;
 }
 
 // Render the component UI
