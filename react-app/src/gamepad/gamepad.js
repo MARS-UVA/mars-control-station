@@ -1,14 +1,5 @@
+import { getTransmissionActive } from "../../../server/packets"
 let gamepads = navigator.getGamepads()
-let isTransmissionActive = true; // New control flag
-
-const ws = new WebSocket('ws://localhost:3001');
-ws.onopen = () => {
-  ws.send(-1)
-  //console.log('websocket connected');
-};
-ws.onclose = () => {
-  //console.log('websocket closed');
-};
 
 window.addEventListener('gamepadconnected', e => {
     gamepads = navigator.getGamepads()
@@ -17,30 +8,10 @@ window.addEventListener('gamepaddisconnected', e => {
     gamepads = navigator.getGamepads()
 })
 
-function detectBrowser() {
-    const userAgent = navigator.userAgent;
-  
-    if (userAgent.match(/chrome|chromium|crios/i)) {
-      return "Chrome";
-    } else if (userAgent.match(/firefox|fxios/i)) {
-      return "Firefox";
-    } else if (userAgent.match(/safari/i)) {
-      return "Safari";
-    } else if (userAgent.match(/msie|trident/i)) {
-      return "Internet Explorer";
-    } else if (userAgent.match(/edge\/\d+/i)) {
-      return "Microsoft Edge";
-    } else if (userAgent.match(/opera|opr/i)) {
-      return "Opera";
-    } else {
-      return "Unknown";
-    }
-  }
-  
 
 /**
  * * @param {Gamepad} gamepad 
- * @returns 
+ * @returns
  */
 const getButtonObjectFromGamepad = (gamepad) => {
     return {
@@ -79,7 +50,6 @@ const getRightStickFromGamepad = (gamepad) => {
 
 const gamepadText = document.getElementById('gamepad-text')
 
-const intervalTime = 30
 
 function getGamepadState(index = 0) {
     // Add safety check in case gamepad is disconnected but index is requested
@@ -88,13 +58,9 @@ function getGamepadState(index = 0) {
             leftStick: getLeftStickFromGamepad(gamepads[index]),
             rightStick: getRightStickFromGamepad(gamepads[index]),
             buttons: getButtonObjectFromGamepad(gamepads[index])
-        } 
+        }
 }
 
-// New helper to control transmission from React
-function setTransmissionActive(isActive) {
-    isTransmissionActive = isActive;
-}
 
 // New helper to send recorded data over the existing socket
 function sendCustomGamepadState(state) {
@@ -104,20 +70,5 @@ function sendCustomGamepadState(state) {
     }
 }
 
-setInterval(() => {
-    gamepads = navigator.getGamepads()
 
-    // Only send live data if transmission is active
-    if (gamepads[0] != null && isTransmissionActive) {
-        const output = {
-            leftStick: getLeftStickFromGamepad(gamepads[0]),
-            rightStick: getRightStickFromGamepad(gamepads[0]),
-            buttons: getButtonObjectFromGamepad(gamepads[0])
-        } 
-
-        let json = JSON.stringify(output);
-        ws.send(json);
-    }
-}, intervalTime)
-
-export { getGamepadState, setTransmissionActive, sendCustomGamepadState }
+export { getGamepadState, sendCustomGamepadState, gamepadStateSender }

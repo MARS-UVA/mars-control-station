@@ -64,11 +64,11 @@ ws.onmessage = (event) => {
         return;
     }
 
-    const gamepadOut = `${jsonObj.buttons.x},${jsonObj.buttons.y},${jsonObj.buttons.a},${jsonObj.buttons.b},
-    ${jsonObj.buttons.lt},${jsonObj.buttons.rt},${jsonObj.buttons.lb},${jsonObj.buttons.rb},${jsonObj.buttons.dd},
-    ${jsonObj.buttons.du},${jsonObj.buttons.l3},${jsonObj.buttons.r3},
-    ${jsonObj.buttons.back},${jsonObj.buttons.start},${jsonObj.leftStick.x},${jsonObj.leftStick.y},${jsonObj.rightStick.x},
-    ${jsonObj.rightStick.y}`;
+    const gamepadOut = `${jsonObj.gamepad.buttons.x},${jsonObj.gamepad.buttons.y},${jsonObj.gamepad.buttons.a},${jsonObj.buttons.b},
+    ${jsonObj.gamepad.buttons.lt},${jsonObj.gamepad.buttons.rt},${jsonObj.gamepad.buttons.lb},${jsonObj.gamepad.buttons.rb},${jsonObj.buttons.dd},
+    ${jsonObj.gamepad.buttons.du},${jsonObj.gamepad.buttons.l3},${jsonObj.gamepad.buttons.r3},
+    ${jsonObj.gamepad.buttons.back},${jsonObj.gamepad.buttons.start},${jsonObj.gamepad.leftStick.x},${jsonObj.gamepad.leftStick.y},${jsonObj.gamepad.rightStick.x},
+    ${jsonObj.gamepad.rightStick.y}`;
 
     let message = "pcktcontnt"+gamepadOut;
     //console.log(message);
