@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import { setDigState, setDumpState, setStopState, getDigState, getDumpState, getStopState, curState, ROBOT_STATES} from '../../../server/robotState';
+import { setDigState, setDumpState, setStopState, getDigState, getDumpState, getStopState, curState, ROBOT_STATES} from '../robotState';
 
 const BUTTON_CLASSES = {
   'STOP': 'command-button-sstop',

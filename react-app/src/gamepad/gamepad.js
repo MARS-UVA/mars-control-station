@@ -1,4 +1,4 @@
-import { getTransmissionActive } from "../../../server/packets"
+import { getTransmissionActive } from "../packets"
 let gamepads = navigator.getGamepads()
 
 window.addEventListener('gamepadconnected', e => {
@@ -71,4 +71,4 @@ function sendCustomGamepadState(state) {
 }
 
 
-export { getGamepadState, sendCustomGamepadState, gamepadStateSender }
+export { getGamepadState, sendCustomGamepadState }
