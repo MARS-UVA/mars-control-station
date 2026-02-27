@@ -15,7 +15,7 @@ const webSocketServer = new WebSocket.Server({port: WS_PORT});
 let websockets = {
     image: null,
     image2: null,
-    motorCurrent: null,
+    motorFeedback: null,
     client: null,
     potentiometer: null,
     dataRate: null,
@@ -25,7 +25,7 @@ let websockets = {
 const dataRateMonitors = {
     image: new DataRateMonitor(DATA_RATE_UPDATE_INTERVAL_MS),
     image2: new DataRateMonitor(DATA_RATE_UPDATE_INTERVAL_MS),
-    motorCurrent: new DataRateMonitor(DATA_RATE_UPDATE_INTERVAL_MS),
+    motorFeedback: new DataRateMonitor(DATA_RATE_UPDATE_INTERVAL_MS),
     client: new DataRateMonitor(DATA_RATE_UPDATE_INTERVAL_MS),
     gyroData: new DataRateMonitor(DATA_RATE_UPDATE_INTERVAL_MS),
 };
@@ -40,7 +40,7 @@ function sendDataRateUpdates() {
             global: globalDataRateMonitor.calculateRates(),
             image: dataRateMonitors.image.calculateRates(),
             image2: dataRateMonitors.image2.calculateRates(),
-            motorCurrent: dataRateMonitors.motorCurrent.calculateRates(),
+            motorFeedback: dataRateMonitors.motorFeedback.calculateRates(),
             client: dataRateMonitors.client.calculateRates(),
             gyroData: dataRateMonitors.gyroData.calculateRates(),
         };
@@ -61,8 +61,8 @@ webSocketServer.on('connection', (ws) => {
                     console.log("connected webcam ws");
                     break;
                 case 1:
-                    websockets.motorCurrent = ws;
-                    console.log("connected motor current ws");
+                    websockets.motorFeedback = ws;
+                    console.log("connected motor feedback ws");
                     break;
                 case 2:
                     websockets.client = ws;
@@ -218,13 +218,13 @@ const image2OnMessage = (receivedChunks) => {
 
 const motorFeedbackOnMessage = (data) => {
     const buffer = Buffer.concat(Object.values(data));
-    if(websockets.motorCurrent){
-        const messageBuf = buffer.subarray(0, 36);
-        dataRateMonitors.motorCurrent.recordReceived(messageBuf.length);
+    if(websockets.motorFeedback){
+        const messageBuf = buffer.subarray(0, 72);
+        dataRateMonitors.motorFeedback.recordReceived(messageBuf.length);
         globalDataRateMonitor.recordReceived(messageBuf.length);
-        console.log("data rate monitor recorder " + messageBuf.length + " and calculated " + dataRateMonitors.motorCurrent.calculateRates());
+        console.log("data rate monitor recorder " + messageBuf.length + " and calculated " + dataRateMonitors.motorFeedback.calculateRates());
         console.log("global data rate monitor recorded " + messageBuf.length + " and calculated " + globalDataRateMonitor.calculateRates());
-        websockets.motorCurrent.send(messageBuf);
+        websockets.motorFeedback.send(messageBuf);
     }
 }
 
