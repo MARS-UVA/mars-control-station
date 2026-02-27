@@ -11,7 +11,7 @@ elif [ $# -eq 1 ]; then
     if [ "$1" == "eduroam" ]; then
         echo "Connecting to eduroam network..."
         nmcli device wifi connect "eduroam"
-        #JETSON_IP="172.25.182.202"
+        export JETSON_IP="172.25.149.156"
     elif [ "$1" == "MARS" ] || [ "$1" == "mars" ]; then
         echo "Connecting to MARS network..."
         nmcli device wifi connect "$SSID" password "$PASSWORD"

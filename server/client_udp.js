@@ -63,7 +63,10 @@ ws.onmessage = (event) => {
         sendMessage(JETSON_IP, jsonObj.cmd);
         return;
     }
-
+    if (!jsonObj.gamepad) {
+        console.error('No gamepad data in message');
+        return;
+    }
     const gamepadOut = `${jsonObj.gamepad.buttons.x},${jsonObj.gamepad.buttons.y},${jsonObj.gamepad.buttons.a},${jsonObj.buttons.b},
     ${jsonObj.gamepad.buttons.lt},${jsonObj.gamepad.buttons.rt},${jsonObj.gamepad.buttons.lb},${jsonObj.gamepad.buttons.rb},${jsonObj.buttons.dd},
     ${jsonObj.gamepad.buttons.du},${jsonObj.gamepad.buttons.l3},${jsonObj.gamepad.buttons.r3},
