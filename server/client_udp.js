@@ -20,30 +20,6 @@ function crc32bit(data) {
 
 const ws = new WebSocket("ws://localhost:3001");
 
-function sendMessage(ip, command) { // Function to send UDP message to robot
-    if (!ip) {
-        console.error('No IP address provided'); // Fails if no IP is provided
-        return;
-    }
-    const socket = dgram.createSocket('udp4'); // Creates UDP4 socket
-    const payload = JSON.stringify({ command: command }); // Prepares payload of JSON type command
-    const buf = Buffer.from(payload); // Converts payload to buffer for UDP transmission
-
-    socket.send(buf, PORT, ip, (err) => { // Sends message
-        if (err) {
-            console.error('Error sending message:', err.message);
-        } else {
-            console.log('Message sent successfully');
-        }   
-        socket.close();
-    });
-
-    socket.on('error', (err) => { // Error handling
-        console.error('Socket error:', err.message);
-        socket.close();
-    });
-}
-
 ws.onopen = () => {
     const buffer = Buffer.from([2]);
     ws.send(buffer)
@@ -59,10 +35,7 @@ ws.onmessage = (event) => {
         console.error('Error parsing JSON:', e);
         return;
     }
-    if (jsonObj && jsonObj.type === 'command') {
-        sendMessage(JETSON_IP, jsonObj.cmd);
-        return;
-    }
+
     if (!jsonObj.gamepad) {
         console.error('No gamepad data in message');
         return;
@@ -78,7 +51,7 @@ ws.onmessage = (event) => {
     
     // Combine into a single message
     let message = "pcktcontnt"+gamepadOut;
-
+    // Converts to buffer to let the Jetson read it
     buffer = Buffer.from(message);
 
     // write commandOut to the first byte
@@ -91,8 +64,6 @@ ws.onmessage = (event) => {
 function client(ip, buffer) {
     // Create a UDP socket
     const socket = dgram.createSocket('udp4');
-    
-    
 
     // Send the message to the server
     socket.send(buffer, PORT, ip, (err) => {
