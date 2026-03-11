@@ -1,7 +1,5 @@
 let isPaused = false;
-let isDigging = false;
-let isDumping = false;
-let isStopped = false;
+let action = 0; // 0 = idle, 1 = dig, 2 = dump, 3 = stop
 
 
 
@@ -16,41 +14,23 @@ export const ROBOT_STATES = Object.freeze({
 export function getPausedState() {
     return isPaused;
 }
-export function getDigState() {
-    return isDigging;
+export function getActionState() {
+    return action;
 }
-export function getDumpState() {
-    return isDumping;
-}
-export function getStopState() {
-    return isStopped;
-}
-
 export function setPausedState(input) {
     if (input instanceof Boolean) {
         isPaused = input;
     }
 }
-export function setDigState(input) {
-    if (input instanceof Boolean) {
-        isDigging = input;
-    }
-}
-export function setDumpState(input) {
-    if (input instanceof Boolean) {
-        isDumping = input;
-    }
-}
-export function setStopState(input) {
-    if (input instanceof Boolean) {
-        isStopped = input;
+export function setActionState(input) {
+    if (typeof input === 'number' && input >= 0 && input <= 3) {
+        action = input;
     }
 }
 
 export function getRobotState() {
     return {
         pause: isPaused,
-        currentState : curState
+        action: action
     }
 }
-export var curState = ROBOT_STATES.IDLE;

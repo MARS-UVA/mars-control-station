@@ -50,7 +50,7 @@ ws.onopen = () => {
     //console.log('ws connected');
 };
 ws.onmessage = (event) => {
-    console.log('Received ws message: ', event.data);
+    //console.log('Received ws message: ', event.data);
     let jsonObj;
     try {
         jsonObj = JSON.parse(event.data);
@@ -67,13 +67,17 @@ ws.onmessage = (event) => {
         console.error('No gamepad data in message');
         return;
     }
+    // commandOut is the action state, 0 = controller, 1 = dig, 2 = dump, 3 = stop
+    const commandOut = `${jsonObj.commands.action}`;
+    // gamepadOut is the button and stick states, in the order of x, y, a, b, lt, rt, lb, rb, dd, du, l3, r3, back, start, leftStick.x, leftStick.y, rightStick.x, rightStick.y
     const gamepadOut = `${jsonObj.gamepad.buttons.x},${jsonObj.gamepad.buttons.y},${jsonObj.gamepad.buttons.a},${jsonObj.gamepad.buttons.b},
     ${jsonObj.gamepad.buttons.lt},${jsonObj.gamepad.buttons.rt},${jsonObj.gamepad.buttons.lb},${jsonObj.gamepad.buttons.rb},${jsonObj.gamepad.buttons.dd},
     ${jsonObj.gamepad.buttons.du},${jsonObj.gamepad.buttons.l3},${jsonObj.gamepad.buttons.r3},
     ${jsonObj.gamepad.buttons.back},${jsonObj.gamepad.buttons.start},${jsonObj.gamepad.leftStick.x},${jsonObj.gamepad.leftStick.y},${jsonObj.gamepad.rightStick.x},
     ${jsonObj.gamepad.rightStick.y}`;
-
-    let message = "pcktcontnt"+gamepadOut;
+    
+    // Combine into a single message
+    let message = "pcktcontnt"+commandOut+","+gamepadOut;
     //console.log(message);
     client(JETSON_IP, message);
 };

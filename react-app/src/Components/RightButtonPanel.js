@@ -1,5 +1,5 @@
 import React, {useState} from 'react';
-import { setDigState, setDumpState, setStopState, getDigState, getDumpState, getStopState, curState, ROBOT_STATES} from '../robotState';
+import { getActionState, setActionState } from '../robotState';
 
 const BUTTON_CLASSES = {
   'STOP': 'command-button-sstop',
@@ -19,10 +19,13 @@ const CommandButton = React.memo(({ label, className, onClick, style }) => (
 
 function RightButtonPanel() {
 
-const doFunction = label => {
-    if (label.toLowerCase() === 'stop')   curState = ROBOT_STATES.STOP;
-    else if (label.toLowerCase() === 'dig auto')   curState = ROBOT_STATES.DIG;
-    else if (label.toLowerCase() === 'dump auto')   curState = ROBOT_STATES.DUMP;
+const doFunction = label => { 
+    if (label.toLowerCase() === 'dig auto' && getActionState() === 1)   setActionState(0);
+    else if (label.toLowerCase() === 'dig auto' && getActionState() !== 3)   setActionState(1);
+    else if (label.toLowerCase() === 'dump auto' && getActionState() === 2)   setActionState(0);
+    else if (label.toLowerCase() === 'dump auto' && getActionState() !== 3)   setActionState(2);
+    else if (label.toLowerCase() === 'stop' && getActionState() === 3)   setActionState(0);
+    else if (label.toLowerCase() === 'stop' && getActionState() !== 3)   setActionState(3);
 }
 
 // Render the component UI
