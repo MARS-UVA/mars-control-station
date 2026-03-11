@@ -77,16 +77,22 @@ ws.onmessage = (event) => {
     ${jsonObj.gamepad.rightStick.y}`;
     
     // Combine into a single message
-    let message = "pcktcontnt"+commandOut+","+gamepadOut;
+    let message = "pcktcontnt"+gamepadOut;
+
+    buffer = Buffer.from(message);
+
+    // write commandOut to the first byte
+    buffer.writeUInt8LE(jsonObj.commands.action, 0);
+    buffer.writeUInt16LE(buffer.length, 4);
     //console.log(message);
-    client(JETSON_IP, message);
+    client(JETSON_IP, buffer);
 };
 
-function client(ip, data) {
+function client(ip, buffer) {
     // Create a UDP socket
     const socket = dgram.createSocket('udp4');
-    buffer = Buffer.from(data);
-    buffer.writeUInt16LE(buffer.length, 4)
+    
+    
 
     // Send the message to the server
     socket.send(buffer, PORT, ip, (err) => {
