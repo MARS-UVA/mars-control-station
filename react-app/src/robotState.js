@@ -17,10 +17,8 @@ export function getPausedState() {
 export function getActionState() {
     return action;
 }
-export function setPausedState(input) {
-    if (input instanceof Boolean) {
-        isPaused = input;
-    }
+export function flipPausedState() {
+    isPaused = !isPaused;
 }
 export function setActionState(input) {
     if (typeof input === 'number' && input >= 0 && input <= 3) {

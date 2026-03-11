@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Camera, ChartNoAxesColumnDecreasing, Pause, Play } from "lucide-react";
+import { flipPausedState, getPausedState } from "../robotState";
 import Guidelines from "../gamepad/Guidelines";
 import pauseImage from '../assets/touchedNpaused.png';
 
@@ -111,37 +112,18 @@ function WebcamPanel({index, gamepadData, cameraActive, setCameraActive}) {
     }, [createSocket]);
     
     const sendCommand = (cmd) => { // Used to pause
-        const payload = JSON.stringify({ type: 'command', cmd: cmd }); // JSON command to the robot
-        let ws = socketRef.current;
-        if (!ws) { // Set up the websocket if it's not running
-          ws = createSocket();
-          socketRef.current = ws;
-          ws.addEventListener('open', () => {
-            try { ws.send(payload); } catch (e) { console.log(e);}
-          }, {once: true});
-          return;
-        }
-        else if (ws.readyState === WebSocket.OPEN) { 
-          try { ws.send(payload); } catch (e) { console.log(e);} // Once opened, send the payload
-        }
-        else if (ws.readyState === WebSocket.CONNECTING) { // Wait if the socket is still connecting
-          ws.addEventListener('open', () => {
-            try { ws.send(payload); } catch (e) { console.log(e);}
-          }, {once: true});
-        }
+        
       }
 
     const toggleFeed = () => {
 
-      if(cameraActive){
+      if(!getPausedState()){
         // Toggles the video feed on
-        sendCommand('start_video');
-        setCameraActive(false);
+        flipPausedState();
         console.log("resuming video");
       } else {
         // Toggles the video feed off
-        sendCommand('stop_video');
-        setCameraActive(true);
+        flipPausedState();
         console.log("pausing video");
       }
     }
@@ -157,15 +139,15 @@ function WebcamPanel({index, gamepadData, cameraActive, setCameraActive}) {
         />
 
         {/* Toggle button */}
-        <button style={styles.toggleButton} onClick={toggleFeed}>
-          {!cameraActive ? <Play size={16} /> : <Pause size={16} />}
-          {!cameraActive ? "Resume" : "Pause"}
-        </button>
+        {/* <button style={styles.toggleButton} onClick={toggleFeed}>
+          {getPausedState() ? <Play size={16} /> : <Pause size={16} />}
+          {getPausedState() ? "Resume" : "Pause"}
+        </button> */}
 
         {/* Overlay pause image when paused */}
-         {!cameraActive && (
+         {/* {!cameraActive && (
           <img className="pause-image" src={pauseImage} alt={"Paused"} style={styles.pauseImage} />
-         )}
+         )} */}
         {/* Overlay the parking guidelines */}
         {gamepadData ? <Guidelines leftStick={gamepadData.leftStick} /> : <></>}
       </div>
