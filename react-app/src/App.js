@@ -77,7 +77,7 @@ const App = () => {
         <div className="right-panel">
           <LiveDataPanel lastDataPoint={lastDataPoint} timestamp={timestamp} chartData={chartData}/>
           <RightButtonPanel></RightButtonPanel>
-          <TiltingRods/>
+          {/* <TiltingRods/> hiding since they're incomplete*/}
         </div>
         <Draggable>
           <Timer/>
