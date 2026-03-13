@@ -1,46 +1,83 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Camera } from "lucide-react";
-import Guidelines from "./Guidelines";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { Camera, ChartNoAxesColumnDecreasing, Pause, Play } from "lucide-react";
+import { flipPausedState, getPausedState } from "../robotState";
+import Guidelines from "../gamepad/Guidelines";
+import pauseImage from '../assets/touchedNpaused.png';
 
 const styles = {
   container: {
     margin: '10px 0', // Adds margin on top and bottom
     position: 'relative',
-    width: '100%',
-    height: '50%'
+    width: '750px',
+    height: '475px'
   },
   cameraContainer: {
-    position: 'relative',
-    width: '100%',
-    height: '100%',
-    overflow: 'hidden',
-    backgroundColor: 'black',
-    borderRadius: '8px'
+    position: "relative",
+    width: "100%",
+    height: "100%",
+    overflow: "hidden",
+    backgroundColor: "black",
+    borderRadius: "8px",
+  },
+  pauseImage : {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    width: "50%",
+    height: "50%",
+    objectFit: "contain",
+  },
+  toggleButton: {
+    position: "absolute",
+    top: "10px",
+    right: "10px",
+    background: "rgba(0,0,0,0.6)",
+    border: "none",
+    borderRadius: "6px",
+    color: "white",
+    padding: "6px 10px",
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    gap: "4px",
   },
   cameraFeed: {
     width: '100%',
     height: '100%',
     objectFit: 'cover'
-  }
+  },
+  overlayText: {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    color: "white",
+    fontSize: "1.5rem",
+    background: "rgba(0,0,0,0.5)",
+    padding: "10px 20px",
+    borderRadius: "8px",
+  },
 };
 
 // This component renders a panel with a webcam feed (currently showing laptop webcam)
-function WebcamPanel({index, gamepadData}) {
+function WebcamPanel({index, gamepadData, cameraActive, setCameraActive}) {
     const id = parseInt(index);
     //const [imageSrc, setImageSrc] = useState(null);
     const imgRef = useRef(null);
     const lastUrl = useRef(null);
     const socketRef = useRef(null);
+    
 
-    useEffect(() => {
+    const createSocket = useCallback(() => {
       const ws = new WebSocket("ws://localhost:3001");
       ws.binaryType = "arraybuffer";
 
       ws.onopen = () => {
         const buffer = new Uint8Array([id]);
-        ws.send(buffer)
+        ws.send(buffer);
         //console.log('webcamPanel ws connected');
-      }
+      };
 
       ws.onmessage = (event) => {
         const blob = new Blob([event.data], {type: 'image/jpeg'});
@@ -48,7 +85,7 @@ function WebcamPanel({index, gamepadData}) {
         //setImageSrc(URL.createObjectURL(blob));
 
         if(lastUrl.current) {
-          const oldUrl = lastUrl.current
+          const oldUrl = lastUrl.current;
           requestAnimationFrame(() => URL.revokeObjectURL(oldUrl));
         }
         lastUrl.current = newUrl;
@@ -57,13 +94,39 @@ function WebcamPanel({index, gamepadData}) {
           imgRef.current.src = newUrl;
         }
       };
+
+      return ws;
+    }, [id]);
+
+    useEffect(() => {
+      const ws = createSocket();
+      socketRef.current = ws;
       return() => {
-        ws.close();
+        if (ws && ws.readyState === WebSocket.OPEN) {
+          ws.close();
+        } else if (ws) {
+          ws.close();
+        }
         if(lastUrl.current) URL.revokeObjectURL(lastUrl.current)
       };
-    }, []);
+    }, [createSocket]);
+    
+    const sendCommand = (cmd) => { // Used to pause
+        
+      }
 
+    const toggleFeed = () => {
 
+      if(!getPausedState()){
+        // Toggles the video feed on
+        flipPausedState();
+        console.log("resuming video");
+      } else {
+        // Toggles the video feed off
+        flipPausedState();
+        console.log("pausing video");
+      }
+    }
 
     return (
     <div style={styles.container}>
@@ -74,7 +137,17 @@ function WebcamPanel({index, gamepadData}) {
           style={styles.cameraFeed}
           alt="Camera Feed"
         />
-        
+
+        {/* Toggle button */}
+        {/* <button style={styles.toggleButton} onClick={toggleFeed}>
+          {getPausedState() ? <Play size={16} /> : <Pause size={16} />}
+          {getPausedState() ? "Resume" : "Pause"}
+        </button> */}
+
+        {/* Overlay pause image when paused */}
+         {/* {!cameraActive && (
+          <img className="pause-image" src={pauseImage} alt={"Paused"} style={styles.pauseImage} />
+         )} */}
         {/* Overlay the parking guidelines */}
         {gamepadData ? <Guidelines leftStick={gamepadData.leftStick} /> : <></>}
       </div>

@@ -1,0 +1,57 @@
+:root {
+  --bg-color: #f9f9f9;
+  --box-shadow-color: #0000001f;
+  --panel-bg-color: #ffffff;
+  --border-color: #e2e8f0;
+  --primary-color: #2d3748;
+  --secondary-color: #4a5568;
+  --accent-color1: #E1A365;
+  --accent-color1-hover: #dd9043;
+  --accent-color2: #e2d8a5;
+  --accent-color2-hover: #f9ecaa;
+  --accent-color3: #6f9f9c;
+  --accent-color3-hover: #83b4b1;
+  --neutral-color-hover: #e4e4e7;
+  --font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+[data-theme="dark"] {
+  --bg-color: #1a202c;
+  --panel-bg-color: #2d3748;
+  --border-color: #71738e;
+  --primary-color: #edf2f7;
+  --secondary-color: #a0aec0;
+  --accent-color1: #cc8f52;
+  --accent-color1-hover: #dda164;
+  --accent-color2: #aea269;
+  --accent-color2-hover: #c3b672;
+  --accent-color3: #6f9f9c;
+  --accent-color3-hover: #589690;
+}
+[data-theme="colorblind-light"] {
+  --accent-color1: rgb(130, 116, 209); /* Ourple */
+  --accent-color1-hover: #604dc8;
+  --accent-color2: #6b97f6; /* Bloo */
+  --accent-color2-hover: #3571f4;
+  --accent-color3: #d54b90; /* Magenta */
+  --accent-color3-hover: #b30b5f;
+  --accent-color4: #FE5F01; /* Orang */
+  --accent-color5: #ffaf10; /* Yerlow */
+}
+[data-theme="colorblind-dark"] {
+  --accent-color1: rgb(130, 116, 209); /* Ourple */
+  --accent-color1-hover: #604dc8;
+  --accent-color2: #6b97f6; /* Bloo */
+  --accent-color2-hover: #3571f4;
+  --accent-color3: #d54b90; /* Magenta */
+  --accent-color3-hover: #b30b5f;
+  --accent-color4: #FE5F01; /* Orang */
+  --accent-color5: #ffaf10; /* Yerlow */
+  --bg-color: #1a202c;
+  --panel-bg-color: #2d3748;
+  --border-color: #71738e;
+  --primary-color: #edf2f7;
+  --secondary-color: #a0aec0;
+}
+
+

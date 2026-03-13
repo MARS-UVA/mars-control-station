@@ -1,11 +1,13 @@
 import React, { useEffect, useState, useRef } from 'react';
-const DATA_UPDATE_DELAY_MS = 30;
+const DATA_UPDATE_DELAY_MS = 200;
 const DATA_WINDOW_WIDTH = 10000 / DATA_UPDATE_DELAY_MS;
 // This component will handle backend/API calls with useEffect blocks, and send the data to the UI components
 
 function Socket({ setGamePadStatus, setChartData, setLastDataPoint, timestamp, setTimestamp, setData: setData }) {
     const motorValuesRef = useRef(new Float32Array(4));
  
+    // Setups Gamepad connection status handling
+    // Creates event listeners for gamepad connection and disconnection
     useEffect(() => {
         const handleGamepadConnected = (e) => {
           setGamePadStatus(`Gamepad connected!: ${e.gamepad.id}`);
@@ -22,11 +24,12 @@ function Socket({ setGamePadStatus, setChartData, setLastDataPoint, timestamp, s
           window.removeEventListener('gamepadconnected', handleGamepadConnected);
           window.removeEventListener('gamepaddisconnected', handleGamepadDisconnected);
         };
-      }, []);
+      }, [setGamePadStatus]);
 
+      // On render finish, start a WebSocket connection to receive motor data
       useEffect(() => {
         const MOTOR_NUM = 5;
-        const ws = new WebSocket('ws://localhost:3001');
+        const ws = new WebSocket('ws://localhost:3001'); // Adjust the URL as needed
         ws.binaryType = 'arraybuffer';
         ws.onopen = () => {
           const buffer = new ArrayBuffer(4);
@@ -45,6 +48,7 @@ function Socket({ setGamePadStatus, setChartData, setLastDataPoint, timestamp, s
         };
       }, []);
 
+      // Find the data rate (receive + send time) and set it to lastDataRate
       const [lastDataRate, setLastDataRate] = React.useState(0.0);
       useEffect(() => {
         const ws = new WebSocket("ws://localhost:3001");
@@ -67,6 +71,7 @@ function Socket({ setGamePadStatus, setChartData, setLastDataPoint, timestamp, s
         };
       }, []);
 
+      // Set up Gyroscope data receiving via WebSocket
       const gyroValuesRef = useRef(new Float32Array(4));
       useEffect(() => {
         const ws = new WebSocket("ws://localhost:3001");
@@ -88,6 +93,7 @@ function Socket({ setGamePadStatus, setChartData, setLastDataPoint, timestamp, s
         };
       }, []);
 
+      // Periodically add new data points to chartData
       useEffect(() => {
         const addNewData = () => {
           const motor_values = motorValuesRef.current;
@@ -96,14 +102,25 @@ function Socket({ setGamePadStatus, setChartData, setLastDataPoint, timestamp, s
             const newTime = prevTime + 1;
             const newData = {
               time: newTime,
-              leftFrontWheel: motor_values[0],
-              rightFrontWheel: motor_values[1],
-              leftBackWheel: motor_values[2],
-              rightBackWheel: motor_values[3],
-              leftBucketDrum: motor_values[4],
-              rightBucketDrum: motor_values[5],
-              actuatorCapacity: 4.315 * (motor_values[6] + motor_values[7]) - 14.18,
-              actuatorHeight: motor_values[8],
+              front_left_wheel_current: motor_values[0],
+              back_left_wheel_current: motor_values[1],
+              front_right_wheel_current: motor_values[2],
+              back_right_wheel_current: motor_values[3],
+              front_drum_current: motor_values[4],
+              back_drum_current: motor_values[5],
+              // actuatorCapacity: 4.315 * (motor_values[6] + motor_values[7]) - 14.18, uncertain if calculations need to be changed
+              front_actuator_current: motor_values[6],
+              back_actuator_current: motor_values[7],
+              main_battery_voltage: motor_values[8],
+              aux_battery_voltage: motor_values[9],
+              front_left_wheel_temperature: motor_values[10],
+              back_left_wheel_temperature: motor_values[11],
+              front_right_wheel_temperature: motor_values[12],
+              back_right_wheel_temperature: motor_values[13],
+              front_drum_temperature: motor_values[14],
+              back_drum_temperature: motor_values[15],
+              front_actuator_position: motor_values[16],
+              back_actuator_position: motor_values[17],
               globalDataRate: lastDataRate,
               xGyro: gyro_values[0],
               yGyro: gyro_values[1],
@@ -119,7 +136,8 @@ function Socket({ setGamePadStatus, setChartData, setLastDataPoint, timestamp, s
             return newTime;
           });
         };
-    
+        
+        // Updates with newData every DATA_UPDATE_DELAY_MS milliseconds
         const intervalId = setInterval(addNewData, DATA_UPDATE_DELAY_MS);
     
         return () => clearInterval(intervalId);
