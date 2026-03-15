@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { getGamepadState, sendCustomGamepadState } from '../gamepad/gamepad';
-import { setTransmissionActive } from '../packets';
+import { getGamepadState } from '../gamepad/gamepad';
+import { setTransmissionActive, sendCustomGamepadState } from '../packets';
 import GamepadDisplay from './GamepadDisplay';
 
 const BUTTON_POSITIONS = {

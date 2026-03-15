@@ -62,13 +62,7 @@ function getGamepadState(index = 0) {
 }
 
 
-// New helper to send recorded data over the existing socket
-function sendCustomGamepadState(state) {
-    if (ws.readyState === WebSocket.OPEN) {
-        let json = JSON.stringify(state);
-        ws.send(json);
-    }
-}
 
 
-export { getGamepadState, sendCustomGamepadState }
+
+export { getGamepadState }
