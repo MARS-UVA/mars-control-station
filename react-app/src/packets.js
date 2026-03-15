@@ -20,6 +20,19 @@ function getTransmissionActive(){
     return isTransmissionActive;
 }
 
+// New helper to send recorded data over the existing socket
+function sendCustomGamepadState(controllerInputs) {
+    if (ws.readyState === WebSocket.OPEN) {
+        const commandOutput = getRobotState(); // Get the commands sent to the robot from robotState.js
+
+      const uiState = {
+        type: 'uiState',
+        gamepad: controllerInputs,
+        commands: commandOutput
+      };
+      ws.send(JSON.stringify(uiState)); // Sends the jit to the websocket
+    }
+}
 
 const intervalTime = 30
 
@@ -37,4 +50,4 @@ setInterval(() => {
     ws.send(JSON.stringify(uiState)); // Sends the jit to the websocket
 }, intervalTime)
 
-export {getTransmissionActive, setTransmissionActive}
+export {getTransmissionActive, setTransmissionActive, sendCustomGamepadState}

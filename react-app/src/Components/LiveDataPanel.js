@@ -7,10 +7,11 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
   const round = num => (Math.round((num + Number.EPSILON) * 100) / 100).toFixed(2);
 
 
-  
   const maxValue = Math.max(...chartData.map(data => Math.max(data.front_left_wheel_current, data.front_right_wheel_current, data.back_left_wheel_current, data.back_right_wheel_current, 
     data.front_drum_current, data.back_drum_current, /*data.actuatorCapacity,*/ data.actuatorHeight)));
-  const Chart = function ({ dataKey }) {return (
+
+  const Chart = function ({ dataKey })
+   {return (
     <ResponsiveContainer width="100%" height={100}>
       <LineChart data={chartData} margin={{ left: 0 }}>
         <CartesianGrid strokeDasharray="3 3" />
@@ -56,7 +57,7 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
   return (
     <>
       <div className="panel">
-        {/* <h2 className="panel-title">Live Data Panel</h2> /}
+        {/* <h2 className="panel-title">Live Data Panel</h2> */}
         {/* <h3 className="panel-title">Charts</h3> */}
         <div className="chart-grid">
           <div className="chart-space">
