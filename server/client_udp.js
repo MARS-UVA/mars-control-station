@@ -43,19 +43,19 @@ ws.onmessage = (event) => {
     // commandOut is the action state, 0 = controller, 1 = dig, 2 = dump, 3 = stop
     const commandOut = `${jsonObj.commands.action}`;
     // gamepadOut is the button and stick states, in the order of x, y, a, b, lt, rt, lb, rb, dd, du, l3, r3, back, start, leftStick.x, leftStick.y, rightStick.x, rightStick.y
-    const gamepadOut = `${jsonObj.gamepad.buttons.x},${jsonObj.gamepad.buttons.y},${jsonObj.gamepad.buttons.a},${jsonObj.gamepad.buttons.b},
-    ${jsonObj.gamepad.buttons.lt},${jsonObj.gamepad.buttons.rt},${jsonObj.gamepad.buttons.lb},${jsonObj.gamepad.buttons.rb},${jsonObj.gamepad.buttons.dd},
-    ${jsonObj.gamepad.buttons.du},${jsonObj.gamepad.buttons.l3},${jsonObj.gamepad.buttons.r3},
-    ${jsonObj.gamepad.buttons.back},${jsonObj.gamepad.buttons.start},${jsonObj.gamepad.leftStick.x},${jsonObj.gamepad.leftStick.y},${jsonObj.gamepad.rightStick.x},
-    ${jsonObj.gamepad.rightStick.y}`;
+    const gamepadOut = `${jsonObj.gamepad.buttons.x},${jsonObj.gamepad.buttons.y},${jsonObj.gamepad.buttons.a},${jsonObj.gamepad.buttons.b},`
+    +`${jsonObj.gamepad.buttons.lt},${jsonObj.gamepad.buttons.rt},${jsonObj.gamepad.buttons.lb},${jsonObj.gamepad.buttons.rb},${jsonObj.gamepad.buttons.dd},`
+    +`${jsonObj.gamepad.buttons.du},${jsonObj.gamepad.buttons.l3},${jsonObj.gamepad.buttons.r3},`
+    +`${jsonObj.gamepad.buttons.back},${jsonObj.gamepad.buttons.start},${jsonObj.gamepad.leftStick.x},${jsonObj.gamepad.leftStick.y},${jsonObj.gamepad.rightStick.x},`
+    +`${jsonObj.gamepad.rightStick.y}`;
     
     // Combine into a single message
     let message = "pcktcontnt"+gamepadOut;
     // Converts to buffer to let the Jetson read it
-    buffer = Buffer.from(message);
+    let buffer = Buffer.from(message);
 
     // write commandOut to the first byte
-    buffer.writeUInt8LE(jsonObj.commands.action, 0);
+    buffer.writeUInt8(jsonObj.commands.action, 0);
     buffer.writeUInt16LE(buffer.length, 4);
     //console.log(message);
     client(JETSON_IP, buffer);
