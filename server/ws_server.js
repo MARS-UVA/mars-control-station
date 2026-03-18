@@ -4,24 +4,33 @@ const WebSocket = require('ws');
 
 const ServerSocket = require('./udp_server');
 const SignalingServer = require('./signaling_server')
+const UDPClient = require('./client_udp')
 
 const WS_PORT = 3001;
 
 const FEEDBACK_PORT = 2001;
-const SIGNALING_PORT = 6767;
+const CAMERA1_SIGNALING_PORT = 6767;
+const CAMERA2_SIGNALING_PORT = 6969;
+const JETSON_IP = process.env.JETSON_IP;
+const ESP_IP = process.env.ESP_IP;
+const JETSON_PORT = 8080;
+const ESP_PORT = 25000;
 
 
 const webSocketServer = new WebSocket.Server({port: WS_PORT});
+const feedbackSocket = new ServerSocket(FEEDBACK_PORT, (ServerSocket.feedbackOnMessage));
+const signalingServer1 = new SignalingServer(CAMERA1_SIGNALING_PORT);
+const signalingServer2 = new SignalingServer(CAMERA2_SIGNALING_PORT);
+const udpClient = new UDPClient(JETSON_PORT, JETSON_IP, ESP_PORT, ESP_IP);
 
 let websockets = {
     udpServer: null,
-    udpClient: null,
-    motorCurrent: null,
-    gyroRate: null
+    robotFeedback: null,
+    gamepad: null,
 };
 
 webSocketServer.on('connection', (ws) => {
-    firstMessage = true;
+    let firstMessage = true;
 
     ws.on('message', (message) => {
         if(firstMessage) {
@@ -32,23 +41,33 @@ webSocketServer.on('connection', (ws) => {
                     break;
                 case 1:
                     websockets.motorCurrent = ws;
-                    console.log("connected motor current ws");
+                    console.log("connected robot feedback ws");
                     break;
                 case 2:
-                    websockets.udpClient = ws;
-                    console.log("connected client_udp ws");
+                    // Removed this, can use for something else later
                     break;
-                case 6:
-                    websockets.gyroRate = ws;
-                    console.log("connected gyro ws");
+                case 3:
+                    websockets.gamepad = ws;
+                    console.log('connected gamepad ws');
                     break;
                 default:
                     break;
             }
             firstMessage = false;
         } else {
-            if(websockets.udpClient) {
-                websockets.udpClient.send(message);
+            if(true) {
+                try {
+                    data = JSON.parse(message);
+                } catch (e) {
+                    console.error('error parsing json: ', e);
+                    return;
+                }                
+                if (data.gamepad2) {
+                    // Handle sending to both esp and jetson
+                } else if (data.gamepad) {
+                    // Handle sending only to jetson
+                    udpClient.send_jetson(data);
+                }
             }
         }
     });
@@ -57,6 +76,3 @@ webSocketServer.on('connection', (ws) => {
         console.log('Disconnected Websocket client');
     });
 });
-
-const feedbackSocket = new ServerSocket(FEEDBACK_PORT, (ServerSocket.feedbackOnMessage));
-const signalingServer = new SignalingServer(SIGNALING_PORT);

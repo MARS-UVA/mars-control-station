@@ -4,11 +4,11 @@ let isTransmissionActive = true; // New control flag
 
 const ws = new WebSocket('ws://localhost:3001');
 ws.onopen = () => {
-  ws.send(-1)
-  //console.log('websocket connected');
+  ws.send(3);
+  console.log('gamepad websocket connected');
 };
 ws.onclose = () => {
-  //console.log('websocket closed');
+  console.log('gamepad websocket closed');
 };
 
 
