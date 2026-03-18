@@ -1,23 +1,46 @@
-import React, { useEffect, useRef } from "react";
-import Guidelines from "./Guidelines"; // Assuming this exists
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { Camera, ChartNoAxesColumnDecreasing, Pause, Play } from "lucide-react";
+import { flipPausedState, getPausedState } from "../robotState";
+import Guidelines from "../gamepad/Guidelines";
+import pauseImage from '../assets/touchedNpaused.png';
 
 const styles = {
   container: {
-    margin: '10px 0',
-    width: '100%',
-    height: '50%',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center'
+    margin: '10px 0', // Adds margin on top and bottom
+    position: 'relative',
+    width: '750px',
+    height: '475px'
   },
   cameraContainer: {
-    position: 'relative',
-    width: '100%',
-    height: '100%',
-    overflow: 'hidden',
-    backgroundColor: '#000',
-    borderRadius: '8px',
-    boxShadow: '0 4px 6px rgba(0,0,0,0.3)'
+    position: "relative",
+    width: "100%",
+    height: "100%",
+    overflow: "hidden",
+    backgroundColor: "black",
+    borderRadius: "8px",
+  },
+  pauseImage : {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    width: "50%",
+    height: "50%",
+    objectFit: "contain",
+  },
+  toggleButton: {
+    position: "absolute",
+    top: "10px",
+    right: "10px",
+    background: "rgba(0,0,0,0.6)",
+    border: "none",
+    borderRadius: "6px",
+    color: "white",
+    padding: "6px 10px",
+    cursor: "pointer",
+    display: "flex",
+    alignItems: "center",
+    gap: "4px",
   },
   cameraFeed: {
     width: '100%',

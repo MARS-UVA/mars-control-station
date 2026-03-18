@@ -4,17 +4,22 @@ Updates through socket connection
 */
 
 import React, {useState, useEffect} from "react";
+import Draggable from "react-draggable";
 
+import "./themes.css";
 import "./App.css";
 import LiveDataPanel from "./Components/LiveDataPanel";
-import GamepadPanel from "./Components/GamepadPanel";
+import GamepadPanel from "./gamepad/GamepadPanel";
 import DriveStatePanel from "./Components/DriveStatePanel";
 import WebcamPanel from "./Components/WebcamPanel";
 import Socket from "./Components/Socket";
 import SingleLiveDataStream from "./Components/SingleLiveDataStream";
 import ActuatorDataDisplay from "./Components/ActuatorDataDisplay";
-
-
+import Timer from "./Components/Timer";
+import ThemeChanger from "./Components/ThemeChanger";
+import TiltingRods from "./Components/TiltingRods";
+import DisplayMeter from "./Components/DisplayMeter";
+import RightButtonPanel from "./Components/RightButtonPanel";
 
 const App = () => {
 
@@ -22,12 +27,15 @@ const App = () => {
   const [gamepadStatus, setGamepadStatus] = useState('No gamepad connected!');
   const [gamepadData, setGamepadData] = useState(null);
   const [driveState, setDriveState] = useState('Idle');
+  const [camera0Active, setCamera0Active] = useState(true);
+  const [camera4Active, setCamera4Active] = useState(true);
 
   
   const [timestamp, setTimestamp] = useState(0);
   const [chartData, setChartData] = useState(Array.from({ length: 1 }, (_, i) => ({
     
     time: i,
+    // goon mode? ACTIVATED
     leftFrontWheel: Math.random() * 100,
     rightFrontWheel: Math.random() * 100,
     leftBackWheel: Math.random() * 100,
@@ -43,6 +51,7 @@ const App = () => {
   })));
   const [lastDataPoint, setLastDataPoint] = useState(chartData[chartData.length - 1]);
   const [valueData, setData] = useState("data");
+  
 
   
 
@@ -54,11 +63,11 @@ const App = () => {
 
       <div className="content">
         <div className="left-panel">
-          <GamepadPanel gamepadStatus={gamepadStatus} setGamepadStatus={setGamepadStatus} gamepadData={gamepadData} setGamepadData={setGamepadData}/>
-
-          <DriveStatePanel />
-
-          <ActuatorDataDisplay />
+          <GamepadPanel gamepadStatus={gamepadStatus} setGamepadStatus={setGamepadStatus} gamepadData={gamepadData} setGamepadData={setGamepadData} camera0Active={camera0Active} camera4Active={camera4Active}/>
+          {/* Hiding the displays that don't do anything currently */}
+          {/* <DisplayMeter current={80} total={100} left = {155} top = {580} height = {40} width = {180} label="Current" />  */} {/*ADD THE METHODS OF GETTING THESE VALUES!!*/}
+          {/* <DisplayMeter current={80} total={100} left = {155} top = {655} height = {40} width = {180} label="Capacity" /> */}
+          {/* <ActuatorDataDisplay lastDataPoint={lastDataPoint}/> */}
         </div>
 
         <div className="middle-panel">
@@ -68,7 +77,13 @@ const App = () => {
 
         <div className="right-panel">
           <LiveDataPanel lastDataPoint={lastDataPoint} timestamp={timestamp} chartData={chartData}/>
+          <RightButtonPanel></RightButtonPanel>
+          {/* <TiltingRods/> hiding since they're incomplete*/}
         </div>
+        <Draggable>
+          <Timer/>
+        </Draggable>
+        <ThemeChanger/>
       </div>
     </div>
   );

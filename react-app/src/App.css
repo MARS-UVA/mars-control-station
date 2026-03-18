@@ -5,56 +5,23 @@
   padding: 16px;
   /* max-width: 96rem; */
   margin: auto;
+  background-color: var(--bg-color);
+  color: var(--primary-color);
 }
 
-.title {
-  font-size: 2rem;
-  font-weight: bold;
-  margin-bottom: 24px;
-  color: #2d3748;
-}
-
-.nav {
-  width: 100%;
-  margin-bottom: 24px;
-}
-
-.tab-list {
-  display: flex;
-  justify-content: center;
-  gap: 4px;
-  background-color: #f7fafc;
-  padding: 4px;
-  border-radius: 8px;
-  list-style-type: none;
-}
-
-.tab-button {
-  padding: 8px 16px;
-  border-radius: 8px;
-  border: none;
-  background: none;
-  font-weight: 600;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  transition: background-color 0.3s;
-}
-
-.tab-button.active {
-  background-color: #ffffff;
-  color: #2d3748;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.tab-button:not(.active):hover {
-  background-color: #e2e8f0;
-  color: #4a5568;
+html, body {
+  overflow: hidden;
+  height: 100%;
+  margin: 0;
 }
 
 .content {
   display: flex;
   flex-direction: row;
+  color: var(--primary-color);
   width: 100%;
   height: 100%;
+  position: relative;
 }
 
 .left-panel {
@@ -64,6 +31,8 @@
   width: 27%;
   padding: 10px;
   height: 100%;
+  color: var(--primary-color);
+  background-color: var(--bg-color);
   /* background-color: #f0f0f0; Optional for visual distinction */
 }
 
@@ -75,56 +44,60 @@
 
 .right-panel {
   width: 27%;
+  height: 100%;
   padding: 10px;
   /* background-color: #d0d0d0; Optional for visual distinction */
 }
-
+/*changes the top left and right panels*/
 .panel {
-  background-color: #ffffff;
+  background-color: var(--panel-bg-color);
   padding: 16px;
   border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px var(--box-shadow-color);
 }
-
+/*changes the bottom left panels*/
 .data-stream-panel {
   padding: 10px;
+  display: fixed;
   width: 100%;
   height: 100px;
   margin: 0px 5px;
-  border: 1px solid #ccc;
+  border: 1px solid var(--border-color);
   border-radius: 5px;
   margin-bottom: 10px;
   text-align: center;
   border-radius: 8px;  
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px var(--box-shadow-color);
+  background-color: var(--panel-bg-color);
   transition: background-color 0.3s ease; /* Smooth transition for color changes */
+  color: var(--primary-color);
 }
-
+/* changes fonts of all bottom left main panel text */
 .data-stream-name {
   font-size: 20px;
-  color: #555;
+  display: fixed;
+  color: var(--primary-color);
   /* margin-bottom: 5px; */
 }
 
+/* changes lower fonts of the texts in panels affect by above thing*/
 .data-stream-value {
   font-size: 24px;
+  display: fixed;
   font-weight: bold;
-  color: #000;
+  color: var(--primary-color);
+  background-color: var(--bg-color);
   margin-top: -20px;
 }
 
-.lever-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-}
-
+/*changes "Controls"*/
 .panel-title {
   text-align: center;
   margin-bottom: 8px;
   font-size: 1.125rem;
   font-weight: 600;
-  color: #2d3748;
+  color: var(--primary-color);
+  background-color: var(--bg-color);
 }
 
 .webcam-container {
@@ -150,8 +123,6 @@
   position: absolute;
   top: 8px;
   left: 8px;
-  background-color: #2d3748;
-  color: #ffffff;
   border-radius: 50%;
   padding: 4px;
 }
@@ -161,72 +132,9 @@
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
   margin-bottom: 16px;
+  
 }
-
-.command-button {
-  /* background-color: #2d3748; */
-  background: none;
-  color: black;
-  border-radius: 8px;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  padding: 8px 8px;
-  font-size: 0.875rem;
-  transition: background-color 0.3s;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  border: 1px solid #e2e8f0;
-  margin-bottom: 10px; /* Add spacing between buttons */
-}
-
-.command-button:hover {
-  background-color: #4a5568;
-  color: white;
-}
-
-.command-button.active {
-  background-color: #2d3748;
-  color: white;
-}
-
-.estop-button {
-  width: 100%;
-  height: 11.25rem;
-  padding: 12px;
-  background-color: #f56565;
-  color: #ffffff;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-  border-radius: 8px;
-  border: 1px solid #e2e8f0;
-  text-align: center;
-  transition: background-color 0.3s;
-  /* margin-top: 10px; Add spacing between buttons in the right column */
-}
-
-.estop-button:hover {
-  background-color: #e53e3e;
-}
-
-.move-control {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.move-label {
-  font-size: 0.875rem;
-  color: #718096;
-}
-
-.move-slider {
-  margin: 0 8px;
-  flex-grow: 1;
-}
-
-.move-current {
-  text-align: center;
-  margin-top: 4px;
-  font-size: 0.875rem;
-  color: #718096;
-}
+/*changes text under "Controls" box*/
 
 .chart-grid {
   display: grid;
@@ -239,120 +147,31 @@
   padding: 10px;
   font-variant-numeric: tabular-nums;
 }
-.lever-space {
-  text-align: center;
-  padding: 10px;
-  font-variant-numeric: tabular-nums;
-}
-
-.lever-grid {
-  display: flex;
-  justify-content: center;
-  grid-template-columns: repeat(4, 1fr);
-}
-
-.lever {
-  height: 96px;
-  width: 4px;
-  background-color: #e2e8f0;
-  position: relative;
-  border-radius: 4px;
-}
-
-.lever-fill {
-  position: absolute;
-  bottom: 0;
-  width: 4px;
-  background-color: #2d3748;
-  border-radius: 4px;
-}
-
-.lever-value {
-  margin-top: 4px;
-  background-color: #2d3748;
-  color: #ffffff;
-  border-radius: 4px;
-  padding: 2px 4px;
-  font-size: 0.75rem;
-}
-
-.reading-grid {
-  display: flex;
-  justify-content: center;
-}
-
-.reading {
-  background-color: #2d3748;
-  color: #ffffff;
-  border-radius: 8px;
-  padding: 4px 8px;
-  margin: 4px;
-  font-size: 0.875rem;
-}
 
 .gamepad-status {
   text-align: center;
-  color: #718096;
+  color: var(--primary-color);
+  margin: 0 0 6px 0; /* remove large top/bottom margins */
+  font-size: 1.2rem; /* slightly larger font size, as per CDR recommendation */
 }
 .gamepad-data {
-  background-color: #f5f5f5;
-  border: 1px solid #ddd;
+  background-color: var(--bg-color);
+  border: 1px solid var(--border-color);
   padding: 10px;
   border-radius: 5px;
   font-family: monospace;
   white-space: pre-wrap; /* Allows wrapping of long lines */
   word-wrap: break-word; /* Breaks long words */
-}
-.lever-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  color: var(--primary-color);
 }
 
-.lever {
-  width: 50px;
-  height: 200px;
-  border: 1px solid #000;
-  position: relative;
+.panel {
+  padding: 12px; /* slightly smaller panel padding */
 }
 
-.lever-fill {
-  width: 100%;
-  background-color: #8884d8;
-  position: absolute;
-  bottom: 0;
-}
-
-.lever-label {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-  margin-top: 10px;
-}
-
-.drive-panel-grid {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 20px; /* Optional spacing between columns */
-}
-
-.drive-buttons-column {
-  display: flex;
-  flex-direction: column;
-  width: 50%; /* Adjust as needed */
-}
-
-.estop-buttons-column {
-  display: flex;
-  flex-direction: column;
-  width: 50%; /* Adjust as needed */
-}
 
 .actuator-data-display {
-  display: flex;
+  display: fixed;
   flex-direction: column;
 }
 
@@ -363,8 +182,8 @@
 .actuator-section h3{
   font-size: 18px;
   margin-bottom: 10px;
-  color: #333;
   text-align: center;
+  color: var(--primary-color);
 }
 
 .actuator-data {
@@ -378,21 +197,291 @@
   padding-right: 10px;
 
 }
-.actuator-button {
-  width: 100%;
-  padding: 10px 20px;
-  margin: 5px;
-  border: none;
-  border-radius: 5px;
-  font-size: 14px;
-  background-color: white;  
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);  
-  border: 1px solid #ccc;
-  transition: background-color 0.1s, transform 0.1s;
+
+.actuator-button-dig:hover, 
+.actuator-button-dig2:hover{
+  transform: scale(1.1);
+  background-color: var(--accent-color1-hover);
+  color: var(--primary-color);
+}
+.actuator-button-dump:hover,
+.actuator-button-mid:hover{
+  transform: scale(1.1);
+  background-color: var(--accent-color2-hover);
+  color: var(--primary-color);
+}
+.actuator-button-stop:hover,
+.actuator-button-top:hover {
+  transform: scale(1.1);
+  background-color: var(--accent-color3-hover);
+  color: var(--primary-color);
 }
 
-.actuator-button:hover {
-  transform: scale(1.1);
-  background-color: lightgray;
+
+.actuator-button-dig{
+  padding: 10px 20px;
+  margin: 5px;
+  font-size: 14px;
+  background-color: var(--accent-color3);
+  border-radius: 8px;
+  box-shadow: 0 4px 6px var(--box-shadow-color);
+  border: 1px solid var(--border-color);
+  color: var(--primary-color);
+  background-color: var(--accent-color1);
 }
+
+.actuator-button-dump{
+  padding: 10px 20px;
+  margin: 5px;
+  font-size: 14px;
+  background-color: var(--accent-color1);
+  border-radius: 8px;
+  box-shadow: 0 4px 6px var(--box-shadow-color);
+  border: 1px solid var(--border-color);
+  color: var(--primary-color);
+  background-color: var(--accent-color2);
+}
+
+.actuator-button-stop{
+  padding: 10px 20px;
+  margin: 5px;
+  font-size: 14px;
+  background-color: var(--bg-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 6px var(--box-shadow-color);
+  border: 1px solid var(--border-color);
+  color: var(--primary-color);
+  background-color: var(--accent-color3);
+}
+
+.actuator-button-dig2{
+  padding: 10px 20px;
+  margin: 5px;
+  font-size: 14px;
+  background-color: var(--bg-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 6px var(--box-shadow-color);
+  border: 1px solid var(--border-color);
+  color: var(--primary-color);
+  background-color: var(--accent-color1);
+}
+
+.actuator-button-mid{
+  padding: 10px 20px;
+  margin: 5px;
+  font-size: 14px;
+  background-color: var(--bg-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 6px var(--box-shadow-color);
+  border: 1px solid var(--border-color);
+  color: var(--primary-color);
+  background-color: var(--accent-color2);
+}
+
+.actuator-button-top{
+  padding: 10px 20px;
+  margin: 5px;
+  font-size: 14px;
+  background-color: var(--bg-color);
+  border-radius: 8px;
+  box-shadow: 0 4px 6px var(--box-shadow-color);
+  border: 1px solid var(--border-color);
+  color: var(--primary-color);
+  background-color: var(--accent-color3);
+}
+
+.panel-title {
+  font-size: 1.25rem; /* slightly larger font size */
+  font-weight: 700;   /* bolder font weight */
+  margin-bottom: 12px; /* increased margin for better spacing */
+  color: var(--primary-color);
+  background-color: var(--bg-color);
+}
+.drive-panel-grid {
+  gap: 16px; /* increased gap for better spacing */
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  height: max(fit-content, 200px);
+  justify-content: space-between;
+  align-items: stretch;
+}
+
+.drive-panel-stop-col {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.drive-panel-other-col {
+  display: flex;
+  flex-direction: column;
+  gap:16px;
+  align-items: center;
+  justify-content: center;
+}
+
+/* common square button behavior */
+.command-button {
+  width: 100%;
+  display: flex;
+  margin: 0;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  box-sizing: border-box;
+}
+/* keep visual styles for variants, but remove fixed width/height */
+.command-button-sstop{
+  width: 100%;
+  height: 100%;
+  position: relative;
+  border-radius: 8px;
+  font-size: 2.5rem;
+  box-shadow: 0 4px 6px var(--box-shadow-color);
+  border: 1px solid var(--border-color);
+  color: var(--primary-color)
+}
+.command-button-digauto,
+.command-button-dumpauto {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  border-radius: 8px;
+  font-size: 1.5rem;
+  box-shadow: 0 4px 6px var(--box-shadow-color);
+  border: 1px solid var(--border-color);
+  color: var(--primary-color)
+}
+
+/* variant colors (preserve your existing color vars) */
+.command-button-sstop { background-color: rgb(215, 69, 69);}
+.command-button-digauto { background-color: var(--accent-color2); }
+.command-button-dumpauto { background-color: var(--accent-color3); }
+
+.command-button-sstop:hover{
+  transform: scale(1.05);
+  background-color: rgb(253, 124, 124);
+  color: var(--primary-color);
+}
+.command-button-digauto:hover{
+  transform: scale(1.05);
+  background-color: var(--accent-color2-hover);
+  color: var(--primary-color);
+}
+
+.command-button-dumpauto:hover{
+  transform: scale(1.05);
+  background-color: var(--accent-color3-hover);
+  color: var(--primary-color);
+}
+
+/* 
+TODO: Change right and bottom values to offset timer in the right and bottom screen
+*/
+.timer-overlay {
+  position: absolute;         /* was fixed */
+  right: 30%;                 /* aligns with camera edge */
+  top: 50%;                   /* vertical center */
+  transform: translateY(-50%);
+
+  background-color: var(--bg-color);
+  padding: 8px 10px;          /* thinner */
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  min-width: 140px;           /* thinner width */
+  z-index: 50;
+
+  box-shadow: 0 4px 6px var(--box-shadow-color);
+
+}
+.timer-display {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--primary-color);
+  margin-bottom: 8px;
+  font-family: monospace; /* Critical for keeping numbers aligned */
+  cursor: grab;
+  background-color: var(--bg-color);
+}
+
+.timer-button-start {
+  background-color: var(--bg-color);
+  color: var(--primary-color); 
+  border: none;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid var(--border-color);
+  margin: 2px 0;
+}
+
+.timer-button-reset {
+  background-color: var(--bg-color);
+  color: var(--primary-color);
+  border: none;
+  padding: 4px 10px;
+  font-size: 0.75rem;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid var(--border-color);
+  margin: 2px 0;
+}
+
+.theme-changer {
+  position: fixed;
+  bottom: 8px;
+  left: 35px;
+  background-color: var(--panel-bg-color);
+  color: var(--primary-color);
+  padding: 0px 0px;
+  border-radius: 6px;
+  width: auto;
+  height: auto;
+}
+.hb {
+  font-family: system-ui, sans-serif;
+}
+
+
+.hb__top {
+  display: fixed;
+  justify-content: space-between;
+  font-size: 12px;
+  margin-bottom: 6px;
+  opacity: 0.9;
+}
+
+
+.hb__track {
+  position: relative;
+  background: #134341;         /* dark gray */
+  border: 2px solid #000;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+
+.hb__fill {
+  height: 100%;
+  width: 0%;
+
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+
+
+  transition: width 220ms ease-out;
+  will-change: width;
+}
+
+.meter_fill{
+
+  height: 2;
+  
+}
+
