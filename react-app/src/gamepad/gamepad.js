@@ -58,7 +58,7 @@ function getGamepadState(index = 0) {
             leftStick: getLeftStickFromGamepad(gamepads[index]),
             rightStick: getRightStickFromGamepad(gamepads[index]),
             buttons: getButtonObjectFromGamepad(gamepads[index])
-        }
+    }
 }
 
 

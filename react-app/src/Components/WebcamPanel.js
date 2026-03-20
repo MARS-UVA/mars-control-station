@@ -45,114 +45,138 @@ const styles = {
   cameraFeed: {
     width: '100%',
     height: '100%',
-    objectFit: 'cover'
+    objectFit: 'cover',
+    display: 'block'
   },
-  overlayText: {
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    color: "white",
-    fontSize: "1.5rem",
-    background: "rgba(0,0,0,0.5)",
-    padding: "10px 20px",
-    borderRadius: "8px",
-  },
+  overlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    pointerEvents: 'none',
+    zIndex: 10
+  }
 };
 
-// This component renders a panel with a webcam feed (currently showing laptop webcam)
-function WebcamPanel({index, gamepadData, cameraActive, setCameraActive}) {
-    const id = parseInt(index);
-    //const [imageSrc, setImageSrc] = useState(null);
-    const imgRef = useRef(null);
-    const lastUrl = useRef(null);
-    const socketRef = useRef(null);
+function WebcamPanel({ signalingPort, gamepadData, index }) {
+  const videoRef = useRef(null);
+  const wsRef = useRef(null);
+  const pcRef = useRef(null);
+  
+  // Change this to ip of signaling server if not on same computer
+  const signalingUrl = `ws://localhost:${signalingPort}`;
+
+  useEffect(() => {
+    const pc = new RTCPeerConnection({
+      iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+    });
     
-
-    const createSocket = useCallback(() => {
-      const ws = new WebSocket("ws://localhost:3001");
-      ws.binaryType = "arraybuffer";
-
-      ws.onopen = () => {
-        const buffer = new Uint8Array([id]);
-        ws.send(buffer);
-        //console.log('webcamPanel ws connected');
-      };
-
-      ws.onmessage = (event) => {
-        const blob = new Blob([event.data], {type: 'image/jpeg'});
-        const newUrl = URL.createObjectURL(blob);
-        //setImageSrc(URL.createObjectURL(blob));
-
-        if(lastUrl.current) {
-          const oldUrl = lastUrl.current;
-          requestAnimationFrame(() => URL.revokeObjectURL(oldUrl));
-        }
-        lastUrl.current = newUrl;
-
-        if(imgRef.current) {
-          imgRef.current.src = newUrl;
-        }
-      };
-
-      return ws;
-    }, [id]);
-
-    useEffect(() => {
-      const ws = createSocket();
-      socketRef.current = ws;
-      return() => {
-        if (ws && ws.readyState === WebSocket.OPEN) {
-          ws.close();
-        } else if (ws) {
-          ws.close();
-        }
-        if(lastUrl.current) URL.revokeObjectURL(lastUrl.current)
-      };
-    }, [createSocket]);
+    pc.addTransceiver('video', { direction: 'recvonly' });
     
-    const sendCommand = (cmd) => { // Used to pause
-        
+    pcRef.current = pc;
+    
+    let candidateQueue = [];
+    let isRemoteSet = false;
+
+    const ws = new WebSocket(signalingUrl);
+    wsRef.current = ws;
+
+    // WebRTC Event Handlers
+    pc.ontrack = (event) => {
+      console.log(`[${signalingUrl}] Track received`);
+      if (videoRef.current) {
+        videoRef.current.srcObject = event.streams[0];
+        videoRef.current.play().catch(e => console.error("Autoplay failed:", e));
+      }
+    };
+
+    pc.onicecandidate = (event) => {
+      if (event.candidate && ws.readyState === WebSocket.OPEN) {
+        ws.send(JSON.stringify({ ice: event.candidate }));
+      }
+    };
+
+    // WebSocket Event Handlers
+    ws.onopen = () => {
+      console.log(`[Cam ${index}] Connected to ${signalingUrl}`);
+      ws.send(JSON.stringify({ cmd: 'HELLO_FROM_VIEWER' }));
+    };
+
+    ws.onmessage = async (event) => {
+      let data = event.data;
+
+      if (data instanceof Blob) {
+        data = await data.text();
       }
 
-    const toggleFeed = () => {
-
-      if(!getPausedState()){
-        // Toggles the video feed on
-        flipPausedState();
-        console.log("resuming video");
-      } else {
-        // Toggles the video feed off
-        flipPausedState();
-        console.log("pausing video");
+      let msg;
+      try {
+        msg = JSON.parse(data);
+      } catch (e) {
+        console.error("JSON Parse Error:", e);
+        return;
       }
-    }
 
-    return (
+      if (msg.cmd === 'HELLO_FROM_STREAMER') {
+        ws.send(JSON.stringify({ cmd: 'HELLO_FROM_VIEWER' }));
+      } 
+      else if (msg.sdp && msg.sdp.type === 'offer') {
+        console.log("Received Offer - Setting Remote Description");
+        try {
+          await pc.setRemoteDescription(new RTCSessionDescription(msg.sdp));
+          isRemoteSet = true;
+          
+          // Add candidates that arrived while waiting
+          console.log(`Processing ${candidateQueue.length} queued candidates`);
+          while (candidateQueue.length > 0) {
+             const c = candidateQueue.shift();
+             await pc.addIceCandidate(new RTCIceCandidate(c));
+          }
+
+          const answer = await pc.createAnswer();
+          await pc.setLocalDescription(answer);
+          ws.send(JSON.stringify({ sdp: { type: 'answer', sdp: answer.sdp } }));
+        } catch (e) {
+          console.error(`[Cam ${index}] SDP Error:`, e);
+        }
+      } 
+      else if (msg.ice) {
+        try {
+          if (isRemoteSet) {
+             console.log("Adding ICE Candidate directly");
+             await pc.addIceCandidate(new RTCIceCandidate(msg.ice));
+          } else {
+             console.log("Queueing ICE Candidate (Remote not set yet)");
+             candidateQueue.push(msg.ice);
+          }
+        } catch (e) {
+          console.error(`[Cam ${index}] ICE Error:`, e);
+        }
+      }
+    };
+
+    // Cleanup
+    return () => {
+      if (ws.readyState === WebSocket.OPEN) ws.close();
+      if (pc.signalingState !== 'closed') pc.close();
+    };
+  }, [signalingPort, index]);
+
+  return (
     <div style={styles.container}>
-      {/* Camera feed container */}
       <div style={styles.cameraContainer}>
-        <img 
-          ref={imgRef}
+        <video
+          ref={videoRef}
           style={styles.cameraFeed}
-          alt="Camera Feed"
+          autoPlay
+          playsInline
+          muted
+          controls={false}
         />
-
-        {/* Toggle button */}
-        {/* <button style={styles.toggleButton} onClick={toggleFeed}>
-          {getPausedState() ? <Play size={16} /> : <Pause size={16} />}
-          {getPausedState() ? "Resume" : "Pause"}
-        </button> */}
-
-        {/* Overlay pause image when paused */}
-         {/* {!cameraActive && (
-          <img className="pause-image" src={pauseImage} alt={"Paused"} style={styles.pauseImage} />
-         )} */}
-        {/* Overlay the parking guidelines */}
-        {gamepadData ? <Guidelines leftStick={gamepadData.leftStick} /> : <></>}
       </div>
     </div>
-    )
+  );
 }
 
 export default WebcamPanel;
