@@ -11,9 +11,8 @@ class ServerSocket {
     /**
      * 
      * @param {Number} port 
-     * @param {(receivedChunks: object) => void} onMessage 
      */
-    constructor (port, onMessage) {
+    constructor (port) {
         this.PORT = port;
         this.receivedChunks = {}
         this.packetCount = 0;
@@ -36,9 +35,6 @@ class ServerSocket {
             this.server.setRecvBufferSize(MESSAGE_LENGTH * 10000);    // This buffer could change size here to be more optimal im sure
         });
 
-        this.receivedChunks = {}
-        this.packetCount = 0;
-
         // Event: On receiving a message
         this.server.on('message', (message, remote) => {
             // console.log(message.subarray(0, 10));
@@ -58,7 +54,7 @@ class ServerSocket {
             //Probably keep check recievedChunks length in default, rest in logic
             if(sequenceNumber+1 >= totalChunks) {
                 // This variable (function) does logic speicific to type of data socket handles
-                onMessage(this.receivedChunks)
+                this.onMessage(this.receivedChunks)
                 this.receivedChunks = {}
             }
             
@@ -90,12 +86,12 @@ class ServerSocket {
             console.log("Server socket closed");
         });
     }
-}
 
-const feedbackOnMessage = (data) => {
-    const buffer = Buffer.concat(Object.values(data));
-    const messageBuf = buffer.subarray(0, 36);
-    this.ws.send(messageBuf);
+    onMessage = (data) => {
+        const buffer = Buffer.concat(Object.values(data));
+        const messageBuf = buffer.subarray(0, 72);
+        this.ws.send(messageBuf);
+    }
 }
 
 module.exports = ServerSocket;

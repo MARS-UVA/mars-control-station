@@ -34,19 +34,20 @@ webSocketServer.on('connection', (ws) => {
 
     ws.on('message', (message) => {
         if(firstMessage) {
+            console.log(typeof message, message);
             switch (message.readUInt8()) {
                 case 0:
                     websockets.udpServer = ws;
                     console.log("connected udp server ws");
                     break;
                 case 1:
-                    websockets.motorCurrent = ws;
+                    websockets.robotFeedback = ws;
                     console.log("connected robot feedback ws");
                     break;
                 case 2:
                     // Removed this, can use for something else later
                     break;
-                case 3:
+                case 51:
                     websockets.gamepad = ws;
                     console.log('connected gamepad ws');
                     break;
@@ -55,7 +56,7 @@ webSocketServer.on('connection', (ws) => {
             }
             firstMessage = false;
         } else {
-            if(true) {
+            if(ws === websockets.gamepad) {
                 try {
                     data = JSON.parse(message);
                 } catch (e) {
@@ -66,8 +67,11 @@ webSocketServer.on('connection', (ws) => {
                     // Handle sending to both esp and jetson
                 } else if (data.gamepad) {
                     // Handle sending only to jetson
+                    console.log('sending controller to jetson')
                     udpClient.send_jetson(data);
                 }
+            } else if (ws === websockets.udpServer) {
+                websockets.robotFeedback.send(message);
             }
         }
     });
