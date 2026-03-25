@@ -64,10 +64,13 @@ webSocketServer.on('connection', (ws) => {
                     return;
                 }                
                 if (data.gamepad2) {
-                    // Handle sending to both esp and jetson
+                    // Handle sending to esp
+                    console.log('sending controller to esp');
+                    udpClient.send_jetson(data);
+                    udpClient.send_esp(data);
                 } else if (data.gamepad) {
                     // Handle sending only to jetson
-                    console.log('sending controller to jetson')
+                    console.log('sending controller to jetson');
                     udpClient.send_jetson(data);
                 }
             } else if (ws === websockets.udpServer) {
