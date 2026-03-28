@@ -13,7 +13,8 @@ window.addEventListener('gamepaddisconnected', e => {
  * * @param {Gamepad} gamepad 
  * @returns
  */
-const getButtonObjectFromGamepad = (gamepad) => {
+const getButtonObjectFromGamepad = (index) => {
+    const gamepad = navigator.getGamepads()[index];
     return {
         x: gamepad.buttons[2].value,
         y: gamepad.buttons[3].value,
@@ -34,14 +35,16 @@ const getButtonObjectFromGamepad = (gamepad) => {
     }
 }
 
-const getLeftStickFromGamepad = (gamepad) => {
+const getLeftStickFromGamepad = (index) => {
+    const gamepad = navigator.getGamepads()[index];
     return {
         x: gamepad.axes[0],
         y: -gamepad.axes[1]
     }
 }
 
-const getRightStickFromGamepad = (gamepad) => {
+const getRightStickFromGamepad = (index) => {
+    const gamepad = navigator.getGamepads()[index];
     return {
         x: gamepad.axes[2],
         y: -gamepad.axes[3]
@@ -55,9 +58,9 @@ function getGamepadState(index = 0) {
     // Add safety check in case gamepad is disconnected but index is requested
     if (!gamepads[index]) return null;
     return {
-            leftStick: getLeftStickFromGamepad(gamepads[index]),
-            rightStick: getRightStickFromGamepad(gamepads[index]),
-            buttons: getButtonObjectFromGamepad(gamepads[index])
+        leftStick: getLeftStickFromGamepad(index),
+        rightStick: getRightStickFromGamepad(index),
+        buttons: getButtonObjectFromGamepad(index)
     }
 }
 

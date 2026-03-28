@@ -17,7 +17,7 @@ const JETSON_PORT = 8080;
 const ESP_PORT = 25000;
 
 
-const webSocketServer = new WebSocket.Server({port: WS_PORT});
+const webSocketServer = new WebSocket.Server({ port: WS_PORT });
 const feedbackSocket = new ServerSocket(FEEDBACK_PORT, (ServerSocket.feedbackOnMessage));
 const signalingServer1 = new SignalingServer(CAMERA1_SIGNALING_PORT);
 const signalingServer2 = new SignalingServer(CAMERA2_SIGNALING_PORT);
@@ -33,7 +33,7 @@ webSocketServer.on('connection', (ws) => {
     let firstMessage = true;
 
     ws.on('message', (message) => {
-        if(firstMessage) {
+        if (firstMessage) {
             console.log(typeof message, message);
             switch (message.readUInt8()) {
                 case 0:
@@ -56,13 +56,14 @@ webSocketServer.on('connection', (ws) => {
             }
             firstMessage = false;
         } else {
-            if(ws === websockets.gamepad) {
+            if (ws === websockets.gamepad) {
                 try {
                     data = JSON.parse(message);
+                    // console.log('received gamepad data: ', data.gamepad.leftStick, data.gamepad2.leftStick);
                 } catch (e) {
                     console.error('error parsing json: ', e);
                     return;
-                }                
+                }
                 if (data.gamepad2) {
                     // Handle sending to esp
                     console.log('sending controller to esp');

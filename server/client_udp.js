@@ -100,16 +100,16 @@ class UDPClient {
         // header/start stuff
         buffer.writeUInt8(0xFF, 0);
         buffer.writeUInt8(0xFF, 1);
-        buffer.writeUInt8(0x04, 2);
+        // buffer.writeUInt8(0x04, 2);
         // Calculate wheel speeds
+        buffer.writeUInt8(left_wheel_speed, 2);
         buffer.writeUInt8(left_wheel_speed, 3);
-        buffer.writeUInt8(left_wheel_speed, 4);
+        buffer.writeUInt8(right_wheel_speed, 4);
         buffer.writeUInt8(right_wheel_speed, 5);
-        buffer.writeUInt8(right_wheel_speed, 6);
         // Non-wheel motors
-        buffer.writeUInt8(bucket_ladder_actuator, 7);
-        buffer.writeUInt8(conveyor_belt, 8);
-        buffer.writeUInt8(track_actuators, 9);
+        buffer.writeUInt8(bucket_ladder_actuator, 6);
+        buffer.writeUInt8(conveyor_belt, 7);
+        buffer.writeUInt8(track_actuators, 8);
         console.log(buffer);
         this.socket.send(buffer, this.esp_port, this.esp_ip, (err) => {
             if (err) {
