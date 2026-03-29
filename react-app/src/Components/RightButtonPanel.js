@@ -1,5 +1,12 @@
 import React, {useState} from 'react';
 import { getActionState, setActionState } from '../robotState';
+import { sendCustomCommandState } from '../packets';
+
+const actions_enum = {
+    'Dig Auto': 1,
+    'Dump Auto': 2,
+    'Stop': 3,
+}
 
 const BUTTON_CLASSES = {
   'STOP': 'command-button-sstop',
@@ -20,10 +27,9 @@ const CommandButton = React.memo(({ label, className, onClick, style }) => (
 function RightButtonPanel() {
 
 const doFunction = label => { 
-   // TODO: Implement the actual functionality for each button
-   if (label.toLowerCase() === 'dig auto')   sendCustomCommandState(1);
-    else if (label.toLowerCase() === 'dump auto')   sendCustomCommandState(2);
-    else if (label.toLowerCase() === 'stop')   sendCustomCommandState(3);
+   if (label.toLowerCase() === 'dig auto')   sendCustomCommandState(actions_enum['Dig Auto']);
+    else if (label.toLowerCase() === 'dump auto')   sendCustomCommandState(actions_enum['Dump Auto']);
+    else if (label.toLowerCase() === 'stop')   sendCustomCommandState(actions_enum['Stop']);
 
 }
 
