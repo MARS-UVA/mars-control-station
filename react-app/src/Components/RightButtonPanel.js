@@ -20,12 +20,7 @@ const CommandButton = React.memo(({ label, className, onClick, style }) => (
 function RightButtonPanel() {
 
 const doFunction = label => { 
-    if (label.toLowerCase() === 'dig auto' && getActionState() === 1)   setActionState(0);
-    else if (label.toLowerCase() === 'dig auto' && getActionState() !== 3)   setActionState(1);
-    else if (label.toLowerCase() === 'dump auto' && getActionState() === 2)   setActionState(0);
-    else if (label.toLowerCase() === 'dump auto' && getActionState() !== 3)   setActionState(2);
-    else if (label.toLowerCase() === 'stop' && getActionState() === 3)   setActionState(0);
-    else if (label.toLowerCase() === 'stop' && getActionState() !== 3)   setActionState(3);
+   // TODO: Implement the actual functionality for each button
 }
 
 // Render the component UI
