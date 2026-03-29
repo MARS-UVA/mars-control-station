@@ -21,6 +21,10 @@ function RightButtonPanel() {
 
 const doFunction = label => { 
    // TODO: Implement the actual functionality for each button
+   if (label.toLowerCase() === 'dig auto')   sendCustomCommandState(1);
+    else if (label.toLowerCase() === 'dump auto')   sendCustomCommandState(2);
+    else if (label.toLowerCase() === 'stop')   sendCustomCommandState(3);
+
 }
 
 // Render the component UI

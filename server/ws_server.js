@@ -62,13 +62,18 @@ webSocketServer.on('connection', (ws) => {
                 } catch (e) {
                     console.error('error parsing json: ', e);
                     return;
-                }                
-                if (data.gamepad2) {
-                    // Handle sending to both esp and jetson
-                } else if (data.gamepad) {
-                    // Handle sending only to jetson
-                    console.log('sending controller to jetson')
-                    udpClient.send_controller_jetson(data);
+                }
+                if (data.type === 'uiState') {            
+                    if (data.gamepad2) {
+                        // Handle sending to both esp and jetson
+                    } else if (data.gamepad) {
+                        // Handle sending only to jetson
+                        console.log('sending controller to jetson')
+                        udpClient.send_controller_jetson(data);
+                    }
+                }
+                else if (data.type === 'action') {
+                    udpClient.send_action_jetson(data);
                 }
             } else if (ws === websockets.udpServer) {
                 websockets.robotFeedback.send(message);
