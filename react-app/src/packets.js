@@ -62,4 +62,4 @@ setInterval(() => {
     ws.send(JSON.stringify(uiState)); // Sends the jit to the websocket
 }, intervalTime)
 
-export {getTransmissionActive, setTransmissionActive, sendCustomGamepadState}
+export {getTransmissionActive, setTransmissionActive, sendCustomGamepadState, sendCustomCommandState}
