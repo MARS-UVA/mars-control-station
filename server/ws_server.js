@@ -70,8 +70,8 @@ webSocketServer.on('connection', (ws) => {
                     udpClient.send_esp(data);
                 } else if (data.gamepad) {
                     // Handle sending only to jetson
-                    console.log('sending controller to jetson');
-                    udpClient.send_jetson(data);
+                    console.log('sending controller to jetson')
+                    udpClient.send_controller_jetson(data);
                 }
             } else if (ws === websockets.udpServer) {
                 // websockets.robotFeedback.send(message);
