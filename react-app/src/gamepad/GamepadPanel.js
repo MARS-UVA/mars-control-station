@@ -21,7 +21,7 @@ const CommandButton = React.memo(({ label, className, onClick, style }) => (
   </button>
 ));
 
-function GamepadPanel({ gamepadStatus, setGamepadStatus, gamepadData, setGamepadData }) {
+function GamepadPanel({ gamepadStatus, setGamepadStatus, gamepadData, setGamepadData, gamepadIndex }) {
   const [isRecording, setIsRecording] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [recordedMacros, setRecordedMacros] = useState([]);
@@ -44,8 +44,8 @@ function GamepadPanel({ gamepadStatus, setGamepadStatus, gamepadData, setGamepad
       if (isPlaying) return;
 
       const gamepads = navigator.getGamepads();
-      if (gamepads[0]) {
-        const state = getGamepadState(0);
+      if (gamepads[gamepadIndex]) {
+        const state = getGamepadState(gamepadIndex);
         if (state) {
           setGamepadData(state);
 
@@ -53,6 +53,8 @@ function GamepadPanel({ gamepadStatus, setGamepadStatus, gamepadData, setGamepad
             recordedMacrosRef.current.push(state);
             setRecordedMacros([...recordedMacrosRef.current]);
           }
+        } else {
+          console.warn('Failed to get gamepad state');
         }
       }
     }, 30);
@@ -150,7 +152,7 @@ function GamepadPanel({ gamepadStatus, setGamepadStatus, gamepadData, setGamepad
           <CommandButton
             label="Stop Recording"
             className={BUTTON_CLASSES['Record']}
-            style={{backgroundColor: '#ffcccc' }}
+            style={{ backgroundColor: '#ffcccc' }}
             onClick={handleStopRecording}
           />
         )}
@@ -160,7 +162,7 @@ function GamepadPanel({ gamepadStatus, setGamepadStatus, gamepadData, setGamepad
           <CommandButton
             label="Stop Playback"
             className={BUTTON_CLASSES['Play']}
-            style={{backgroundColor: '#ccffcc' }}
+            style={{ backgroundColor: '#ccffcc' }}
             onClick={handleStopPlayback}
           />
         )}

@@ -3,7 +3,7 @@ Renders dashboard with gamepad status, drive state, live data, and webcam feed
 Updates through socket connection
 */
 
-import React, {useState, useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import Draggable from "react-draggable";
 
 import "./themes.css";
@@ -23,17 +23,19 @@ import RightButtonPanel from "./Components/RightButtonPanel";
 
 const App = () => {
 
-  
+
   const [gamepadStatus, setGamepadStatus] = useState('No gamepad connected!');
+  const [gamepad2Status, setGamepad2Status] = useState('No gamepad connected!');
   const [gamepadData, setGamepadData] = useState(null);
+  const [gamepad2Data, setGamepad2Data] = useState(null);
   const [driveState, setDriveState] = useState('Idle');
   const [camera0Active, setCamera0Active] = useState(true);
   const [camera4Active, setCamera4Active] = useState(true);
 
-  
+
   const [timestamp, setTimestamp] = useState(0);
   const [chartData, setChartData] = useState(Array.from({ length: 1 }, (_, i) => ({
-    
+
     time: i,
     // goon mode? ACTIVATED
     leftFrontWheel: Math.random() * 100,
@@ -51,19 +53,20 @@ const App = () => {
   })));
   const [lastDataPoint, setLastDataPoint] = useState(chartData[chartData.length - 1]);
   const [valueData, setData] = useState("data");
-  
 
-  
+
+
 
   return (
     <div className="app-container">
       {/* <h1 className="title">MARS Web UI</h1> */}
-      <Socket setGamePadStatus={setGamepadStatus} setChartData={setChartData} setLastDataPoint={setLastDataPoint} timestamp={timestamp} setTimestamp={setTimestamp} setData={setData}/>
+      <Socket setGamePadStatus={setGamepadStatus} setChartData={setChartData} setLastDataPoint={setLastDataPoint} timestamp={timestamp} setTimestamp={setTimestamp} setData={setData} />
 
 
       <div className="content">
         <div className="left-panel">
-          <GamepadPanel gamepadStatus={gamepadStatus} setGamepadStatus={setGamepadStatus} gamepadData={gamepadData} setGamepadData={setGamepadData} camera0Active={camera0Active} camera4Active={camera4Active}/>
+          <GamepadPanel gamepadStatus={gamepadStatus} setGamepadStatus={setGamepadStatus} gamepadData={gamepadData} setGamepadData={setGamepadData} gamepadIndex={0} camera0Active={camera0Active} camera4Active={camera4Active} />
+          <GamepadPanel gamepadStatus={gamepad2Status} setGamepadStatus={setGamepad2Status} gamepadData={gamepad2Data} setGamepadData={setGamepad2Data} gamepadIndex={1} camera0Active={camera0Active} camera4Active={camera4Active} />
           {/* Hiding the displays that don't do anything currently */}
           {/* <DisplayMeter current={80} total={100} left = {155} top = {580} height = {40} width = {180} label="Current" />  */} {/*ADD THE METHODS OF GETTING THESE VALUES!!*/}
           {/* <DisplayMeter current={80} total={100} left = {155} top = {655} height = {40} width = {180} label="Capacity" /> */}
@@ -76,14 +79,14 @@ const App = () => {
         </div>
 
         <div className="right-panel">
-          <LiveDataPanel lastDataPoint={lastDataPoint} timestamp={timestamp} chartData={chartData}/>
+          <LiveDataPanel lastDataPoint={lastDataPoint} timestamp={timestamp} chartData={chartData} />
           <RightButtonPanel></RightButtonPanel>
           {/* <TiltingRods/> hiding since they're incomplete*/}
         </div>
         <Draggable>
-          <Timer/>
+          <Timer />
         </Draggable>
-        <ThemeChanger/>
+        <ThemeChanger />
       </div>
     </div>
   );

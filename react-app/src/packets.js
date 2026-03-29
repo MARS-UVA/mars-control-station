@@ -40,11 +40,13 @@ setInterval(() => {
     // Only send live data if transmission is active
     if (!isTransmissionActive || ws.readyState !== WebSocket.OPEN) return; // Checks for the websocket status
     const gamepadOutput = getGamepadState(); // Get the gamepad info from gamepad.js (in react-app)
+    const gamepad2Output = getGamepadState(1);
     const commandOutput = getRobotState(); // Get the commands sent to the robot from robotState.js
 
     const uiState = {
       type: 'uiState',
       gamepad: gamepadOutput,
+      gamepad2: gamepad2Output,
       commands: commandOutput
     };
     ws.send(JSON.stringify(uiState)); // Sends the jit to the websocket
