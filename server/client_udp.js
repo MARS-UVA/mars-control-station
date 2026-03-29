@@ -1,4 +1,5 @@
 const dgram = require('dgram');
+const { json } = require('stream/consumers');
 
 function crc32bit(data) {
     let crc = 0xFFFFFFFF;
@@ -25,15 +26,19 @@ class UDPClient {
         this.socket.on('error', (err) => {
             console.error('Socket error:', err.message);
         });
+        this.bucket_ladder_state = 127;
+        this.current_trigger = 0; // 1 for right trigger, -1 for left trigger, 0 for neither
+        this.lb_on = false;
+        this.rb_on = false;
     }
 
     send_jetson(jsonObj) {
         const gamepadOut = `${jsonObj.gamepad.buttons.x},${jsonObj.gamepad.buttons.y},${jsonObj.gamepad.buttons.a},${jsonObj.gamepad.buttons.b},`
-            +`${jsonObj.gamepad.buttons.lt},${jsonObj.gamepad.buttons.rt},${jsonObj.gamepad.buttons.lb},${jsonObj.gamepad.buttons.rb},${jsonObj.gamepad.buttons.dd},`
-            +`${jsonObj.gamepad.buttons.du},${jsonObj.gamepad.buttons.l3},${jsonObj.gamepad.buttons.r3},`
-            +`${jsonObj.gamepad.buttons.back},${jsonObj.gamepad.buttons.start},${jsonObj.gamepad.leftStick.x},${jsonObj.gamepad.leftStick.y},${jsonObj.gamepad.rightStick.x},`
-            +`${jsonObj.gamepad.rightStick.y}`;
-        let message = "pcktcontnt"+gamepadOut;
+            + `${jsonObj.gamepad.buttons.lt},${jsonObj.gamepad.buttons.rt},${jsonObj.gamepad.buttons.lb},${jsonObj.gamepad.buttons.rb},${jsonObj.gamepad.buttons.dd},`
+            + `${jsonObj.gamepad.buttons.du},${jsonObj.gamepad.buttons.l3},${jsonObj.gamepad.buttons.r3},`
+            + `${jsonObj.gamepad.buttons.back},${jsonObj.gamepad.buttons.start},${jsonObj.gamepad.leftStick.x},${jsonObj.gamepad.leftStick.y},${jsonObj.gamepad.rightStick.x},`
+            + `${jsonObj.gamepad.rightStick.y}`;
+        let message = "pcktcontnt" + gamepadOut;
         let buffer = Buffer.from(message);
         buffer.writeUInt8(jsonObj.commands.action, 0);
         buffer.writeUInt16LE(buffer.length, 4);
@@ -46,14 +51,14 @@ class UDPClient {
 
     send_esp(jsonObj) {
         const applyDeadband = (value, deadband = 0.05) => {
-            if(Math.abs(value) < deadband) return 0;
+            if (Math.abs(value) < deadband) return 0;
             return value;
         }
         const clamp = (value) => {
             return Math.max(-1, Math.min(1, value));
         }
         const toUInt8 = (value) => {
-            return Math.round((value+1) * 127);
+            return Math.round((value + 1) * 127);
         }
         const fullForwardMagnitude = 0.6;
         const deadband = 0.05;
@@ -71,29 +76,44 @@ class UDPClient {
         // Convert to Bytes
         left_wheel_speed = toUInt8(clamp(left_wheel_speed));
         right_wheel_speed = toUInt8(clamp(right_wheel_speed));
-        // Bucket ladder up and down
-        let bucket_ladder_actuator = 127;
-        if(jsonObj.gamepad2.buttons.x) {
-            console.log('x pressed');
-            bucket_ladder_actuator = 127 - 126/2;
-        } else if(jsonObj.gamepad2.buttons.a) {
-            console.log('a pressed');
-            bucket_ladder_actuator = 127 + 126/2;
+        // Bucket ladder up and down        
+        if (jsonObj.gamepad2.buttons.lb) {
+            if (!this.lb_on) {
+                console.log('left bumper pressed');
+                this.bucket_ladder_state -= 8;
+                this.lb_on = true;
+            }
+        } else {
+            this.lb_on = false;
         }
+
+        if (jsonObj.gamepad2.buttons.rb) {
+            if (!this.rb_on) {
+                console.log('right bumper pressed');
+                this.bucket_ladder_state += 8;
+                this.rb_on = true;
+            }
+        } else {
+            this.rb_on = false;
+        }
+
+        if (jsonObj.gamepad2.buttons.y) {
+            console.log('y pressed');
+            this.bucket_ladder_state = 127;
+        }
+
+        this.bucket_ladder_state = Math.max(0, Math.min(255, this.bucket_ladder_state));
+        let bucket_ladder_actuator = Math.min(254, this.bucket_ladder_state);
         // Conveyor Belt
-        let conveyor_belt = 127;
-        if(jsonObj.gamepad2.buttons.y) {
-            console.log('y pressed')
-            conveyor_belt = 127 + 126/2;
-        }
+        let conveyor_belt = 127 * (1 + jsonObj.gamepad2.buttons.rt - jsonObj.gamepad2.buttons.lt);
         // Track Actuators
         let track_actuators = 127;
-        if(jsonObj.gamepad2.buttons.dd) {
+        if (jsonObj.gamepad2.buttons.dd) {
             console.log('dd pressed');
-            track_actuators = 127 - 126/2;
-        } else if(jsonObj.gamepad2.buttons.du) {
+            track_actuators -= 127;
+        } else if (jsonObj.gamepad2.buttons.du) {
             console.log('du pressed');
-            track_actuators = 127 + 126/2;
+            track_actuators += 127;
         }
 
         let buffer = Buffer.alloc(10);
