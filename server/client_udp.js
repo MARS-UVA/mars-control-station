@@ -116,7 +116,7 @@ class UDPClient {
             track_actuators += 127;
         }
 
-        let buffer = Buffer.alloc(10);
+        let buffer = Buffer.alloc(9);
         // header/start stuff
         buffer.writeUInt8(0xFF, 0);
         buffer.writeUInt8(0xFF, 1);
