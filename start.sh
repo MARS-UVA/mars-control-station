@@ -37,7 +37,9 @@ else
     export JETSON_IP
 fi
 
-node ./server/ws_server.js &
+cd react-app
+
+node ../server/ws_server.js &
 npm start &
 wait
 
