@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SSID="Team_39"
-PASSWORD="marsuva!"
+PASSWORD="lunabotics#1"
 
 if [ $# -eq 0 ]; then
     echo "No arguments supplied, connecting to MARS network"
