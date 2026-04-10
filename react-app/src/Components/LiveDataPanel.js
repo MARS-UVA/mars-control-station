@@ -5,6 +5,7 @@ import TiltMeter from "./TiltMeter";
 // This component renders a panel with charts and live values
 function LiveDataPanel({ lastDataPoint, chartData }) {
   const round = num => (Math.round((num + Number.EPSILON) * 100) / 100).toFixed(2);
+  console.log(chartData);
 
 
   const maxValue = Math.max(...chartData.map(data => Math.max(data.front_left_wheel_current, data.front_right_wheel_current, data.back_left_wheel_current, data.back_right_wheel_current, 
