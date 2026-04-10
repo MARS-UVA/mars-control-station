@@ -46,7 +46,7 @@ class ServerSocket {
             const totalPackets = (message[3] << 8) | message[2];
             const chunkData = message.subarray(10);
 
-            // console.log(`Received packet ${sequenceNumber + 1} of ${totalPackets}`);
+             console.log(`Received packet ${sequenceNumber + 1} of ${totalPackets}`);
             // console.log(chunkData.length);
             this.receivedChunks[sequenceNumber] = chunkData;
             const totalChunks = totalPackets;
