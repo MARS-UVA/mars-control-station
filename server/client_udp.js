@@ -48,7 +48,7 @@ class UDPClient {
         });
     }
     send_autonomous_action_jetson(jsonObj) {
-        let message = "actncontnt"+jsonObj.commands.action;
+        let message = "actncontnt"+jsonObj.actionType;
         let buffer = Buffer.from(message);
         buffer.writeUInt16LE(buffer.length, 4);
         this.socket.send(buffer, this.jetson_port, this.jetson_ip, (err) => {
