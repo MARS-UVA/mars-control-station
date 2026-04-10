@@ -119,7 +119,7 @@ class UDPClient {
         let buffer = Buffer.alloc(9);
         // header/start stuff
         buffer.writeUInt8(0xFF, 0);
-        buffer.writeUInt8(0xFF, 1);
+        buffer.writeUInt8(0x00, 1);
         // buffer.writeUInt8(0x04, 2);
         // Calculate wheel speeds
         buffer.writeUInt8(left_wheel_speed, 2);
