@@ -15,7 +15,6 @@ const JETSON_IP = process.env.JETSON_IP;
 const ESP_IP = process.env.ESP_IP;
 const JETSON_PORT = 8080;
 const ESP_PORT = 2001;
-console.log(ESP_IP + ":" + ESP_PORT)
 
 const webSocketServer = new WebSocket.Server({ port: WS_PORT });
 const feedbackSocket = new ServerSocket(FEEDBACK_PORT, (ServerSocket.feedbackOnMessage));
