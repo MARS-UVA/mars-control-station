@@ -17,7 +17,7 @@ const JETSON_PORT = 8080;
 const ESP_PORT = 25000;
 
 
-const webSocketServer = new WebSocket.Server({port: WS_PORT});
+const webSocketServer = new WebSocket.Server({ port: WS_PORT });
 const feedbackSocket = new ServerSocket(FEEDBACK_PORT, (ServerSocket.feedbackOnMessage));
 const signalingServer1 = new SignalingServer(CAMERA1_SIGNALING_PORT);
 const signalingServer2 = new SignalingServer(CAMERA2_SIGNALING_PORT);
@@ -33,7 +33,7 @@ webSocketServer.on('connection', (ws) => {
     let firstMessage = true;
 
     ws.on('message', (message) => {
-        if(firstMessage) {
+        if (firstMessage) {
             console.log(typeof message, message);
             switch (message.readUInt8()) {
                 case 0:
@@ -56,24 +56,23 @@ webSocketServer.on('connection', (ws) => {
             }
             firstMessage = false;
         } else {
-            if(ws === websockets.gamepad) {
+            if (ws === websockets.gamepad) {
                 try {
                     data = JSON.parse(message);
+                    // console.log('received gamepad data: ', data.gamepad.leftStick, data.gamepad2.leftStick);
                 } catch (e) {
                     console.error('error parsing json: ', e);
                     return;
                 }
-                if (data.type === 'uiState') {            
-                    if (data.gamepad2) {
-                        // Handle sending to both esp and jetson
-                    } else if (data.gamepad) {
-                        // Handle sending only to jetson
-                        console.log('sending controller to jetson')
-                        udpClient.send_controller_jetson(data);
-                    }
-                }
-                else if (data.type === 'action') {
-                    udpClient.send_action_jetson(data);
+                if (data.gamepad2) {
+                    // Handle sending to esp
+                    console.log('sending controller to esp');
+                    udpClient.send_jetson(data);
+                    udpClient.send_esp(data);
+                } else if (data.gamepad) {
+                    // Handle sending only to jetson
+                    console.log('sending controller to jetson');
+                    udpClient.send_jetson(data);
                 }
             } else if (ws === websockets.udpServer) {
                 websockets.robotFeedback.send(message);
