@@ -90,7 +90,11 @@ class ServerSocket {
     onMessage = (data) => {
         const buffer = Buffer.concat(Object.values(data));
         const messageBuf = buffer.subarray(0, 72);
-        this.ws.send(messageBuf);
+        if (this.ws.readyState === WebSocket.OPEN) {
+            this.ws.send(messageBuf);
+        } else {
+            console.error("WebSocket is not open. Cannot send message.");
+        }
     }
 }
 

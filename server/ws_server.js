@@ -79,7 +79,7 @@ webSocketServer.on('connection', (ws) => {
                     console.log('sending action to jetson: ', data.actionType);
                     udpClient.send_autonomous_action_jetson(data);
                 }
-            } else if (ws === websockets.udpServer) {
+            } else if (ws === websockets.udpServer && websockets.robotFeedback) {
                 websockets.robotFeedback.send(message);
             }
         }
