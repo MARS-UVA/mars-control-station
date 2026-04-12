@@ -34,6 +34,18 @@ function sendCustomGamepadState(controllerInputs) {
     }
 }
 
+function sendCustomCommandState(actionType) {
+    if(ws.readyState === WebSocket.OPEN) {
+      const action = {
+        type: 'action',
+        actionType: actionType,
+      };
+      ws.send(JSON.stringify(action)); // Sends the jit to the websocket
+    } 
+
+}
+
+
 const intervalTime = 30
 
 setInterval(() => {
@@ -52,4 +64,4 @@ setInterval(() => {
     ws.send(JSON.stringify(uiState)); // Sends the jit to the websocket
 }, intervalTime)
 
-export {getTransmissionActive, setTransmissionActive, sendCustomGamepadState}
+export {getTransmissionActive, setTransmissionActive, sendCustomGamepadState, sendCustomCommandState}
