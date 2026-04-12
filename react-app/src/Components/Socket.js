@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 const DATA_UPDATE_DELAY_MS = 200;
-const DATA_WINDOW_WIDTH = 10000 / DATA_UPDATE_DELAY_MS;
+const DATA_WINDOW_WIDTH = 60000 / DATA_UPDATE_DELAY_MS;
 // This component will handle backend/API calls with useEffect blocks, and send the data to the UI components
 
 function Socket({ setGamePadStatus, setChartData, setLastDataPoint, timestamp, setTimestamp, setData: setData }) {
