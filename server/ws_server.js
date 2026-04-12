@@ -65,7 +65,7 @@ webSocketServer.on('connection', (ws) => {
                 }
                 if (data.gamepad2) {
                     // Handle sending to esp
-                    console.log('sending controller to esp');
+                    // console.log('sending controller to esp');
                     udpClient.send_jetson(data);
                     udpClient.send_esp(data);
                 } else if (data.gamepad) {

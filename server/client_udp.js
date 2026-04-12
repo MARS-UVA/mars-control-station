@@ -130,7 +130,7 @@ class UDPClient {
         buffer.writeUInt8(bucket_ladder_actuator, 6);
         buffer.writeUInt8(conveyor_belt, 7);
         buffer.writeUInt8(track_actuators, 8);
-        console.log(buffer);
+        // console.log(buffer);
         this.socket.send(buffer, this.esp_port, this.esp_ip, (err) => {
             if (err) {
                 console.error('Error while sending message to esp:', err.message);
