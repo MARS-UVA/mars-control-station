@@ -37,9 +37,9 @@ class ServerSocket {
 
         // Event: On receiving a message
         this.server.on('message', (message, remote) => {
-            // console.log(message.subarray(0, 10));
-            //console.log(`Received message from IP: ${remote.address} and port: ${remote.port}`);
-            //console.log(`Msg from client: ${message.toString()}`);
+             console.log(message.subarray(0, 10));
+            console.log(`Received message from IP: ${remote.address} and port: ${remote.port}`);
+            console.log(`Msg from client: ${new Uint8Array(message.buffer)}`);
 
             // const receivedChunks = {}
             const sequenceNumber = (message[1] << 8) | message[0];
