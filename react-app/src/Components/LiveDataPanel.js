@@ -5,31 +5,22 @@ import TiltMeter from "./TiltMeter";
 // This component renders a panel with charts and live values
 function LiveDataPanel({ lastDataPoint, chartData }) {
   const round = num => (Math.round((num + Number.EPSILON) * 100) / 100).toFixed(2);
-  console.log(chartData);
 
-
-  const maxValue = Math.max(...chartData.map(data => Math.max(data.front_left_wheel_current, data.front_right_wheel_current, data.back_left_wheel_current, data.back_right_wheel_current, 
-    data.front_drum_current, data.back_drum_current, /*data.actuatorCapacity,*/ data.actuatorHeight)));
-
-  const Chart = function ({ dataKey })
-   {return (
+  const renderChart = (dataKey) => (
     <ResponsiveContainer width="100%" height={120}>
-      <LineChart data={chartData} margin={{ left: 0, right: 20, top: 5, bottom: 5 }}>
+      <LineChart data={chartData} margin={{ left: 0, right: 20, top: 5, bottom: 5 }} isAnimationActive={false}>
         <CartesianGrid strokeDasharray="3 3" />
         <YAxis label={/*dataKey === "actuatorCapacity" ? "%" :*/ dataKey === "globalDataRate" ? "Mbps" :"Value"} />
         <Tooltip />
         <Legend wrapperStyle={{ paddingTop: '5px' }} height={20} />
         <Line type="monotone" dataKey={dataKey} stroke="#8884d8" dot={false} isAnimationActive={false} name={dataKey === "globalDataRate" ? "Data Rate (Mbps)" : dataKey} />
-        {/* <ReferenceLine y={maxValue} stroke="red" strokeWidth={1} /> */}
       </LineChart>
     </ResponsiveContainer>
   );
-}
 
-
-  const MultiChart = function({ dataKey })  { return (
-    <ResponsiveContainer width="100%" height={100} debounce={1000}>
-      <LineChart data={chartData} margin={{ right: 20, top: 5, bottom: 5 }}>
+  const renderMultiChart = (dataKey) => (
+    <ResponsiveContainer width="100%" height={100}>
+      <LineChart data={chartData} margin={{ right: 20, top: 5, bottom: 5 }} isAnimationActive={false}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="time" height={20} />
         <YAxis width={40} label={{ value: dataKey === "wheel-current" ? "A" : dataKey === "temperature" ? "°C" : "Pos", angle: -90, position: "insideLeft" }} />
@@ -41,6 +32,10 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
             <Line type="monotone" dataKey="front_right_wheel_current" stroke="#03fc2c" dot={false} isAnimationActive={false} name="FR Wheel" />
             <Line type="monotone" dataKey="back_left_wheel_current" stroke="#031cfc" dot={false} isAnimationActive={false} name="BL Wheel" />
             <Line type="monotone" dataKey="back_right_wheel_current" stroke="#fc03ba" dot={false} isAnimationActive={false} name="BR Wheel" />
+            <Line type="monotone" dataKey="front_drum_current" stroke="#ffa500" dot={false} isAnimationActive={false} name="F Drum" strokeWidth={1.5} />
+            <Line type="monotone" dataKey="back_drum_current" stroke="#22e0e0" dot={false} isAnimationActive={false} name="B Drum" strokeWidth={1.5} />
+            <Line type="monotone" dataKey="main_battery_voltage" stroke="#ff6b6b" dot={false} isAnimationActive={false} name="Main Batt" strokeWidth={2} />
+            <Line type="monotone" dataKey="aux_battery_voltage" stroke="#ffd700" dot={false} isAnimationActive={false} name="Aux Batt" strokeWidth={2} />
           </>
         )}
         {dataKey === "bucketDrum" && (
@@ -65,11 +60,9 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
             <Line type="monotone" dataKey="back_actuator_position" stroke="#228b22" dot={false} isAnimationActive={false} name="Back Act." />
           </>
         )}
-        {/* <ReferenceLine y={maxValue} stroke="red" strokeWidth={1} /> */}
       </LineChart>
     </ResponsiveContainer>
   );
-};
 
   // Ref Hook - useRef for accessing a DOM element or mutable value
 
@@ -79,26 +72,23 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
       <div className="panel">
         {/* <h2 className="panel-title">Live Data Panel</h2> */}
         {/* <h3 className="panel-title">Charts</h3> */}
-        <div className="chart-grid">
+        <div className="chart-grid" style={{ paddingBottom: '20px' }}>
           <div className="chart-space">
             <h3>Data Rate</h3>
-            <Chart dataKey="globalDataRate" />
+            {renderChart("globalDataRate")}
             Current: {lastDataPoint["globalDataRate"]} Mbps
           </div>
           <div className="chart-space">
             <h3>Wheel Currents (A)</h3>
-            <MultiChart dataKey="wheel-current" />
+            {renderMultiChart("wheel-current")}
           </div>
           <div className="chart-space">
             <h3>Temperatures (°C)</h3>
-            <MultiChart dataKey="temperature" />
+            {renderMultiChart("temperature")}
           </div>
           <div className="chart-space">
             <h3>Actuator Positions</h3>
-            <MultiChart dataKey="position" />
-          </div>
-          <div className="chart-space" style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "120px" }}>
-            <TiltMeter angleX={lastDataPoint["xGyro"]} angleY={lastDataPoint["yGyro"]} angleZ={lastDataPoint["zGyro"]}/>
+            {renderMultiChart("position")}
           </div>
         </div>
       </div>
@@ -106,4 +96,4 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
   );
 }
 
-export default LiveDataPanel;
+export default memo(LiveDataPanel);
