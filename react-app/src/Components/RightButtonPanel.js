@@ -1,5 +1,4 @@
 import React, {useState} from 'react';
-import { getActionState, setActionState } from '../robotState';
 import { sendActionState, sendPursuitState } from '../packets';
 
 const actions_enum = {
@@ -8,12 +7,20 @@ const actions_enum = {
     'Stop': 3,
 }
 
+const pursuit_enum = {
+    'Pursuit Record Inputs': 1,
+    'Pursuit Run Inputs': 2,
+    'Pursuit Reset Recording': 3,
+}
+
 const BUTTON_CLASSES = {
   'STOP': 'command-button-sstop',
   'Dig Auto': 'command-button-digauto',
   'Dump Auto': 'command-button-dumpauto',
-  'Pure Pursuit': 'command-button-purepursuit',
-};
+  'Pursuit Record Inputs': 'command-button-purepursuit-record',
+  'Pursuit Run Inputs': 'command-button-purepursuit-start',
+  'Pursuit Reset Recording': 'command-button-purepursuit-reset',
+  };
 
 const CommandButton = React.memo(({ label, className, onClick, style }) => (
   <button className={className}
@@ -25,13 +32,27 @@ const CommandButton = React.memo(({ label, className, onClick, style }) => (
   </button>
 ));
 
-function RightButtonPanel() {
+function RightButtonPanel(lastDataPoint) {
+  const [isRecording, setIsRecording] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  
+  const [modes, setModes] = useState({
+      'Pursuit Record Inputs': false,
+      'Pursuit Run Inputs': false,
+      'Pursuit Reset Recording': false,
+    });
 
 const doFunction = label => { 
    if (label.toLowerCase() === 'dig auto')   sendActionState(actions_enum['Dig Auto']);
     else if (label.toLowerCase() === 'dump auto')   sendActionState(actions_enum['Dump Auto']);
     else if (label.toLowerCase() === 'stop')   sendActionState(actions_enum['Stop']);
-    else if (label.toLowerCase() === 'pure pursuit')   sendPursuitState(actions_enum['Pure Pursuit']);
+    else if (label.toLowerCase() === 'pursuit record inputs')   sendPursuitState(pursuit_enum['Pursuit Record Inputs']);
+    else if (label.toLowerCase() === 'pursuit run inputs')   sendPursuitState(pursuit_enum['Pursuit Run Inputs']);
+    else if (label.toLowerCase() === 'pursuit reset recording')   sendPursuitState(pursuit_enum['Pursuit Reset Recording']);
+}
+
+const changeColor = (label) => {
+
 }
 
 // Render the component UI
@@ -48,7 +69,18 @@ const doFunction = label => {
         </div>
       </div>
       <div className='drive-panel-other-row'>
-          <CommandButton key = 'Pure Pursuit' label = 'Pure Pursuit' className = 'command-button-purepursuit' onClick = {() => doFunction('Pure Pursuit')}></CommandButton>
+          <CommandButton key = 'Pursuit Record Inputs' 
+            label = 'Pursuit Record Inputs' 
+            className = 'command-button-purepursuit-record' 
+            onClick = {() => doFunction('Pursuit Record Inputs')}></CommandButton>
+          <CommandButton key = 'Pursuit Run Inputs' 
+            label = 'Pursuit Run Inputs' 
+            className = 'command-button-purepursuit-start' 
+            onClick = {() => doFunction('Pursuit Run Inputs')}></CommandButton>
+          <CommandButton key = 'Pursuit Reset Recording' 
+            label = 'Pursuit Reset Recording' 
+            className = 'command-button-purepursuit-reset' 
+            onClick = {() => doFunction('Pursuit Reset Recording')}></CommandButton>
         </div>
     </div>
   );

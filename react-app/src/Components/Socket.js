@@ -121,7 +121,7 @@ function Socket({ setGamePadStatus, setChartData, setLastDataPoint, timestamp, s
               back_drum_temperature: motor_values[15],
               front_actuator_position: motor_values[16],
               back_actuator_position: motor_values[17],
-              robot_state: motor_values[18],
+              robot_state: motor_values[18], // 0 is nothing, 1 is dig, 2, is dump, 3 is stop
               globalDataRate: lastDataRate,
               xGyro: gyro_values[0],
               yGyro: gyro_values[1],
