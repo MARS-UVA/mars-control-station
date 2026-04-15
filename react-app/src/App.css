@@ -320,6 +320,14 @@ html, body {
   justify-content: center;
 }
 
+.drive-panel-other-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding-top: 20px;
+}
+
 /* common square button behavior */
 .command-button {
   width: 100%;
@@ -330,7 +338,6 @@ html, body {
   padding: 0.5rem;
   box-sizing: border-box;
 }
-/* keep visual styles for variants, but remove fixed width/height */
 .command-button-sstop{
   width: 100%;
   height: 100%;
@@ -339,7 +346,8 @@ html, body {
   font-size: 2.5rem;
   box-shadow: 0 4px 6px var(--box-shadow-color);
   border: 1px solid var(--border-color);
-  color: var(--primary-color)
+  color: var(--primary-color);
+  background-color: rgb(215, 69, 69);
 }
 .command-button-digauto,
 .command-button-dumpauto {
@@ -353,8 +361,19 @@ html, body {
   color: var(--primary-color)
 }
 
-/* variant colors (preserve your existing color vars) */
-.command-button-sstop { background-color: rgb(215, 69, 69);}
+.command-button-purepursuit {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  border-radius: 8px;
+  font-size: 1.5rem;
+  box-shadow: 0 4px 6px var(--box-shadow-color);
+  border: 1px solid var(--border-color);
+  color: var(--primary-color);
+  background-color: var(--accent-color1);
+}
+
+/* variant colors */
 .command-button-digauto { background-color: var(--accent-color2); }
 .command-button-dumpauto { background-color: var(--accent-color3); }
 
@@ -374,6 +393,13 @@ html, body {
   background-color: var(--accent-color3-hover);
   color: var(--primary-color);
 }
+
+.command-button-purepursuit:hover{
+  transform: scale(1.05);
+  background-color: var(--accent-color1-hover);
+  color: var(--primary-color);
+}
+
 
 /* 
 TODO: Change right and bottom values to offset timer in the right and bottom screen

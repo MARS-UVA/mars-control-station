@@ -58,6 +58,17 @@ class UDPClient {
         });
     }
 
+    send_pursuit_command_jetson(jsonObj) {
+        let message = "bredcontnt"+jsonObj.actionType;  // bred for breadcrumbing
+        let buffer = Buffer.from(message);
+        buffer.writeUInt16LE(buffer.length, 4);
+        this.socket.send(buffer, this.jetson_port, this.jetson_ip, (err) => {
+            if (err) {
+                console.error('Error while sending message to jetson:', err.message);
+            }
+        });
+    }
+
     send_esp(jsonObj) {
         const applyDeadband = (value, deadband = 0.05) => {
             if (Math.abs(value) < deadband) return 0;

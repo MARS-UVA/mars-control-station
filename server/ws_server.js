@@ -77,6 +77,9 @@ webSocketServer.on('connection', (ws) => {
                 } else if (data.type === 'action') {
                     console.log('sending action to jetson: ', data.actionType);
                     udpClient.send_autonomous_action_jetson(data);
+                } else if (data.type === 'pursuit') {
+                    console.log('sending pursuit command to jetson: ', data.pursuitType);
+                    udpClient.send_pursuit_command_jetson(data);
                 }
             } else if (ws === websockets.udpServer && websockets.robotFeedback) {
                 websockets.robotFeedback.send(message);
