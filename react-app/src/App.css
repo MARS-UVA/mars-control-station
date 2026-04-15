@@ -385,7 +385,7 @@ TODO: Change right and bottom values to offset timer in the right and bottom scr
   transform: translateY(-50%);
 
   background-color: var(--bg-color);
-  padding: 8px 10px;          /* thinner */
+  padding: 16px 20px;          /* thinner */
   border-radius: 8px;
   border: 1px solid var(--border-color);
 
@@ -393,14 +393,14 @@ TODO: Change right and bottom values to offset timer in the right and bottom scr
   flex-direction: column;
   align-items: center;
 
-  min-width: 140px;           /* thinner width */
+  min-width: 200px;           /* thinner width */
   z-index: 50;
 
   box-shadow: 0 4px 6px var(--box-shadow-color);
 
 }
 .timer-display {
-  font-size: 1.2rem;
+  font-size: 2rem;
   font-weight: bold;
   color: var(--primary-color);
   margin-bottom: 8px;
@@ -413,8 +413,8 @@ TODO: Change right and bottom values to offset timer in the right and bottom scr
   background-color: var(--bg-color);
   color: var(--primary-color); 
   border: none;
-  padding: 4px 10px;
-  font-size: 0.75rem;
+  padding: 8px 20px;
+  font-size: 1rem;
   border-radius: 4px;
   cursor: pointer;
   border: 1px solid var(--border-color);
@@ -425,8 +425,8 @@ TODO: Change right and bottom values to offset timer in the right and bottom scr
   background-color: var(--bg-color);
   color: var(--primary-color);
   border: none;
-  padding: 4px 10px;
-  font-size: 0.75rem;
+  padding: 8px 20px;
+  font-size: 1rem;
   border-radius: 4px;
   cursor: pointer;
   border: 1px solid var(--border-color);

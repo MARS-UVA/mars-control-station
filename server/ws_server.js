@@ -14,8 +14,7 @@ const CAMERA2_SIGNALING_PORT = 6969;
 const JETSON_IP = process.env.JETSON_IP;
 const ESP_IP = process.env.ESP_IP;
 const JETSON_PORT = 8080;
-const ESP_PORT = 25000;
-
+const ESP_PORT = 2001;
 
 const webSocketServer = new WebSocket.Server({ port: WS_PORT });
 const feedbackSocket = new ServerSocket(FEEDBACK_PORT, (ServerSocket.feedbackOnMessage));

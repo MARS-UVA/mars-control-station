@@ -128,7 +128,7 @@ class UDPClient {
         let buffer = Buffer.alloc(9);
         // header/start stuff
         buffer.writeUInt8(0xFF, 0);
-        buffer.writeUInt8(0xFF, 1);
+        buffer.writeUInt8(0x00, 1);
         // buffer.writeUInt8(0x04, 2);
         // Calculate wheel speeds
         buffer.writeUInt8(left_wheel_speed, 2);
@@ -139,7 +139,7 @@ class UDPClient {
         buffer.writeUInt8(bucket_ladder_actuator, 6);
         buffer.writeUInt8(conveyor_belt, 7);
         buffer.writeUInt8(track_actuators, 8);
-        console.log(buffer);
+        // console.log(buffer);
         this.socket.send(buffer, this.esp_port, this.esp_ip, (err) => {
             if (err) {
                 console.error('Error while sending message to esp:', err.message);
