@@ -80,7 +80,7 @@ const App = () => {
 
         <div className="right-panel">
           <LiveDataPanel lastDataPoint={lastDataPoint} timestamp={timestamp} chartData={chartData} />
-          <RightButtonPanel></RightButtonPanel>
+          <RightButtonPanel feedback={chartData.robot_state}></RightButtonPanel>
           {/* <TiltingRods/> hiding since they're incomplete*/}
         </div>
         <Draggable>

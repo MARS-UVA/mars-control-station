@@ -24,7 +24,7 @@ const CommandButton = React.memo(({ label, className, onClick, style }) => (
   </button>
 ));
 
-function RightButtonPanel() {
+function RightButtonPanel({ feedback }) {
 
 const doFunction = label => { 
    if (label.toLowerCase() === 'dig auto')   sendCustomCommandState(actions_enum['Dig Auto']);
@@ -33,17 +33,35 @@ const doFunction = label => {
 
 }
 
+const getButtonStyle = (buttonType) => {
+  const baseStyle = feedback[buttonType] ? { opacity: 0.6 } : {};
+  return baseStyle;
+}
+
 // Render the component UI
   return (
     <div>
       <h2 className="panel-title">Control Panel</h2>
       <div className="drive-panel-grid">
         <div className='drive-panel-stop-col'>
-          <CommandButton key = 'STOP' label = 'STOP' className = 'command-button-sstop' onClick = {() => doFunction('STOP')}></CommandButton>
+          {feedback == 3 ? (
+            <CommandButton key = 'STOP' label = 'STOP' className = 'command-button-sstop-feedback' onClick = {() => doFunction('STOP')} style={getButtonStyle('STOP')}></CommandButton>
+          ) : (
+            <CommandButton key = 'STOP' label = 'STOP' className = 'command-button-sstop' onClick = {() => doFunction('STOP')}></CommandButton>
+          )}
         </div>
         <div className='drive-panel-other-col'>
-          <CommandButton key = 'Dig Auto' label = 'Dig Auto' className = 'command-button-digauto' onClick = {() => doFunction('Dig Auto')}></CommandButton>
-          <CommandButton key = 'Dump Auto' label = 'Dump Auto' className = 'command-button-dumpauto' onClick = {() => doFunction('Dump Auto')}></CommandButton>
+          
+          {feedback == 1 ? (
+            <CommandButton key = 'Dig Auto' label = 'Dig Auto' className = 'command-button-digauto-feedback' onClick = {() => doFunction('Dig Auto')} style={getButtonStyle('Dig Auto')}></CommandButton>
+          ) : (
+            <CommandButton key = 'Dig Auto' label = 'Dig Auto' className = 'command-button-digauto' onClick = {() => doFunction('Dig Auto')}></CommandButton>
+          )}
+          {feedback == 2 ? (
+            <CommandButton key = 'Dump Auto' label = 'Dump Auto' className = 'command-button-dumpauto-feedback' onClick = {() => doFunction('Dump Auto')} style={getButtonStyle('Dump Auto')}></CommandButton>
+          ) : (
+            <CommandButton key = 'Dump Auto' label = 'Dump Auto' className = 'command-button-dumpauto' onClick = {() => doFunction('Dump Auto')}></CommandButton>
+          )}
         </div>
         </div>
       </div>
