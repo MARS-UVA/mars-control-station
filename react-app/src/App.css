@@ -383,6 +383,9 @@ body {
 .command-button-sstop {
   background-color: rgb(215, 69, 69);
 }
+.command-button-sstop-feedback {
+  background-color: rgb(124, 253, 128);
+}
 
 .command-button-digauto {
   background-color: var(--accent-color2);
@@ -390,6 +393,13 @@ body {
 
 .command-button-dumpauto {
   background-color: var(--accent-color3);
+}
+.command-button-digauto-feedback {
+  background-color: var(--primary-color);
+}
+
+.command-button-dumpauto-feedback {
+  background-color: var(--primary-color);
 }
 
 .command-button-sstop:hover {

@@ -32,11 +32,7 @@ const doFunction = label => {
     else if (label.toLowerCase() === 'stop')   sendCustomCommandState(actions_enum['Stop']);
 
 }
-
-const getButtonStyle = (buttonType) => {
-  const baseStyle = feedback[buttonType] ? { opacity: 0.6 } : {};
-  return baseStyle;
-}
+console.log(feedback)
 
 // Render the component UI
   return (

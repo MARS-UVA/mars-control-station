@@ -72,7 +72,7 @@ const App = () => {
           {/* <DisplayMeter current={80} total={100} left = {155} top = {655} height = {40} width = {180} label="Capacity" /> */}
           {/* <ActuatorDataDisplay lastDataPoint={lastDataPoint}/> */}
 
-          <RightButtonPanel feedback={chartData.robot_state}></RightButtonPanel>
+          <RightButtonPanel feedback={chartData[chartData.length-1].robot_state}></RightButtonPanel>
         </div>
 
         <div className="middle-panel">
