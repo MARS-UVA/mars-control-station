@@ -1,4 +1,4 @@
-import React, {useMemo, memo, useEffect} from "react";
+import React, { useMemo, memo, useEffect } from "react";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, ReferenceLine, CartesianGrid, Legend, Tooltip } from "recharts";
 import TiltMeter from "./TiltMeter";
 
@@ -10,7 +10,7 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
     <ResponsiveContainer width="100%" height={120}>
       <LineChart data={chartData} margin={{ left: 0, right: 20, top: 5, bottom: 5 }} isAnimationActive={false}>
         <CartesianGrid strokeDasharray="3 3" />
-        <YAxis label={/*dataKey === "actuatorCapacity" ? "%" :*/ dataKey === "globalDataRate" ? "Mbps" :"Value"} />
+        <YAxis label={/*dataKey === "actuatorCapacity" ? "%" :*/ dataKey === "globalDataRate" ? "Mbps" : "Value"} />
         <Tooltip />
         <Legend wrapperStyle={{ paddingTop: '5px' }} height={20} />
         <Line type="monotone" dataKey={dataKey} stroke="#8884d8" dot={false} isAnimationActive={false} name={dataKey === "globalDataRate" ? "Data Rate (Mbps)" : dataKey} />
@@ -18,14 +18,27 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
     </ResponsiveContainer>
   );
 
+  const dataKeyToLabel = {
+    "wheel-current": "A",
+    "temperature": "°C",
+    "position": "Pos",
+    "battery-voltage": "V",
+  };
+
   const renderMultiChart = (dataKey) => (
-    <ResponsiveContainer width="100%" height={100}>
+    <ResponsiveContainer width="100%" height={200}>
       <LineChart data={chartData} margin={{ right: 20, top: 5, bottom: 5 }} isAnimationActive={false}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="time" height={20} />
-        <YAxis width={40} label={{ value: dataKey === "wheel-current" ? "A" : dataKey === "temperature" ? "°C" : "Pos", angle: -90, position: "insideLeft" }} />
+        <YAxis width={40} label={{ value: dataKeyToLabel[dataKey], angle: -90, position: "insideLeft" }} />
         <Tooltip />
         <Legend wrapperStyle={{ paddingTop: '5px' }} height={20} />
+        {dataKey === "battery-voltage" && (
+          <>
+            <Line type="monotone" dataKey="main_battery_voltage" stroke="#ff6b6b" dot={false} isAnimationActive={false} name="Main Batt" strokeWidth={2} />
+            <Line type="monotone" dataKey="aux_battery_voltage" stroke="#ffd700" dot={false} isAnimationActive={false} name="Aux Batt" strokeWidth={2} />
+          </>
+        )}
         {dataKey === "wheel-current" && (
           <>
             <Line type="monotone" dataKey="front_left_wheel_current" stroke="#fc2803" dot={false} isAnimationActive={false} name="FL Wheel" />
@@ -34,8 +47,6 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
             <Line type="monotone" dataKey="back_right_wheel_current" stroke="#fc03ba" dot={false} isAnimationActive={false} name="BR Wheel" />
             <Line type="monotone" dataKey="front_drum_current" stroke="#ffa500" dot={false} isAnimationActive={false} name="F Drum" strokeWidth={1.5} />
             <Line type="monotone" dataKey="back_drum_current" stroke="#22e0e0" dot={false} isAnimationActive={false} name="B Drum" strokeWidth={1.5} />
-            <Line type="monotone" dataKey="main_battery_voltage" stroke="#ff6b6b" dot={false} isAnimationActive={false} name="Main Batt" strokeWidth={2} />
-            <Line type="monotone" dataKey="aux_battery_voltage" stroke="#ffd700" dot={false} isAnimationActive={false} name="Aux Batt" strokeWidth={2} />
           </>
         )}
         {dataKey === "bucketDrum" && (
@@ -74,12 +85,12 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
         {/* <h3 className="panel-title">Charts</h3> */}
         <div className="chart-grid" style={{ paddingBottom: '20px' }}>
           <div className="chart-space">
-            <h3>Data Rate</h3>
-            {renderChart("globalDataRate")}
-            Current: {lastDataPoint["globalDataRate"]} Mbps
+            <h3>Battery Voltage</h3>
+            {renderMultiChart("battery-voltage")}
+            {/* Current: {lastDataPoint["globalDataRate"]} Mbps */}
           </div>
           <div className="chart-space">
-            <h3>Wheel Currents (A)</h3>
+            <h3>Currents (A)</h3>
             {renderMultiChart("wheel-current")}
           </div>
           <div className="chart-space">

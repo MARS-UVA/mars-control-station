@@ -12,7 +12,7 @@ class ServerSocket {
      * 
      * @param {Number} port 
      */
-    constructor (port) {
+    constructor(port) {
         this.PORT = port;
         this.receivedChunks = {}
         this.packetCount = 0;
@@ -23,10 +23,10 @@ class ServerSocket {
             this.ws.send(buffer)
             //console.log('ws connected');
         };
-        
+
         // Create a UDP socket
         this.server = dgram.createSocket('udp4');
-    
+
         // Event: On server start
         this.server.on('listening', () => {
             const address = this.server.address();
@@ -52,12 +52,12 @@ class ServerSocket {
             const totalChunks = totalPackets;
             //Check if all packets have been received
             //Probably keep check recievedChunks length in default, rest in logic
-            if(sequenceNumber+1 >= totalChunks) {
+            if (sequenceNumber + 1 >= totalChunks) {
                 // This variable (function) does logic speicific to type of data socket handles
                 this.onMessage(this.receivedChunks)
                 this.receivedChunks = {}
             }
-            
+
             /*
             // Echo the message back to the client
             server.send(message, 0, message.length, remote.port, remote.address, (err) => {

@@ -48,7 +48,7 @@ class UDPClient {
         });
     }
     send_autonomous_action_jetson(jsonObj) {
-        let message = "actncontnt"+jsonObj.actionType;
+        let message = "actncontnt" + jsonObj.actionType;
         let buffer = Buffer.from(message);
         buffer.writeUInt16LE(buffer.length, 4);
         this.socket.send(buffer, this.jetson_port, this.jetson_ip, (err) => {
@@ -139,13 +139,14 @@ class UDPClient {
         buffer.writeUInt8(bucket_ladder_actuator, 6);
         buffer.writeUInt8(conveyor_belt, 7);
         buffer.writeUInt8(track_actuators, 8);
-        // console.log(buffer);
+        console.log(buffer);
         this.socket.send(buffer, this.esp_port, this.esp_ip, (err) => {
             if (err) {
                 console.error('Error while sending message to esp:', err.message);
             }
         })
     }
+
 
     close() {
         this.socket.close();
