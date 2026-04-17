@@ -71,6 +71,8 @@ const App = () => {
           {/* <DisplayMeter current={80} total={100} left = {155} top = {580} height = {40} width = {180} label="Current" />  */} {/*ADD THE METHODS OF GETTING THESE VALUES!!*/}
           {/* <DisplayMeter current={80} total={100} left = {155} top = {655} height = {40} width = {180} label="Capacity" /> */}
           {/* <ActuatorDataDisplay lastDataPoint={lastDataPoint}/> */}
+
+          <RightButtonPanel></RightButtonPanel>
         </div>
 
         <div className="middle-panel">
@@ -80,7 +82,6 @@ const App = () => {
 
         <div className="right-panel">
           <LiveDataPanel lastDataPoint={lastDataPoint} timestamp={timestamp} chartData={chartData} />
-          <RightButtonPanel></RightButtonPanel>
           {/* <TiltingRods/> hiding since they're incomplete*/}
         </div>
         <Draggable>

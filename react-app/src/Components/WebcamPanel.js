@@ -6,10 +6,11 @@ import pauseImage from '../assets/touchedNpaused.png';
 
 const styles = {
   container: {
-    margin: '10px 0', // Adds margin on top and bottom
+    margin: '10px auto', // Adds margin on top and bottom
     position: 'relative',
     width: '750px',
-    height: '475px'
+    height: '475px',
+    maxWidth: '100%',
   },
   cameraContainer: {
     position: "relative",
