@@ -31,6 +31,7 @@ const App = () => {
   const [driveState, setDriveState] = useState('Idle');
   const [camera0Active, setCamera0Active] = useState(true);
   const [camera4Active, setCamera4Active] = useState(true);
+  const [robotState, setRobotState] = useState(0);
 
 
   const [timestamp, setTimestamp] = useState(0);
@@ -60,7 +61,7 @@ const App = () => {
   return (
     <div className="app-container">
       {/* <h1 className="title">MARS Web UI</h1> */}
-      <Socket setGamePadStatus={setGamepadStatus} setChartData={setChartData} setLastDataPoint={setLastDataPoint} timestamp={timestamp} setTimestamp={setTimestamp} setData={setData} />
+      <Socket setGamePadStatus={setGamepadStatus} setRobotState={setRobotState} setChartData={setChartData} setLastDataPoint={setLastDataPoint} timestamp={timestamp} setTimestamp={setTimestamp} setData={setData} />
 
 
       <div className="content">
@@ -71,8 +72,8 @@ const App = () => {
           {/* <DisplayMeter current={80} total={100} left = {155} top = {580} height = {40} width = {180} label="Current" />  */} {/*ADD THE METHODS OF GETTING THESE VALUES!!*/}
           {/* <DisplayMeter current={80} total={100} left = {155} top = {655} height = {40} width = {180} label="Capacity" /> */}
           {/* <ActuatorDataDisplay lastDataPoint={lastDataPoint}/> */}
-
-          <RightButtonPanel feedback={chartData[chartData.length-1].robot_state}></RightButtonPanel>
+          {/* bitwise by zero into integer */}
+          <RightButtonPanel feedback={robotState}></RightButtonPanel>
         </div>
 
         <div className="middle-panel">

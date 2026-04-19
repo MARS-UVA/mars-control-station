@@ -3,7 +3,7 @@ const DATA_UPDATE_DELAY_MS = 200;
 const DATA_WINDOW_WIDTH = 60000 / DATA_UPDATE_DELAY_MS;
 // This component will handle backend/API calls with useEffect blocks, and send the data to the UI components
 
-function Socket({ setGamePadStatus, setChartData, setLastDataPoint, timestamp, setTimestamp, setData: setData }) {
+function Socket({ setGamePadStatus, setChartData, setRobotState, setLastDataPoint, timestamp, setTimestamp, setData: setData }) {
     const motorValuesRef = useRef(new Float32Array(4));
  
     // Setups Gamepad connection status handling
@@ -39,8 +39,11 @@ function Socket({ setGamePadStatus, setChartData, setLastDataPoint, timestamp, s
         };
         ws.onmessage = (event) => {
           const buffer = event.data;
-          let newValues = new Float32Array(buffer);
+          const view = new DataView(buffer);
+          let newValues = new Float32Array(buffer, 0, 18);
+          let robotState = view.getInt32(18 * 4, true); // Assuming robot state is sent as an int32 right after the motor values
           motorValuesRef.current = newValues;
+          setRobotState(robotState);
         };
         
         return () => {
@@ -121,7 +124,6 @@ function Socket({ setGamePadStatus, setChartData, setLastDataPoint, timestamp, s
               back_drum_temperature: motor_values[15],
               front_actuator_position: motor_values[16],
               back_actuator_position: motor_values[17],
-              robot_state: motor_values[18],
               globalDataRate: lastDataRate,
               xGyro: gyro_values[0],
               yGyro: gyro_values[1],
