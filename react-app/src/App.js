@@ -35,6 +35,7 @@ const App = () => {
   const [orangeActive, setOrangeActive] = useState(false);
   const [blueActive, setBlueActive] = useState(false);
   const [prevGamepadData, setPrevGamepadData] = useState(null);
+  const [robotState, setRobotState] = useState(0);
 
 
   const [timestamp, setTimestamp] = useState(0);
