@@ -82,8 +82,8 @@ const App = () => {
         </div>
 
         <div className="middle-panel">
-          <WebcamPanel signalingPort="6767" index="0" />
           <WebcamPanel signalingPort="6969" index="4" />
+          <WebcamPanel signalingPort="6767" index="0" />
         </div>
 
         <div className="right-panel">

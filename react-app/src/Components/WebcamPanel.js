@@ -19,6 +19,7 @@ const styles = {
     overflow: "hidden",
     backgroundColor: "black",
     borderRadius: "8px",
+    border: "6px solid #cccccc", // default
   },
   pauseImage : {
     position: "absolute",
@@ -166,7 +167,10 @@ function WebcamPanel({ signalingPort, gamepadData, index }) {
 
   return (
     <div style={styles.container}>
-      <div style={styles.cameraContainer}>
+      <div style={{
+        ...styles.cameraContainer,
+        borderColor: index === "0" ? "#ff8c00" : index === "4" ? "#0088ff" : "#cccccc"
+      }}>
         <video
           ref={videoRef}
           style={styles.cameraFeed}
