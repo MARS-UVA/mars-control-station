@@ -89,7 +89,7 @@ class ServerSocket {
 
     onMessage = (data) => {
         const buffer = Buffer.concat(Object.values(data));
-        const messageBuf = buffer.subarray(0, 76);
+        const messageBuf = buffer.subarray(0, 84);
         if (this.ws.readyState === WebSocket.OPEN) {
             this.ws.send(messageBuf);
         } else {

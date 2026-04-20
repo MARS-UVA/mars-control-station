@@ -65,7 +65,7 @@ const App = () => {
   return (
     <div className="app-container">
       {/* <h1 className="title">MARS Web UI</h1> */}
-      <Socket setGamePadStatus={setGamepadStatus} setRobotState={setRobotState} setChartData={setChartData} setLastDataPoint={setLastDataPoint} timestamp={timestamp} setTimestamp={setTimestamp} setData={setData} />
+      <Socket setGamePadStatus={setGamepadStatus} setRobotState={setRobotState} setFrontArm={setBlueActive} setBackArm={setOrangeActive} setChartData={setChartData} setLastDataPoint={setLastDataPoint} timestamp={timestamp} setTimestamp={setTimestamp} setData={setData} />
 
 
       <div className="content">
