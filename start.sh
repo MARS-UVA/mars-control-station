@@ -6,7 +6,7 @@ PASSWORD="lunabotics#1"
 if [ $# -eq 0 ]; then
     echo "No arguments supplied, connecting to MARS network"
     nmcli device wifi connect "$SSID" password "$PASSWORD"
-    export JETSON_IP="192.168.50.100"
+    export JETSON_IP="192.168.50.220"
     export ESP_IP="192.168.50.205"
 elif [ $# -eq 1 ]; then
     if [ "$1" == "eduroam" ]; then

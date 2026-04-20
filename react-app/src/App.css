@@ -356,7 +356,8 @@ body {
 }
 
 /* keep visual styles for variants, but remove fixed width/height */
-.command-button-sstop {
+.command-button-sstop,
+.command-button-sstop-feedback {
   width: 100%;
   height: 100%;
   position: relative;
@@ -368,7 +369,9 @@ body {
 }
 
 .command-button-digauto,
-.command-button-dumpauto {
+.command-button-dumpauto,
+.command-button-digauto-feedback,
+.command-button-dumpauto-feedback {
   width: 100%;
   height: 100%;
   position: relative;
@@ -383,6 +386,9 @@ body {
 .command-button-sstop {
   background-color: rgb(215, 69, 69);
 }
+.command-button-sstop-feedback {
+  background-color: var(--active-color);
+}
 
 .command-button-digauto {
   background-color: var(--accent-color2);
@@ -391,10 +397,23 @@ body {
 .command-button-dumpauto {
   background-color: var(--accent-color3);
 }
+.command-button-digauto-feedback {
+  background-color: var(--active-color);
+}
+
+.command-button-dumpauto-feedback {
+  background-color: var(--active-color);
+}
 
 .command-button-sstop:hover {
   transform: scale(1.05);
   background-color: rgb(253, 124, 124);
+  color: var(--primary-color);
+}
+
+.command-button-sstop-feedback:hover {
+  transform: scale(1.05);
+  background-color: var(--active-color);
   color: var(--primary-color);
 }
 
@@ -404,9 +423,21 @@ body {
   color: var(--primary-color);
 }
 
+.command-button-digauto-feedback:hover {
+  transform: scale(1.05);
+  background-color: var(--active-color-hover);
+  color: var(--primary-color);
+}
+
 .command-button-dumpauto:hover {
   transform: scale(1.05);
   background-color: var(--accent-color3-hover);
+  color: var(--primary-color);
+}
+
+.command-button-dumpauto-feedback:hover {
+  transform: scale(1.05);
+  background-color: var(--active-color-hover);
   color: var(--primary-color);
 }
 
