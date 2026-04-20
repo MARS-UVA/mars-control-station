@@ -20,7 +20,7 @@ import ThemeChanger from "./Components/ThemeChanger";
 import TiltingRods from "./Components/TiltingRods";
 import DisplayMeter from "./Components/DisplayMeter";
 import RightButtonPanel from "./Components/RightButtonPanel";
-import BarsIndicator from "./gamepad/BarsIndicator";
+import ArmIndicator from "./gamepad/ArmIndicator";
 
 const App = () => {
 
@@ -78,7 +78,7 @@ const App = () => {
           {/* <ActuatorDataDisplay lastDataPoint={lastDataPoint}/> */}
 
           <RightButtonPanel></RightButtonPanel>
-          <BarsIndicator blueActive={blueActive} orangeActive={orangeActive} label="Arm State" />
+          <ArmIndicator blueActive={blueActive} orangeActive={orangeActive} label="Arm Control" />
         </div>
 
         <div className="middle-panel">
