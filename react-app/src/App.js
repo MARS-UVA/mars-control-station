@@ -20,6 +20,7 @@ import ThemeChanger from "./Components/ThemeChanger";
 import TiltingRods from "./Components/TiltingRods";
 import DisplayMeter from "./Components/DisplayMeter";
 import RightButtonPanel from "./Components/RightButtonPanel";
+import BarsIndicator from "./gamepad/BarsIndicator";
 
 const App = () => {
 
@@ -31,6 +32,9 @@ const App = () => {
   const [driveState, setDriveState] = useState('Idle');
   const [camera0Active, setCamera0Active] = useState(true);
   const [camera4Active, setCamera4Active] = useState(true);
+  const [orangeActive, setOrangeActive] = useState(false);
+  const [blueActive, setBlueActive] = useState(false);
+  const [prevGamepadData, setPrevGamepadData] = useState(null);
 
 
   const [timestamp, setTimestamp] = useState(0);
@@ -73,6 +77,7 @@ const App = () => {
           {/* <ActuatorDataDisplay lastDataPoint={lastDataPoint}/> */}
 
           <RightButtonPanel></RightButtonPanel>
+          <BarsIndicator blueActive={blueActive} orangeActive={orangeActive} label="Arm State" />
         </div>
 
         <div className="middle-panel">
