@@ -10,7 +10,7 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
     <ResponsiveContainer width="100%" height={120}>
       <LineChart data={chartData} margin={{ left: 0, right: 20, top: 5, bottom: 5 }} isAnimationActive={false}>
         <CartesianGrid strokeDasharray="3 3" />
-        <YAxis label={/*dataKey === "actuatorCapacity" ? "%" :*/ dataKey === "globalDataRate" ? "Mbps" : "Value"} />
+        <YAxis label={/*dataKey === "actuatorCapacity" ? "%" :*/ dataKey === "globalDataRate" ? "Mbps" :"Value"} />
         <Tooltip />
         <Legend wrapperStyle={{ paddingTop: '5px' }} height={20} />
         <Line type="monotone" dataKey={dataKey} stroke="#8884d8" dot={false} isAnimationActive={false} name={dataKey === "globalDataRate" ? "Data Rate (Mbps)" : dataKey} />
@@ -85,12 +85,12 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
         {/* <h3 className="panel-title">Charts</h3> */}
         <div className="chart-grid" style={{ paddingBottom: '20px' }}>
           <div className="chart-space">
-            <h3>Battery Voltage</h3>
-            {renderMultiChart("battery-voltage")}
-            {/* Current: {lastDataPoint["globalDataRate"]} Mbps */}
+            <h3>Data Rate</h3>
+            {renderChart("globalDataRate")}
+            Current: {lastDataPoint["globalDataRate"]} Mbps
           </div>
           <div className="chart-space">
-            <h3>Currents (A)</h3>
+            <h3>Wheel Currents (A)</h3>
             {renderMultiChart("wheel-current")}
           </div>
           <div className="chart-space">
