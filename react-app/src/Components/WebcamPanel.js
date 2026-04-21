@@ -6,11 +6,16 @@ import pauseImage from '../assets/touchedNpaused.png';
 
 const styles = {
   container: {
-    margin: '10px auto', // Adds margin on top and bottom
     position: 'relative',
-    width: '750px',
-    height: '475px',
-    maxWidth: '100%',
+    // width: '750px',
+    // height: '475px',
+    // maxWidth: '100%',
+    aspectRatio: '3 / 2',
+    // width: "auto",
+    // maxHeight: "40%",
+    height: "50%",
+    maxWidth: "100%",
+    margin: "0 auto"
   },
   cameraContainer: {
     position: "relative",
@@ -21,7 +26,7 @@ const styles = {
     borderRadius: "8px",
     border: "6px solid #cccccc", // default
   },
-  pauseImage : {
+  pauseImage: {
     position: "absolute",
     top: "50%",
     left: "50%",
@@ -65,7 +70,7 @@ function WebcamPanel({ signalingPort, gamepadData, index }) {
   const videoRef = useRef(null);
   const wsRef = useRef(null);
   const pcRef = useRef(null);
-  
+
   // Change this to ip of signaling server if not on same computer
   const signalingUrl = `ws://localhost:${signalingPort}`;
 
@@ -73,11 +78,11 @@ function WebcamPanel({ signalingPort, gamepadData, index }) {
     const pc = new RTCPeerConnection({
       iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
     });
-    
+
     pc.addTransceiver('video', { direction: 'recvonly' });
-    
+
     pcRef.current = pc;
-    
+
     let candidateQueue = [];
     let isRemoteSet = false;
 
@@ -122,18 +127,18 @@ function WebcamPanel({ signalingPort, gamepadData, index }) {
 
       if (msg.cmd === 'HELLO_FROM_STREAMER') {
         ws.send(JSON.stringify({ cmd: 'HELLO_FROM_VIEWER' }));
-      } 
+      }
       else if (msg.sdp && msg.sdp.type === 'offer') {
         console.log("Received Offer - Setting Remote Description");
         try {
           await pc.setRemoteDescription(new RTCSessionDescription(msg.sdp));
           isRemoteSet = true;
-          
+
           // Add candidates that arrived while waiting
           console.log(`Processing ${candidateQueue.length} queued candidates`);
           while (candidateQueue.length > 0) {
-             const c = candidateQueue.shift();
-             await pc.addIceCandidate(new RTCIceCandidate(c));
+            const c = candidateQueue.shift();
+            await pc.addIceCandidate(new RTCIceCandidate(c));
           }
 
           const answer = await pc.createAnswer();
@@ -142,15 +147,15 @@ function WebcamPanel({ signalingPort, gamepadData, index }) {
         } catch (e) {
           console.error(`[Cam ${index}] SDP Error:`, e);
         }
-      } 
+      }
       else if (msg.ice) {
         try {
           if (isRemoteSet) {
-             console.log("Adding ICE Candidate directly");
-             await pc.addIceCandidate(new RTCIceCandidate(msg.ice));
+            console.log("Adding ICE Candidate directly");
+            await pc.addIceCandidate(new RTCIceCandidate(msg.ice));
           } else {
-             console.log("Queueing ICE Candidate (Remote not set yet)");
-             candidateQueue.push(msg.ice);
+            console.log("Queueing ICE Candidate (Remote not set yet)");
+            candidateQueue.push(msg.ice);
           }
         } catch (e) {
           console.error(`[Cam ${index}] ICE Error:`, e);

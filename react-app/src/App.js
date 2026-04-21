@@ -26,7 +26,7 @@ const App = () => {
 
 
   const [gamepadStatus, setGamepadStatus] = useState('No gamepad connected!');
-  const [gamepad2Status, setGamepad2Status] = useState('No gamepad connected!');
+  // const [gamepad2Status, setGamepad2Status] = useState('No gamepad connected!');
   const [gamepadData, setGamepadData] = useState(null);
   const [gamepad2Data, setGamepad2Data] = useState(null);
   const [driveState, setDriveState] = useState('Idle');
@@ -71,7 +71,7 @@ const App = () => {
       <div className="content">
         <div className="left-panel">
           <GamepadPanel gamepadStatus={gamepadStatus} setGamepadStatus={setGamepadStatus} gamepadData={gamepadData} setGamepadData={setGamepadData} gamepadIndex={0} camera0Active={camera0Active} camera4Active={camera4Active} />
-          <GamepadPanel gamepadStatus={gamepad2Status} setGamepadStatus={setGamepad2Status} gamepadData={gamepad2Data} setGamepadData={setGamepad2Data} gamepadIndex={1} camera0Active={camera0Active} camera4Active={camera4Active} />
+          {/* <GamepadPanel gamepadStatus={gamepad2Status} setGamepadStatus={setGamepad2Status} gamepadData={gamepad2Data} setGamepadData={setGamepad2Data} gamepadIndex={1} camera0Active={camera0Active} camera4Active={camera4Active} /> */}
           {/* Hiding the displays that don't do anything currently */}
           {/* <DisplayMeter current={80} total={100} left = {155} top = {580} height = {40} width = {180} label="Current" />  */} {/*ADD THE METHODS OF GETTING THESE VALUES!!*/}
           {/* <DisplayMeter current={80} total={100} left = {155} top = {655} height = {40} width = {180} label="Capacity" /> */}

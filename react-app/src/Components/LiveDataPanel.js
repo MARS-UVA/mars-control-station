@@ -26,7 +26,7 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
   };
 
   const renderMultiChart = (dataKey) => (
-    <ResponsiveContainer width="100%" height={200}>
+    <ResponsiveContainer width="100%" height="100%">
       <LineChart data={chartData} margin={{ right: 20, top: 5, bottom: 5 }} isAnimationActive={false}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="time" height={20} />
@@ -83,7 +83,7 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
       <div className="panel">
         {/* <h2 className="panel-title">Live Data Panel</h2> */}
         {/* <h3 className="panel-title">Charts</h3> */}
-        <div className="chart-grid" style={{ paddingBottom: '20px' }}>
+        <div className="chart-grid">
           <div className="chart-space">
             <h3>Battery Voltage</h3>
             {renderMultiChart("battery-voltage")}

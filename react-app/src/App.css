@@ -16,6 +16,10 @@ body {
   margin: 0;
 }
 
+* {
+  box-sizing: border-box;
+}
+
 .content {
   display: flex;
   flex-direction: row;
@@ -40,13 +44,18 @@ body {
 .middle-panel {
   width: 46%;
   padding: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  max-height: calc(100vh - 30px);
+  gap: 10px;
   /* background-color: #e0e0e0; Optional for visual distinction */
 }
 
 .right-panel {
   width: 27%;
   height: 100%;
-  padding: 10px;
+  padding: 20px;
   /* background-color: #d0d0d0; Optional for visual distinction */
 }
 
@@ -152,6 +161,7 @@ body {
 .chart-space {
   text-align: center;
   padding: 10px;
+  height: calc(25vh - 100px);
   font-variant-numeric: tabular-nums;
 }
 
@@ -386,6 +396,7 @@ body {
 .command-button-sstop {
   background-color: rgb(215, 69, 69);
 }
+
 .command-button-sstop-feedback {
   background-color: var(--active-color);
 }
@@ -397,6 +408,7 @@ body {
 .command-button-dumpauto {
   background-color: var(--accent-color3);
 }
+
 .command-button-digauto-feedback {
   background-color: var(--active-color);
 }
