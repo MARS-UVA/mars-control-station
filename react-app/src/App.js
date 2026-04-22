@@ -71,6 +71,7 @@ const App = () => {
       <div className="content">
         <div className="left-panel">
           <GamepadPanel gamepadStatus={gamepadStatus} setGamepadStatus={setGamepadStatus} gamepadData={gamepadData} setGamepadData={setGamepadData} gamepadIndex={0} camera0Active={camera0Active} camera4Active={camera4Active} />
+          <ArmIndicator blueActive={blueActive} orangeActive={orangeActive} label="Arm Control" />
           {/* <GamepadPanel gamepadStatus={gamepad2Status} setGamepadStatus={setGamepad2Status} gamepadData={gamepad2Data} setGamepadData={setGamepad2Data} gamepadIndex={1} camera0Active={camera0Active} camera4Active={camera4Active} /> */}
           {/* Hiding the displays that don't do anything currently */}
           {/* <DisplayMeter current={80} total={100} left = {155} top = {580} height = {40} width = {180} label="Current" />  */} {/*ADD THE METHODS OF GETTING THESE VALUES!!*/}
@@ -78,7 +79,7 @@ const App = () => {
           {/* <ActuatorDataDisplay lastDataPoint={lastDataPoint}/> */}
 
           <RightButtonPanel></RightButtonPanel>
-          <ArmIndicator blueActive={blueActive} orangeActive={orangeActive} label="Arm Control" />
+          <Timer />
         </div>
 
         <div className="middle-panel">
@@ -90,9 +91,6 @@ const App = () => {
           <LiveDataPanel lastDataPoint={lastDataPoint} timestamp={timestamp} chartData={chartData} />
           {/* <TiltingRods/> hiding since they're incomplete*/}
         </div>
-        <Draggable>
-          <Timer />
-        </Draggable>
         <ThemeChanger />
       </div>
     </div>
