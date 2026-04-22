@@ -3,7 +3,7 @@ const DATA_UPDATE_DELAY_MS = 200;
 const DATA_WINDOW_WIDTH = 60000 / DATA_UPDATE_DELAY_MS;
 // This component will handle backend/API calls with useEffect blocks, and send the data to the UI components
 
-function Socket({ setGamePadStatus, setChartData, setRobotState, setFrontArm, setBackArm, setLastDataPoint, timestamp, setTimestamp, setData: setData }) {
+function Socket({ setGamePadStatus, setChartData, setRobotState, setFrontArmActive, setBackArmActive, setLastDataPoint, timestamp, setTimestamp, setData: setData }) {
   const motorValuesRef = useRef(new Float32Array(4));
 
   // Setups Gamepad connection status handling
@@ -41,13 +41,14 @@ function Socket({ setGamePadStatus, setChartData, setRobotState, setFrontArm, se
       const buffer = event.data;
       const view = new DataView(buffer);
       let newValues = new Float32Array(buffer, 0, 18);
-      // let robotState = view.getInt32(18 * 4, true); // Assuming robot state is sent as an int32 right after the motor values
-      // let frontArmActive = view.getInt8(18 * 4 + 4); // Assuming front arm state is sent as an int8 right after robot state
-      // let backArmActive = view.getInt8(18 * 4 + 5); // Assuming back arm state is sent as an int8 right after front arm state
+      let robotState = view.getInt32(18 * 4, true); // Assuming robot state is sent as an int32 right after the motor values
+      let frontArmActive = view.getInt32(18 * 4 + 4, true); // Assuming front arm state is sent as an int32 right after robot state
+      let backArmActive = view.getInt32(18 * 4 + 8, true); // Assuming back arm state is sent as an int32 right after front arm state
       motorValuesRef.current = newValues;
-      // setRobotState(robotState);
-      // setFrontArm(frontArmActive === 1);
-      // setBackArm(backArmActive === 1);
+      setRobotState(robotState);
+      //console.log(`Robot state: ${robotState}, Front Arm: ${frontArmActive}, Back Arm: ${backArmActive}`);
+      setFrontArmActive(frontArmActive === 1);
+      setBackArmActive(backArmActive === 1);
     };
 
     return () => {

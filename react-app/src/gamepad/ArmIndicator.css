@@ -32,14 +32,14 @@
   color: var(--secondary-color);
 }
 
-.arm-indicator-box.status-front {
+.arm-indicator-box.status-back {
   background-color: #ffe6cc;
   border-color: #ff8c00;
   color: #cc5500;
   box-shadow: 0 0 8px rgba(255, 140, 0, 0.3), 0 2px 4px var(--box-shadow-color);
 }
 
-.arm-indicator-box.status-back {
+.arm-indicator-box.status-front {
   background-color: #cce6ff;
   border-color: #0088ff;
   color: #0044aa;

@@ -32,8 +32,8 @@ const App = () => {
   const [driveState, setDriveState] = useState('Idle');
   const [camera0Active, setCamera0Active] = useState(true);
   const [camera4Active, setCamera4Active] = useState(true);
-  const [orangeActive, setOrangeActive] = useState(false);
-  const [blueActive, setBlueActive] = useState(false);
+  const [frontArmActive, setFrontArmActive] = useState(false);
+  const [backArmActive, setBackArmActive] = useState(false);
   const [prevGamepadData, setPrevGamepadData] = useState(null);
   const [robotState, setRobotState] = useState(0);
 
@@ -65,20 +65,20 @@ const App = () => {
   return (
     <div className="app-container">
       {/* <h1 className="title">MARS Web UI</h1> */}
-      <Socket setGamePadStatus={setGamepadStatus} setRobotState={setRobotState} setFrontArm={setBlueActive} setBackArm={setOrangeActive} setChartData={setChartData} setLastDataPoint={setLastDataPoint} timestamp={timestamp} setTimestamp={setTimestamp} setData={setData} />
+      <Socket setGamePadStatus={setGamepadStatus} setRobotState={setRobotState} setFrontArmActive={setFrontArmActive} setBackArmActive={setBackArmActive} setChartData={setChartData} setLastDataPoint={setLastDataPoint} timestamp={timestamp} setTimestamp={setTimestamp} setData={setData} />
 
 
       <div className="content">
         <div className="left-panel">
           <GamepadPanel gamepadStatus={gamepadStatus} setGamepadStatus={setGamepadStatus} gamepadData={gamepadData} setGamepadData={setGamepadData} gamepadIndex={0} camera0Active={camera0Active} camera4Active={camera4Active} />
-          <ArmIndicator blueActive={blueActive} orangeActive={orangeActive} label="Arm Control" />
+          <ArmIndicator frontArmActive={frontArmActive} backArmActive={backArmActive} label="Arm Control" />
           {/* <GamepadPanel gamepadStatus={gamepad2Status} setGamepadStatus={setGamepad2Status} gamepadData={gamepad2Data} setGamepadData={setGamepad2Data} gamepadIndex={1} camera0Active={camera0Active} camera4Active={camera4Active} /> */}
           {/* Hiding the displays that don't do anything currently */}
           {/* <DisplayMeter current={80} total={100} left = {155} top = {580} height = {40} width = {180} label="Current" />  */} {/*ADD THE METHODS OF GETTING THESE VALUES!!*/}
           {/* <DisplayMeter current={80} total={100} left = {155} top = {655} height = {40} width = {180} label="Capacity" /> */}
           {/* <ActuatorDataDisplay lastDataPoint={lastDataPoint}/> */}
 
-          <RightButtonPanel></RightButtonPanel>
+          <RightButtonPanel feedback={robotState}></RightButtonPanel>
           <Timer />
         </div>
 

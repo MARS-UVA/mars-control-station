@@ -2,17 +2,17 @@ import React from 'react';
 import './ArmIndicator.css';
 
 const ArmIndicator = ({ 
-  orangeActive = false,
-  blueActive = false,
+  frontArmActive = false,
+  backArmActive = false,
   label = 'Arm Control'
 }) => {
   let armStatus = 'Neither';
   
-  if (orangeActive && blueActive) {
+  if (frontArmActive && backArmActive) {
     armStatus = 'Both';
-  } else if (orangeActive) {
+  } else if (frontArmActive) {
     armStatus = 'Front';
-  } else if (blueActive) {
+  } else if (backArmActive) {
     armStatus = 'Back';
   }
 
