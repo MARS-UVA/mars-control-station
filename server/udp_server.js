@@ -37,16 +37,16 @@ class ServerSocket {
 
         // Event: On receiving a message
         this.server.on('message', (message, remote) => {
-             console.log(message.subarray(0, 10));
-            console.log(`Received message from IP: ${remote.address} and port: ${remote.port}`);
-            console.log(`Msg from client: ${new Uint8Array(message.buffer)}`);
+            // console.log(message.subarray(0, 10));
+            // console.log(`Received message from IP: ${remote.address} and port: ${remote.port}`);
+            // console.log(`Msg from client: ${new Uint8Array(message.buffer)}`);
 
             // const receivedChunks = {}
             const sequenceNumber = (message[1] << 8) | message[0];
             const totalPackets = (message[3] << 8) | message[2];
             const chunkData = message.subarray(10);
 
-             console.log(`Received packet ${sequenceNumber + 1} of ${totalPackets}`);
+            // console.log(`Received packet ${sequenceNumber + 1} of ${totalPackets}`);
             // console.log(chunkData.length);
             this.receivedChunks[sequenceNumber] = chunkData;
             const totalChunks = totalPackets;

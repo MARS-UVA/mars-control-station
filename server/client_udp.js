@@ -76,7 +76,7 @@ class UDPClient {
 
         // Set headers
         view.setInt8(0, 0x00); // reserve byte
-        view.setInt8(1, 0x00); // packet type 0 for controller data
+        view.setInt8(1, 0x01); // packet type 1 for autonomous action data
         view.setUint16(2, 18, true); // number of bytes of actual data (not including header)
         view.setUint16(4, 1, true); // num of packets
         view.setUint16(6, 1, true); // batch packet count
@@ -84,7 +84,7 @@ class UDPClient {
 
         // Populate the buffer with action data
         view.setInt8(10, jsonObj.actionType);
-        
+
         this.socket.send(view, this.jetson_port, this.jetson_ip, (err) => {
             if (err) {
                 console.error('Error while sending message to jetson:', err.message);
