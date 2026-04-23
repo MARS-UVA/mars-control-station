@@ -10,7 +10,7 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
     <ResponsiveContainer width="100%" height={120}>
       <LineChart data={chartData} margin={{ left: 0, right: 20, top: 5, bottom: 5 }} isAnimationActive={false}>
         <CartesianGrid strokeDasharray="3 3" />
-        <YAxis label={/*dataKey === "actuatorCapacity" ? "%" :*/ dataKey === "globalDataRate" ? "Mbps" : "Value"} />
+        <YAxis label={/*dataKey === "actuatorCapacity" ? "%" :*/ dataKey === "globalDataRate" ? "Mbps" :"Value"} />
         <Tooltip />
         <Legend wrapperStyle={{ paddingTop: '5px' }} height={20} />
         <Line type="monotone" dataKey={dataKey} stroke="#8884d8" dot={false} isAnimationActive={false} name={dataKey === "globalDataRate" ? "Data Rate (Mbps)" : dataKey} />
