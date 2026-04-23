@@ -35,12 +35,8 @@ class UDPClient {
     send_controller_jetson(jsonObj) {
         const buffer = new ArrayBuffer(46);
         const view = new DataView(buffer);
-        const gamepadOut = `${jsonObj.gamepad.buttons.x},${jsonObj.gamepad.buttons.y},${jsonObj.gamepad.buttons.a},${jsonObj.gamepad.buttons.b},`
-            + `${jsonObj.gamepad.buttons.lt},${jsonObj.gamepad.buttons.rt},${jsonObj.gamepad.buttons.lb},${jsonObj.gamepad.buttons.rb},${jsonObj.gamepad.buttons.dd},`
-            + `${jsonObj.gamepad.buttons.du},${jsonObj.gamepad.buttons.l3},${jsonObj.gamepad.buttons.r3},`
-            + `${jsonObj.gamepad.buttons.back},${jsonObj.gamepad.buttons.start},${jsonObj.gamepad.leftStick.x},${jsonObj.gamepad.leftStick.y},${jsonObj.gamepad.rightStick.x},`
-            + `${jsonObj.gamepad.rightStick.y}`;
         
+        // Set headers
         view.setInt8(0, 0x00); // reserve byte
         view.setInt8(1, 0x00); // packet type 0 for controller data
         view.setUint16(2, 18, true); // number of bytes of actual data (not including header)
@@ -48,6 +44,7 @@ class UDPClient {
         view.setUint16(6, 1, true); // batch packet count
         view.setUint16(8, 0, true); // TODO: crc number
 
+        // Populate the buffer with gamepad data
         view.setInt8(10, jsonObj.gamepad.buttons.x);
         view.setInt8(11, jsonObj.gamepad.buttons.y);
         view.setInt8(12, jsonObj.gamepad.buttons.a);
@@ -74,10 +71,21 @@ class UDPClient {
         });
     }
     send_autonomous_action_jetson(jsonObj) {
-        let message = "actncontnt" + jsonObj.actionType;
-        let buffer = Buffer.from(message);
-        buffer.writeUInt16LE(buffer.length, 4);
-        this.socket.send(buffer, this.jetson_port, this.jetson_ip, (err) => {
+        const buffer = new ArrayBuffer(11);
+        const view = new DataView(buffer);
+
+        // Set headers
+        view.setInt8(0, 0x00); // reserve byte
+        view.setInt8(1, 0x00); // packet type 0 for controller data
+        view.setUint16(2, 18, true); // number of bytes of actual data (not including header)
+        view.setUint16(4, 1, true); // num of packets
+        view.setUint16(6, 1, true); // batch packet count
+        view.setUint16(8, 0, true); // TODO: crc number
+
+        // Populate the buffer with action data
+        view.setInt8(10, jsonObj.actionType);
+        
+        this.socket.send(view, this.jetson_port, this.jetson_ip, (err) => {
             if (err) {
                 console.error('Error while sending message to jetson:', err.message);
             }
