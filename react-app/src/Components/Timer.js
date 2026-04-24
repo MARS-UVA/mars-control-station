@@ -51,6 +51,24 @@ const Timer = () => {
     }
   }, [time])
 
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === ' ') {
+        e.preventDefault(); // stops page from scrolling
+        if (isActive) lap();
+      }
+      if (e.key === '/n') {
+        toggle();
+      }
+      if (e.key === 'r') {
+        reset();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isActive, laps, time]);
+  
+
   const formatTime = (time) => {
     const totalSeconds = Math.floor(time / 1000)
     const seconds = ("0" + (totalSeconds % 60)).slice(-2);
