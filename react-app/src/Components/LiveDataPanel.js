@@ -113,12 +113,6 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
         {/* <h3 className="panel-title">Charts</h3> */}
         <div className="chart-grid">
           <div className="chart-space">
-            <div style={{ padding: "0.5rem" }}>
-              <h3>Data Rate</h3>
-              <div style={{ width: "100%" }}>
-                {lastDataPoint.globalDataRate} Mbps
-              </div>
-            </div>
 
             <h3>Battery Voltage</h3>
             <div style={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", margin: "10px 0", gap: "10px" }}>
