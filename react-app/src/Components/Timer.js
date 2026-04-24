@@ -1,10 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
-import Draggable from 'react-draggable';
-
 
 
 const Timer = () => {
   const [time, setTime] = useState(0); // Time in milliseconds
+  const [currentLapTime, setLapTime] = useState(0);
   const [laps, setLaps] = useState([]);
   const [isActive, setIsActive] = useState(false);
 
@@ -16,6 +15,7 @@ const Timer = () => {
 
   function reset() {
     setTime(0);
+    setLapTime(0);
     setIsActive(false);
     lapStartTimeRef.current = 0;
     setLaps([]);
@@ -25,7 +25,11 @@ const Timer = () => {
     let interval = null;
     if (isActive) {
       interval = setInterval(() => {
-        setTime((prevTime) => prevTime + 100);
+        setTime((prevTime) => {
+          const newTime = prevTime + 100;
+          setLapTime(newTime - lapStartTimeRef.current);
+          return newTime;
+        });
       }, 100);
     } else {
       clearInterval(interval);
@@ -40,11 +44,11 @@ const Timer = () => {
   }, [time])
 
   const formatTime = (time) => {
-    const milliseconds = ("0" + ((time / 10) % 100)).slice(-2);
-    const seconds = ("0" + Math.floor((time / 1000) % 60)).slice(-2);
-    const minutes = ("0" + Math.floor(time / 60000)).slice(-2);
+    const totalSeconds = Math.floor(time / 1000)
+    const seconds = ("0" + (totalSeconds % 60)).slice(-2);
+    const minutes = ("0" + Math.floor(totalSeconds / 60)).slice(-2);
 
-    return `${minutes}:${seconds}:${milliseconds}`;
+    return `${minutes}:${seconds}`;
   };
 
   const lap = () => {
@@ -75,6 +79,11 @@ const Timer = () => {
       <div className="timer-display">
         {formatTime(time)}
       </div>
+      {isActive && (
+      <div className="lap-display">
+        {formatTime(currentLapTime)}
+      </div>
+      )}
       <div className="timer-controls">
         <button className="timer-button-start" onClick={toggle}>
           {isActive ? 'Pause' : 'Start'}

@@ -51,7 +51,6 @@ const App = () => {
     rightBucketDrum: Math.random() * 100,
     actuatorCapacity: Math.random() * 100,
     actuatorHeight: Math.random() * 100,
-    globalDataRate: Math.random() * 100,
     xGyro: 0.0,
     yGyro: 0.0,
     zGyro: 0.0,
