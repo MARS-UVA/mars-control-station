@@ -33,6 +33,12 @@ const Timer = () => {
     return () => clearInterval(interval);
   }, [isActive]);
 
+  useEffect(() => {
+    if (time === 10000){
+      playBeep();
+    }
+  }, [time])
+
   const formatTime = (time) => {
     const milliseconds = ("0" + ((time / 10) % 100)).slice(-2);
     const seconds = ("0" + Math.floor((time / 1000) % 60)).slice(-2);
@@ -47,6 +53,22 @@ const Timer = () => {
     console.log(lapStartTimeRef.current, time);
     lapStartTimeRef.current = time;
   }
+
+  const playBeep = () => {
+    const context = new AudioContext();
+    const oscillator = context.createOscillator();
+    const gainNode = context.createGain();
+  
+    oscillator.connect(gainNode);
+    gainNode.connect(context.destination);
+  
+    oscillator.type = 'sine';  // 'sine', 'square', 'sawtooth', 'triangle'
+    oscillator.frequency.value = 880; // pitch in Hz
+    gainNode.gain.value = 0.5; // volume (0 to 1)
+  
+    oscillator.start();
+    oscillator.stop(context.currentTime + 0.3); // play for 0.3 seconds
+  };
 
   return (
     <div className="timer-overlay">
