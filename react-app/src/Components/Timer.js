@@ -57,7 +57,7 @@ const Timer = () => {
         e.preventDefault(); // stops page from scrolling
         if (isActive) lap();
       }
-      if (e.key === '/n') {
+      if (e.key === 'Enter') {
         toggle();
       }
       if (e.key === 'r') {
