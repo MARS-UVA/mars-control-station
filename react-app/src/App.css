@@ -462,6 +462,7 @@ body {
 TODO: Change right and bottom values to offset timer in the right and bottom screen
 */
 .timer-overlay {
+  position: relative;
   background-color: var(--panel-bg-color);
   padding: 16px 20px;
   /* thinner */
