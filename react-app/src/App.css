@@ -33,7 +33,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  width: 27%;
+  width: 22%;
   padding: 10px;
   height: 100%;
   color: var(--primary-color);
@@ -462,6 +462,7 @@ body {
 TODO: Change right and bottom values to offset timer in the right and bottom screen
 */
 .timer-overlay {
+  position: relative;
   background-color: var(--panel-bg-color);
   padding: 16px 20px;
   /* thinner */

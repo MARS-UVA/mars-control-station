@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import { getActionState, setActionState } from '../robotState';
 import { sendCustomCommandState } from '../packets';
 
@@ -33,6 +33,7 @@ const doFunction = label => {
 
 }
 //console.log(feedback)
+
 
 // Render the component UI
   return (
