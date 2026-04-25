@@ -34,6 +34,22 @@ const doFunction = label => {
 }
 //console.log(feedback)
 
+useEffect(() => {
+  const handleKeyDown = (e) => {
+    if (e.key === 'Backspace') {
+      doFunction('stop');
+    }
+    else if (e.key === 'd'){
+      doFunction('dig auto');
+    }
+    else if (e.key === 'f'){
+      doFunction('dump auto')
+    }
+  };
+  window.addEventListener('keydown', handleKeyDown);
+  return () => window.removeEventListener('keydown', handleKeyDown);
+}, []);
+
 
 // Render the component UI
   return (
