@@ -33,7 +33,7 @@ class UDPClient {
     }
 
     send_controller_jetson(jsonObj) {
-        const buffer = new ArrayBuffer(46);
+        const buffer = new ArrayBuffer(48);
         const view = new DataView(buffer);
         
         // Set headers
@@ -55,14 +55,16 @@ class UDPClient {
         view.setInt8(23, jsonObj.gamepad.buttons.rb);
         view.setInt8(24, jsonObj.gamepad.buttons.dd);
         view.setInt8(25, jsonObj.gamepad.buttons.du);
-        view.setInt8(26, jsonObj.gamepad.buttons.l3);
-        view.setInt8(27, jsonObj.gamepad.buttons.r3);
-        view.setInt8(28, jsonObj.gamepad.buttons.back);
-        view.setInt8(29, jsonObj.gamepad.buttons.start);
-        view.setFloat32(30, jsonObj.gamepad.leftStick.x, true);
-        view.setFloat32(34, jsonObj.gamepad.leftStick.y, true);
-        view.setFloat32(38, jsonObj.gamepad.rightStick.x, true);
-        view.setFloat32(42, jsonObj.gamepad.rightStick.y, true);
+        view.setInt8(26, jsonObj.gamepad.buttons.dl);
+        view.setInt8(27, jsonObj.gamepad.buttons.dr);
+        view.setInt8(28, jsonObj.gamepad.buttons.l3);
+        view.setInt8(29, jsonObj.gamepad.buttons.r3);
+        view.setInt8(30, jsonObj.gamepad.buttons.back);
+        view.setInt8(31, jsonObj.gamepad.buttons.start);
+        view.setFloat32(32, jsonObj.gamepad.leftStick.x, true);
+        view.setFloat32(36, jsonObj.gamepad.leftStick.y, true);
+        view.setFloat32(40, jsonObj.gamepad.rightStick.x, true);
+        view.setFloat32(44, jsonObj.gamepad.rightStick.y, true);
         
         this.socket.send(view, this.jetson_port, this.jetson_ip, (err) => {
             if (err) {
@@ -77,7 +79,7 @@ class UDPClient {
         // Set headers
         view.setInt8(0, 0x00); // reserve byte
         view.setInt8(1, 0x01); // packet type 1 for autonomous action data
-        view.setUint16(2, 18, true); // number of bytes of actual data (not including header)
+        view.setUint16(2, 40, true); // number of bytes of actual data (not including header)
         view.setUint16(4, 1, true); // num of packets
         view.setUint16(6, 1, true); // batch packet count
         view.setUint16(8, 0, true); // TODO: crc number

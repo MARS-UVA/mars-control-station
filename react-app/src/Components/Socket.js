@@ -5,6 +5,52 @@ const DATA_WINDOW_WIDTH = 60000 / DATA_UPDATE_DELAY_MS;
 
 function Socket({ setGamePadStatus, setChartData, setRobotState, setFrontArmActive, setBackArmActive, setLastDataPoint, timestamp, setTimestamp, setData: setData }) {
   const motorValuesRef = useRef(new Float32Array(4));
+  const alertAudioRef = useRef(null);
+  const oscillatorRef = useRef(null);
+  const gainNodeRef = useRef(null);
+  const overStallCurrent = useRef(false);
+  const STALL_CURRENT = 366; // Amps from https://docs.wcproducts.com/welcome/frc-build-system/electronics-and-pneumatics/brushless-motors
+
+  useEffect(() => {
+    return () => {
+      StopOverCurrentAlarm();
+      alertAudioRef.current?.close();
+    };
+  }, []);
+
+  useEffect(() => {
+    alertAudioRef.current = new (window.AudioContext || window.webkitAudioContext)();
+  }, []);
+
+  const StartOverCurrentAlarm = () => {
+    const context = alertAudioRef.current;
+    if (!context || oscillatorRef.current) return;
+
+    const oscillator = context.createOscillator();
+    const gainNode = context.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(context.destination);
+
+    oscillator.type = 'sine';  // 'sine', 'square', 'sawtooth', 'triangle'
+    oscillator.frequency.value = 1000; // pitch in Hz
+    gainNode.gain.value = 1; // volume (0 to 1)
+
+    oscillator.start();
+
+    oscillatorRef.current = oscillator;
+    gainNodeRef.current = gainNode;
+  };
+
+  const StopOverCurrentAlarm = () => {
+    if (oscillatorRef.current) {
+      oscillatorRef.current.stop();
+      oscillatorRef.current.disconnect();
+
+      oscillatorRef.current = null;
+      gainNodeRef.current = null;
+    }
+  }
 
   // Setups Gamepad connection status handling
   // Creates event listeners for gamepad connection and disconnection
@@ -134,6 +180,20 @@ function Socket({ setGamePadStatus, setChartData, setRobotState, setFrontArmActi
           yGyro: gyro_values[1],
           zGyro: gyro_values[2],
         };
+
+        const isOverStallCurrent = (
+          newData.front_left_wheel_current > STALL_CURRENT ||
+          newData.back_left_wheel_current > STALL_CURRENT ||
+          newData.front_right_wheel_current > STALL_CURRENT ||
+          newData.back_right_wheel_current > STALL_CURRENT
+        );
+        if (isOverStallCurrent && !overStallCurrent.current) {
+          StartOverCurrentAlarm();
+        }
+        if (!isOverStallCurrent && overStallCurrent.current) {
+          StopOverCurrentAlarm();
+        }
+        overStallCurrent.current = isOverStallCurrent;
 
         setChartData((prevData) => {
           setLastDataPoint(newData);

@@ -37,37 +37,19 @@ class ServerSocket {
 
         // Event: On receiving a message
         this.server.on('message', (message, remote) => {
-            // console.log(message.subarray(0, 10));
-            // console.log(`Received message from IP: ${remote.address} and port: ${remote.port}`);
-            // console.log(`Msg from client: ${new Uint8Array(message.buffer)}`);
+            const header = {
+                reserved: message.readUInt8(0),
+                packetType: message.readUInt8(1),
+                packetLength: message.readUInt16LE(2),
+                numPackets: message.readUInt16LE(4),
+                batchPacketCount: message.readUInt16LE(6),
+                crc: message.readUInt16LE(8),
+            };
 
-            // const receivedChunks = {}
-            const sequenceNumber = (message[1] << 8) | message[0];
-            const totalPackets = (message[3] << 8) | message[2];
-            const chunkData = message.subarray(10);
-
-            // console.log(`Received packet ${sequenceNumber + 1} of ${totalPackets}`);
-            // console.log(chunkData.length);
-            this.receivedChunks[sequenceNumber] = chunkData;
-            const totalChunks = totalPackets;
-            //Check if all packets have been received
-            //Probably keep check recievedChunks length in default, rest in logic
-            if (sequenceNumber + 1 >= totalChunks) {
-                // This variable (function) does logic speicific to type of data socket handles
-                this.onMessage(this.receivedChunks)
-                this.receivedChunks = {}
+            const payload = message.subarray(HEADER_LENGTH);
+            if (this.ws.readyState === WebSocket.OPEN) {
+                this.ws.send(payload);
             }
-
-            /*
-            // Echo the message back to the client
-            server.send(message, 0, message.length, remote.port, remote.address, (err) => {
-                if (err) {
-                    console.error("Error sending message:", err.message);
-                } else {
-                    console.log("Message echoed back to client");
-                }
-            });
-            */
         });
 
         // Bind the server to the port and IP
@@ -85,16 +67,6 @@ class ServerSocket {
         this.server.on('close', () => {
             console.log("Server socket closed");
         });
-    }
-
-    onMessage = (data) => {
-        const buffer = Buffer.concat(Object.values(data));
-        const messageBuf = buffer.subarray(0, 84);
-        if (this.ws.readyState === WebSocket.OPEN) {
-            this.ws.send(messageBuf);
-        } else {
-            console.error("WebSocket is not open. Cannot send message.");
-        }
     }
 }
 
