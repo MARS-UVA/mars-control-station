@@ -233,7 +233,7 @@ body {
 }
 
 .middle-panel {
-  width: 46%;
+  width: 52%;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
@@ -242,7 +242,7 @@ body {
 }
 
 .right-panel {
-  width: 32%;
+  width: 29%;
   height: 100%;
   overflow-y: auto;
   padding-right: 4px;
