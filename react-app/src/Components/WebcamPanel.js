@@ -4,72 +4,11 @@ import { flipPausedState, getPausedState } from "../robotState";
 import Guidelines from "../gamepad/Guidelines";
 import pauseImage from '../assets/touchedNpaused.png';
 
-const styles = {
-  container: {
-    position: 'relative',
-    // width: '750px',
-    // height: '475px',
-    // maxWidth: '100%',
-    aspectRatio: '3 / 2',
-    // width: "auto",
-    // maxHeight: "40%",
-    height: "50%",
-    maxWidth: "100%",
-    margin: "0 auto"
-  },
-  cameraContainer: {
-    position: "relative",
-    width: "100%",
-    height: "100%",
-    overflow: "hidden",
-    backgroundColor: "black",
-    borderRadius: "8px",
-    border: "6px solid #cccccc", // default
-  },
-  pauseImage: {
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    width: "50%",
-    height: "50%",
-    objectFit: "contain",
-  },
-  toggleButton: {
-    position: "absolute",
-    top: "10px",
-    right: "10px",
-    background: "rgba(0,0,0,0.6)",
-    border: "none",
-    borderRadius: "6px",
-    color: "white",
-    padding: "6px 10px",
-    cursor: "pointer",
-    display: "flex",
-    alignItems: "center",
-    gap: "4px",
-  },
-  cameraFeed: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover',
-    display: 'block'
-  },
-  overlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '100%',
-    height: '100%',
-    pointerEvents: 'none',
-    zIndex: 10
-  }
-};
-
 function WebcamPanel({ signalingPort, gamepadData, index }) {
   const videoRef = useRef(null);
   const wsRef = useRef(null);
   const pcRef = useRef(null);
+  const [isLive, setIsLive] = useState(false);
 
   // Change this to ip of signaling server if not on same computer
   const signalingUrl = `ws://localhost:${signalingPort}`;
@@ -95,6 +34,7 @@ function WebcamPanel({ signalingPort, gamepadData, index }) {
       if (videoRef.current) {
         videoRef.current.srcObject = event.streams[0];
         videoRef.current.play().catch(e => console.error("Autoplay failed:", e));
+        setIsLive(true);
       }
     };
 
@@ -167,23 +107,39 @@ function WebcamPanel({ signalingPort, gamepadData, index }) {
     return () => {
       if (ws.readyState === WebSocket.OPEN) ws.close();
       if (pc.signalingState !== 'closed') pc.close();
+      setIsLive(false);
     };
   }, [signalingPort, index]);
 
+  const cameraLabel = index === "0" ? "REAR" : index === "4" ? "FRONT" : `CAM ${index}`;
+  const accentClass = index === "0" ? "webcam-card--rear" : index === "4" ? "webcam-card--front" : "";
+
   return (
-    <div style={styles.container}>
-      <div style={{
-        ...styles.cameraContainer,
-        borderColor: index === "0" ? "#ff8c00" : index === "4" ? "#0088ff" : "#cccccc"
-      }}>
-        <video
-          ref={videoRef}
-          style={styles.cameraFeed}
-          autoPlay
-          playsInline
-          muted
-          controls={false}
-        />
+    <div className={`webcam-card ${accentClass}`}>
+      <video
+        ref={videoRef}
+        className="webcam-card__video"
+        autoPlay
+        playsInline
+        muted
+        controls={false}
+      />
+      {!isLive && (
+        <div className="webcam-card__placeholder">
+          <Camera size={36} strokeWidth={1.5} className="webcam-card__placeholder-icon" />
+          <div className="webcam-card__placeholder-title">No Signal</div>
+          <div className="webcam-card__placeholder-sub">{cameraLabel} • Port {signalingPort}</div>
+        </div>
+      )}
+      <div className="webcam-card__overlay">
+        <div className="webcam-card__badge">
+          <Camera size={11} />
+          <span>{cameraLabel}</span>
+        </div>
+        <div className={`webcam-card__live ${isLive ? "is-live" : ""}`}>
+          <span className="webcam-card__live-dot" />
+          <span>{isLive ? "LIVE" : "OFFLINE"}</span>
+        </div>
       </div>
     </div>
   );

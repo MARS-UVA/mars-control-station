@@ -1,59 +1,228 @@
+/* ==========================================================================
+   Theme tokens — UVA palette (Jefferson Blue + Cavalier Orange)
+   Brand:  Jefferson Blue #232D4B
+           Cavalier Orange #E57200
+   Restrained "engineering tool" treatment with UVA accents.
+   ========================================================================== */
+
 :root {
-  --bg-color: #f9f9f9;
-  --box-shadow-color: #0000001f;
+  /* --- Surfaces (light) ------------------------------------------------- */
+  --bg-color: #f4f6fa;
+  --bg-color-elevated: #ffffff;
+  --bg-color-deep: #eaeef5;
   --panel-bg-color: #ffffff;
-  --border-color: #e2e8f0;
-  --primary-color: #2d3748;
-  --secondary-color: #4a5568;
-  --active-color: #77f192;
-  --active-color-hover: #5de06c;
-  --accent-color1: #E1A365;
-  --accent-color1-hover: #dd9043;
-  --accent-color2: #e2d8a5;
-  --accent-color2-hover: #f9ecaa;
-  --accent-color3: #6f9f9c;
-  --accent-color3-hover: #83b4b1;
-  --neutral-color-hover: #e4e4e7;
-  --font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+  --panel-bg-gradient: linear-gradient(180deg, #ffffff 0%, #fbfcfe 100%);
+  --panel-border: rgba(35, 45, 75, 0.08);
+  --panel-border-strong: rgba(35, 45, 75, 0.15);
+  --border-color: rgba(35, 45, 75, 0.08);
+  --border-color-strong: rgba(35, 45, 75, 0.15);
+
+  /* --- Shadows (light) -------------------------------------------------- */
+  --box-shadow-color: rgba(35, 45, 75, 0.06);
+  --box-shadow-color-strong: rgba(35, 45, 75, 0.12);
+  --shadow-sm: 0 1px 2px rgba(35, 45, 75, 0.05);
+  --shadow-md: 0 1px 2px rgba(35, 45, 75, 0.05), 0 4px 12px rgba(35, 45, 75, 0.08);
+  --shadow-lg: 0 4px 8px rgba(35, 45, 75, 0.08), 0 12px 32px rgba(35, 45, 75, 0.12);
+  --shadow-glow: 0 0 0 3px rgba(229, 114, 0, 0.18);
+
+  /* --- Text (light) ----------------------------------------------------- */
+  --primary-color: #232D4B;
+  --secondary-color: #4a5675;
+  --muted-color: #8892ab;
+  --inverse-color: #ffffff;
+
+  /* --- Brand & accent (UVA) -------------------------------------------- */
+  --uva-blue: #232D4B;
+  --uva-blue-hover: #1a2238;
+  --uva-blue-deep: #15192b;
+  --uva-blue-text: #2a3e5c;          /* readable blue for text/values */
+  --uva-orange: #E57200;
+  --uva-orange-hover: #c96400;
+  --uva-orange-soft: rgba(229, 114, 0, 0.12);
+  --uva-blue-soft: rgba(35, 45, 75, 0.08);
+
+  --brand-color: #E57200;
+  --brand-color-hover: #c96400;
+  --active-color: #2f8b4d;
+  --active-color-hover: #267040;
+
+  /* Two-color accent system: orange (primary action) + blue (secondary)  */
+  --accent-color1: #E57200;        /* Cavalier Orange */
+  --accent-color1-hover: #c96400;
+  --accent-color2: #E57200;
+  --accent-color2-hover: #c96400;
+  --accent-color3: #232D4B;        /* Jefferson Blue */
+  --accent-color3-hover: #1a2238;
+  --accent-color3-soft: rgba(35, 45, 75, 0.08);
+  --neutral-color-hover: #f0f3f8;
+
+  /* --- Status (light) --------------------------------------------------- */
+  --status-success: #2f8b4d;
+  --status-success-bg: rgba(47, 139, 77, 0.10);
+  --status-warning: #d4791a;
+  --status-warning-bg: rgba(212, 121, 26, 0.10);
+  --status-danger: #b73838;
+  --status-danger-bg: rgba(183, 56, 56, 0.10);
+  --status-info: #2C4F8A;
+  --status-info-bg: rgba(44, 79, 138, 0.10);
+
+  /* --- Glows ------------------------------------------------------------ */
+  --accent-glow: rgba(229, 114, 0, 0.22);
+  --accent-glow-strong: rgba(229, 114, 0, 0.40);
+  --blue-glow: rgba(35, 45, 75, 0.25);
+  --danger-glow: rgba(183, 56, 56, 0.28);
+  --success-glow: rgba(47, 139, 77, 0.25);
+
+  /* --- Typography ------------------------------------------------------- */
+  --font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Monaco, Consolas, 'Courier New', monospace;
+
+  /* --- Geometry --------------------------------------------------------- */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-pill: 999px;
+
+  /* --- Motion ----------------------------------------------------------- */
+  --transition-fast: 120ms cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-base: 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  --transition-slow: 320ms cubic-bezier(0.16, 1, 0.3, 1);
+
+  /* --- Spacing scale ---------------------------------------------------- */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
 }
+
+/* ==========================================================================
+   Dark theme — UVA blue-tinted dark with orange accents
+   ========================================================================== */
 
 [data-theme="dark"] {
-  --bg-color: #1a202c;
-  --panel-bg-color: #2d3748;
-  --border-color: #71738e;
-  --primary-color: #edf2f7;
-  --secondary-color: #a0aec0;
-  --accent-color1: #cc8f52;
-  --accent-color1-hover: #dda164;
-  --accent-color2: #aea269;
-  --accent-color2-hover: #c3b672;
-  --accent-color3: #6f9f9c;
-  --accent-color3-hover: #589690;
+  /* Surfaces — deep blue-tinted near-black, hints of Jefferson Blue */
+  --bg-color: #0c0f17;
+  --bg-color-elevated: #161a26;
+  --bg-color-deep: #080a11;
+  --panel-bg-color: #161a26;
+  --panel-bg-gradient: linear-gradient(180deg, #181d2c 0%, #141826 100%);
+  --panel-border: rgba(141, 158, 197, 0.08);
+  --panel-border-strong: rgba(141, 158, 197, 0.16);
+  --border-color: rgba(141, 158, 197, 0.08);
+  --border-color-strong: rgba(141, 158, 197, 0.16);
+
+  /* Shadows */
+  --box-shadow-color: rgba(0, 0, 0, 0.4);
+  --box-shadow-color-strong: rgba(0, 0, 0, 0.6);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 14px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.4), 0 16px 36px rgba(0, 0, 0, 0.55);
+  --shadow-glow: 0 0 0 3px rgba(196, 110, 30, 0.18);
+
+  /* Text — warm grays */
+  --primary-color: #e6e9f0;
+  --secondary-color: #98a0b3;
+  --muted-color: #5e667a;
+  --inverse-color: #0c0f17;
+
+  /* Brand & accent — muted UVA, "oxford academic" feel */
+  --uva-blue: #2a3e5c;              /* deep Jefferson Blue */
+  --uva-blue-hover: #354c70;
+  --uva-blue-deep: #1f2e44;
+  --uva-blue-text: #8aa3d4;          /* readable lifted blue for text */
+  --uva-orange: #c46e1f;            /* burnt Cavalier (close to original #E57200) */
+  --uva-orange-hover: #d8801f;
+  --uva-orange-soft: rgba(196, 110, 31, 0.10);
+  --uva-blue-soft: rgba(42, 62, 92, 0.12);
+
+  --brand-color: #c46e1f;
+  --brand-color-hover: #d8801f;
+  --active-color: #4d955f;
+  --active-color-hover: #5cab6e;
+
+  --accent-color1: #c46e1f;
+  --accent-color1-hover: #d8801f;
+  --accent-color2: #c46e1f;
+  --accent-color2-hover: #d8801f;
+  --accent-color3: #3a5378;
+  --accent-color3-hover: #45628c;
+  --accent-color3-soft: rgba(58, 83, 120, 0.12);
+  --neutral-color-hover: #1f2433;
+
+  /* Status — desaturated */
+  --status-success: #4d955f;
+  --status-success-bg: rgba(77, 149, 95, 0.10);
+  --status-warning: #b8772a;
+  --status-warning-bg: rgba(184, 119, 42, 0.10);
+  --status-danger: #b04848;
+  --status-danger-bg: rgba(176, 72, 72, 0.10);
+  --status-info: #5a8aa8;
+  --status-info-bg: rgba(90, 138, 168, 0.10);
+
+  /* Glows — much more subtle */
+  --accent-glow: rgba(196, 110, 31, 0.18);
+  --accent-glow-strong: rgba(196, 110, 31, 0.30);
+  --blue-glow: rgba(58, 83, 120, 0.22);
+  --danger-glow: rgba(176, 72, 72, 0.22);
+  --success-glow: rgba(77, 149, 95, 0.18);
 }
+
+/* ==========================================================================
+   Colorblind variants
+   ========================================================================== */
+
 [data-theme="colorblind-light"] {
-  --accent-color1: rgb(130, 116, 209); /* Ourple */
-  --accent-color1-hover: #604dc8;
-  --accent-color2: #6b97f6; /* Bloo */
-  --accent-color2-hover: #3571f4;
-  --accent-color3: #d54b90; /* Magenta */
-  --accent-color3-hover: #b30b5f;
-  --accent-color4: #FE5F01; /* Orang */
-  --accent-color5: #ffaf10; /* Yerlow */
+  --brand-color: #0072B2;
+  --brand-color-hover: #005a8e;
+  --accent-color1: #0072B2;
+  --accent-color1-hover: #005a8e;
+  --accent-color2: #0072B2;
+  --accent-color2-hover: #005a8e;
+  --accent-color3: #0072B2;
+  --accent-color3-hover: #005a8e;
+  --accent-color3-soft: rgba(0, 114, 178, 0.10);
+  --accent-glow: rgba(0, 114, 178, 0.22);
+  --accent-glow-strong: rgba(0, 114, 178, 0.40);
+  --status-warning: #E69F00;
+  --status-warning-bg: rgba(230, 159, 0, 0.10);
 }
+
 [data-theme="colorblind-dark"] {
-  --accent-color1: rgb(130, 116, 209); /* Ourple */
-  --accent-color1-hover: #604dc8;
-  --accent-color2: #6b97f6; /* Bloo */
-  --accent-color2-hover: #3571f4;
-  --accent-color3: #d54b90; /* Magenta */
-  --accent-color3-hover: #b30b5f;
-  --accent-color4: #FE5F01; /* Orang */
-  --accent-color5: #ffaf10; /* Yerlow */
-  --bg-color: #1a202c;
-  --panel-bg-color: #2d3748;
-  --border-color: #71738e;
-  --primary-color: #edf2f7;
-  --secondary-color: #a0aec0;
+  --bg-color: #0c0f17;
+  --bg-color-elevated: #161a26;
+  --bg-color-deep: #080a11;
+  --panel-bg-color: #161a26;
+  --panel-bg-gradient: linear-gradient(180deg, #181d2c 0%, #141826 100%);
+  --panel-border: rgba(141, 158, 197, 0.08);
+  --panel-border-strong: rgba(141, 158, 197, 0.16);
+  --border-color: rgba(141, 158, 197, 0.08);
+  --border-color-strong: rgba(141, 158, 197, 0.16);
+  --primary-color: #e6e9f0;
+  --secondary-color: #98a0b3;
+  --muted-color: #5e667a;
+
+  --brand-color: #56B4E9;
+  --brand-color-hover: #7cc7ee;
+  --accent-color1: #56B4E9;
+  --accent-color1-hover: #7cc7ee;
+  --accent-color2: #56B4E9;
+  --accent-color2-hover: #7cc7ee;
+  --accent-color3: #56B4E9;
+  --accent-color3-hover: #7cc7ee;
+  --accent-color3-soft: rgba(86, 180, 233, 0.13);
+
+  --status-success: #009E73;
+  --status-success-bg: rgba(0, 158, 115, 0.13);
+  --status-warning: #E69F00;
+  --status-warning-bg: rgba(230, 159, 0, 0.13);
+  --status-danger: #D55E00;
+  --status-danger-bg: rgba(213, 94, 0, 0.13);
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 1px 2px rgba(0, 0, 0, 0.3), 0 4px 14px rgba(0, 0, 0, 0.35);
+  --accent-glow: rgba(86, 180, 233, 0.28);
+  --accent-glow-strong: rgba(86, 180, 233, 0.50);
 }
-
-

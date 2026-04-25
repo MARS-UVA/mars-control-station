@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
-
-const THEMES = ["default", "dark", "colorblind"];
+import { Palette } from "lucide-react";
 
 function ThemeToggle() {
   const [theme, setTheme] = useState("default");
@@ -15,20 +14,19 @@ function ThemeToggle() {
 
   return (
     <div className="theme-changer">
-      <label>
-        <select
-          value={theme} // ...force the select's value to match the state variable...
-          onChange={e => setTheme(e.target.value)} // ... and update the state variable on any change!
-        >
-          <option value="default">Default</option>
-          <option value="dark">Dark Mode</option>
-          <option value="colorblind-light">Colorblind Light Mode</option>
-          <option value ="colorblind-dark">Colorblind Dark Mode</option>
-        </select>
-      </label>
+      <Palette size={13} className="theme-changer__icon" />
+      <select
+        className="theme-changer__select"
+        value={theme}
+        onChange={e => setTheme(e.target.value)}
+      >
+        <option value="default">Light</option>
+        <option value="dark">Dark</option>
+        <option value="colorblind-light">Colorblind Light</option>
+        <option value="colorblind-dark">Colorblind Dark</option>
+      </select>
     </div>
   );
 }
 
 export default ThemeToggle;
-

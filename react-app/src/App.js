@@ -63,9 +63,7 @@ const App = () => {
 
   return (
     <div className="app-container">
-      {/* <h1 className="title">MARS Web UI</h1> */}
       <Socket setGamePadStatus={setGamepadStatus} setRobotState={setRobotState} setFrontArmActive={setFrontArmActive} setBackArmActive={setBackArmActive} setChartData={setChartData} setLastDataPoint={setLastDataPoint} timestamp={timestamp} setTimestamp={setTimestamp} setData={setData} />
-
 
       <div className="content">
         <div className="left-panel">

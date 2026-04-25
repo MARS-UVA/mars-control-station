@@ -1,54 +1,53 @@
 .arm-indicator-container {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   color: var(--primary-color);
 }
 
 .arm-indicator-label {
-  font-size: 12px;
-  font-weight: bold;
+  font-size: 0.7rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  color: var(--secondary-color);
+  letter-spacing: 0.12em;
+  color: var(--muted-color);
+  text-align: center;
 }
 
 .arm-indicator-box {
-  padding: 16px;
-  border-radius: 8px;
-  border: 2px solid var(--border-color);
-  background-color: var(--panel-bg-color);
-  color: var(--primary-color);
-  font-size: 18px;
-  font-weight: bold;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  background-color: var(--bg-color-deep);
+  color: var(--secondary-color);
+  font-size: 0.95rem;
+  font-weight: 600;
   text-align: center;
-  transition: all 0.3s ease;
-  box-shadow: 0 2px 4px var(--box-shadow-color);
+  transition: all var(--transition-base);
+  box-shadow: var(--shadow-sm);
+  letter-spacing: 0.04em;
 }
 
 .arm-indicator-box.status-neither {
-  background-color: var(--panel-bg-color);
+  background-color: var(--bg-color-deep);
   border-color: var(--border-color);
-  color: var(--secondary-color);
+  color: var(--muted-color);
 }
 
 .arm-indicator-box.status-back {
-  background-color: #ffe6cc;
-  border-color: #ff8c00;
-  color: #cc5500;
-  box-shadow: 0 0 8px rgba(255, 140, 0, 0.3), 0 2px 4px var(--box-shadow-color);
+  background-color: var(--status-warning-bg);
+  border-color: rgba(212, 160, 74, 0.35);
+  color: var(--status-warning);
 }
 
 .arm-indicator-box.status-front {
-  background-color: #cce6ff;
-  border-color: #0088ff;
-  color: #0044aa;
-  box-shadow: 0 0 8px rgba(0, 136, 255, 0.3), 0 2px 4px var(--box-shadow-color);
+  background-color: var(--accent-color3-soft);
+  border-color: rgba(124, 138, 240, 0.35);
+  color: var(--brand-color);
 }
 
 .arm-indicator-box.status-both {
-  background: linear-gradient(135deg, #ffe6cc 50%, #cce6ff 50%);
-  border-color: #ff8c00;
-  color: #000;
-  box-shadow: 0 0 8px rgba(255, 140, 0, 0.3), 0 0 8px rgba(0, 136, 255, 0.3), 0 2px 4px var(--box-shadow-color);
+  background-color: var(--status-success-bg);
+  border-color: rgba(95, 179, 122, 0.35);
+  color: var(--status-success);
 }
