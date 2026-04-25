@@ -2,9 +2,9 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Volume2, VolumeX } from 'lucide-react';
 
 
-const beep15min = [1200000, 900000, 600000, 300000, 180000, 120000, 60000, 30000, 15000, 5000, 1000, 0].map(offset => 1600000 - offset);
+const beep15min = [1200000, 900000, 600000, 300000, 180000, 120000, 60000, 30000, 15000, 5000, 1000, 0].map(offset => 900000 - offset);
                     //20min   15min  10min 5min    3min    2min    1min    30s   15s   5s    1s    0s  left
-const beep30min = [600000, 300000, 180000, 120000, 60000, 30000, 15000, 5000, 1000, 0].map(offset => 900000 - offset);
+const beep30min = [600000, 300000, 180000, 120000, 60000, 30000, 15000, 5000, 1000, 0].map(offset => 1800000 - offset);
                     //10min 5min    3min    2min    1min    30s   15s   5s    1s    0s  left
 
 const Timer = () => {

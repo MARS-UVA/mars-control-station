@@ -116,6 +116,31 @@ function GamepadPanel({ gamepadStatus, setGamepadStatus, gamepadData, setGamepad
     recordedMacrosRef.current = [];
   };
 
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'q' && !isPlaying){
+        if (isRecording) {
+          handleStopRecording();
+        } else {
+          handleStartRecording();
+        }
+      }
+      else if (e.key === 'w' && !isRecording){
+        if (!isPlaying){
+          handleStartPlayback();
+        }
+        if (isPlaying){
+          handleStopPlayback();
+        }
+      }
+      else if (e.key === 'e' && !isPlaying && !isRecording){
+        resetRecording();
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isRecording, isPlaying]);
+
   return (
     <div>
       <div className="panel">
