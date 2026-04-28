@@ -8,13 +8,13 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
 
   const degToRad = deg => deg * (Math.PI / 180);
 
-  const actuatorToDrum = num => ((12.0625*Math.sin(degToRad(142.920267719)-Math.acos((Math.pow((23.6224274544+(12*num)),2)-737.506048128)/(-643.804738952))))-(2.015*Math.cos(degToRad(142.920267719)-Math.acos((Math.pow((23.6224274544+(12*num)),2)-737.506048128)/(-643.804738952))))-1.75);
+  const actuatorToDrum = num => ((12.0625 * Math.sin(degToRad(142.920267719) - Math.acos((Math.pow((23.6224274544 + (12 * num)), 2) - 737.506048128) / (-643.804738952)))) - (2.015 * Math.cos(degToRad(142.920267719) - Math.acos((Math.pow((23.6224274544 + (12 * num)), 2) - 737.506048128) / (-643.804738952)))) - 1.75);
 
   const renderChart = (dataKey) => (
     <ResponsiveContainer width="100%" height={120}>
       <LineChart data={chartData} margin={{ left: 0, right: 20, top: 5, bottom: 5 }} isAnimationActive={false}>
         <CartesianGrid strokeDasharray="3 3" />
-        <YAxis label={/*dataKey === "actuatorCapacity" ? "%" :*/ dataKey === "globalDataRate" ? "Mbps" :"Value"} />
+        <YAxis label={/*dataKey === "actuatorCapacity" ? "%" :*/ dataKey === "globalDataRate" ? "Mbps" : "Value"} />
         <Tooltip />
         <Legend wrapperStyle={{ paddingTop: '5px' }} height={20} />
         <Line type="monotone" dataKey={dataKey} stroke="#8884d8" dot={false} isAnimationActive={false} name={dataKey === "globalDataRate" ? "Data Rate (Mbps)" : dataKey} />
@@ -212,19 +212,19 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
               {
                 [
                   {
-                    key: "Front Actuator Position",
+                    key: "Front Actuator",
                     position: lastDataPoint.front_actuator_position,
                   }, {
-                    key: "Back Actuator Position",
+                    key: "Back Actuator",
                     position: lastDataPoint.back_actuator_position,
                   }
                 ].map((item, index) => (
-                  <div key={index} style={{backgroundColor: "#f44336", color: "#ffffff", width: "100%", marginBottom: "4px", padding: "0.5rem", borderRadius: "8px" }}>
+                  <div key={index} style={{ backgroundColor: "#f44336", color: "#ffffff", width: "100%", marginBottom: "4px", padding: "0.5rem", borderRadius: "8px" }}>
                     <div style={{ padding: "4px", borderRadius: "4px", fontWeight: "bold" }}>
                       {item.key}
                     </div>
                     <div style={{ margin: "4px 0", fontSize: "18px" }}>
-                      {round(actuatorToDrum(item.position))} in (Raw: {round(item.position)}) 
+                      {round(actuatorToDrum(item.position))} in (Raw: {round(item.position)})
                     </div>
                   </div>
                 ))
