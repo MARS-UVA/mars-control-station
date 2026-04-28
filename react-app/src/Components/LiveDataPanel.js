@@ -24,6 +24,7 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
 
   const dataKeyToLabel = {
     "wheel-current": "A",
+    "drum-current": "A",
     "temperature": "°C",
     "position": "Pos",
     "battery-voltage": "V",
@@ -34,7 +35,7 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
       <LineChart data={chartData} margin={{ right: 20, top: 5, bottom: 5 }} isAnimationActive={false}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="time" height={20} />
-        <YAxis width={40} label={{ value: dataKeyToLabel[dataKey], angle: -90, position: "insideLeft" }} domain={dataKey === "wheel-current" ? [0, 20] : [0, 'dataMax']} />
+        <YAxis width={40} label={{ value: dataKeyToLabel[dataKey], angle: -90, position: "insideLeft" }} domain={["wheel-current", "drum-current"].includes(dataKey) ? [0, 20] : [0, 'dataMax']} />
         <Tooltip />
         <Legend wrapperStyle={{ paddingTop: '5px' }} height={20} />
         {dataKey === "battery-voltage" && (
@@ -49,6 +50,10 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
             <Line type="monotone" dataKey="front_right_wheel_current" stroke="#03fc2c" dot={false} isAnimationActive={false} name="FR Wheel" />
             <Line type="monotone" dataKey="back_left_wheel_current" stroke="#031cfc" dot={false} isAnimationActive={false} name="BL Wheel" />
             <Line type="monotone" dataKey="back_right_wheel_current" stroke="#fc03ba" dot={false} isAnimationActive={false} name="BR Wheel" />
+          </>
+        )}
+        {dataKey === "drum-current" && (
+          <>
             <Line type="monotone" dataKey="front_drum_current" stroke="#ffa500" dot={false} isAnimationActive={false} name="F Drum" strokeWidth={1.5} />
             <Line type="monotone" dataKey="back_drum_current" stroke="#22e0e0" dot={false} isAnimationActive={false} name="B Drum" strokeWidth={1.5} />
           </>
@@ -219,15 +224,19 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
                       {item.key}
                     </div>
                     <div style={{ margin: "4px 0", fontSize: "18px" }}>
-                      {round(actuatorToDrum(1))} in (Raw: {round(item.position)}) 
+                      {round(actuatorToDrum(item.position))} in (Raw: {round(item.position)}) 
                     </div>
                   </div>
                 ))
               }
             </div>
             <div className="chart-space">
-              <h3>Currents (A)</h3>
+              <h3>Wheel Currents (A)</h3>
               {renderMultiChart("wheel-current")}
+            </div>
+            <div className="chart-space">
+              <h3>Drum Currents (A)</h3>
+              {renderMultiChart("drum-current")}
             </div>
             {/* Current: {lastDataPoint["globalDataRate"]} Mbps */}
           </div>
