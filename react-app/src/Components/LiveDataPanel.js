@@ -6,6 +6,10 @@ import TiltMeter from "./TiltMeter";
 function LiveDataPanel({ lastDataPoint, chartData }) {
   const round = num => (Math.round((num + Number.EPSILON) * 100) / 100).toFixed(2);
 
+  const degToRad = deg => deg * (Math.PI / 180);
+
+  const actuatorToDrum = num => ((12.0625*Math.sin(degToRad(142.920267719)-Math.acos((Math.pow((23.6224274544+(12*num)),2)-737.506048128)/(-643.804738952))))-(2.015*Math.cos(degToRad(142.920267719)-Math.acos((Math.pow((23.6224274544+(12*num)),2)-737.506048128)/(-643.804738952))))-1.75);
+
   const renderChart = (dataKey) => (
     <ResponsiveContainer width="100%" height={120}>
       <LineChart data={chartData} margin={{ left: 0, right: 20, top: 5, bottom: 5 }} isAnimationActive={false}>
@@ -192,14 +196,42 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
             </div>
             {/* {renderMultiChart("temperature")} */}
           </div>
-          <div className="chart-space">
-            <h3>Currents (A)</h3>
-            {renderMultiChart("wheel-current")}
-          </div>
-          <div className="chart-space">
+          {/* <div className="chart-space">
             <h3>Actuator Positions</h3>
             {renderMultiChart("position")}
+          </div> */}
+          <div className="chart-space">
+
+            <h3>Actuator Positions</h3>
+            <div style={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", margin: "10px 0", gap: "10px" }}>
+              {
+                [
+                  {
+                    key: "Front Actuator Position",
+                    position: lastDataPoint.front_actuator_position,
+                  }, {
+                    key: "Back Actuator Position",
+                    position: lastDataPoint.back_actuator_position,
+                  }
+                ].map((item, index) => (
+                  <div key={index} style={{backgroundColor: "#f44336", color: "#ffffff", width: "100%", marginBottom: "4px", padding: "0.5rem", borderRadius: "8px" }}>
+                    <div style={{ padding: "4px", borderRadius: "4px", fontWeight: "bold" }}>
+                      {item.key}
+                    </div>
+                    <div style={{ margin: "4px 0", fontSize: "18px" }}>
+                      {round(actuatorToDrum(1))} in (Raw: {round(item.position)}) 
+                    </div>
+                  </div>
+                ))
+              }
+            </div>
+            <div className="chart-space">
+              <h3>Currents (A)</h3>
+              {renderMultiChart("wheel-current")}
+            </div>
+            {/* Current: {lastDataPoint["globalDataRate"]} Mbps */}
           </div>
+
         </div>
       </div>
     </>
