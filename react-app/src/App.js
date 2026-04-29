@@ -20,17 +20,21 @@ import ThemeChanger from "./Components/ThemeChanger";
 import TiltingRods from "./Components/TiltingRods";
 import DisplayMeter from "./Components/DisplayMeter";
 import RightButtonPanel from "./Components/RightButtonPanel";
+import ArmIndicator from "./gamepad/ArmIndicator";
 
 const App = () => {
 
 
   const [gamepadStatus, setGamepadStatus] = useState('No gamepad connected!');
-  const [gamepad2Status, setGamepad2Status] = useState('No gamepad connected!');
+  // const [gamepad2Status, setGamepad2Status] = useState('No gamepad connected!');
   const [gamepadData, setGamepadData] = useState(null);
   const [gamepad2Data, setGamepad2Data] = useState(null);
   const [driveState, setDriveState] = useState('Idle');
   const [camera0Active, setCamera0Active] = useState(true);
   const [camera4Active, setCamera4Active] = useState(true);
+  const [frontArmActive, setFrontArmActive] = useState(false);
+  const [backArmActive, setBackArmActive] = useState(false);
+  const [prevGamepadData, setPrevGamepadData] = useState(null);
   const [robotState, setRobotState] = useState(0);
 
 
@@ -47,7 +51,6 @@ const App = () => {
     rightBucketDrum: Math.random() * 100,
     actuatorCapacity: Math.random() * 100,
     actuatorHeight: Math.random() * 100,
-    globalDataRate: Math.random() * 100,
     xGyro: 0.0,
     yGyro: 0.0,
     zGyro: 0.0,
@@ -61,33 +64,32 @@ const App = () => {
   return (
     <div className="app-container">
       {/* <h1 className="title">MARS Web UI</h1> */}
-      <Socket setGamePadStatus={setGamepadStatus} setRobotState={setRobotState} setChartData={setChartData} setLastDataPoint={setLastDataPoint} timestamp={timestamp} setTimestamp={setTimestamp} setData={setData} />
+      <Socket setGamePadStatus={setGamepadStatus} setRobotState={setRobotState} setFrontArmActive={setFrontArmActive} setBackArmActive={setBackArmActive} setChartData={setChartData} setLastDataPoint={setLastDataPoint} timestamp={timestamp} setTimestamp={setTimestamp} setData={setData} />
 
 
       <div className="content">
         <div className="left-panel">
           <GamepadPanel gamepadStatus={gamepadStatus} setGamepadStatus={setGamepadStatus} gamepadData={gamepadData} setGamepadData={setGamepadData} gamepadIndex={0} camera0Active={camera0Active} camera4Active={camera4Active} />
-          <GamepadPanel gamepadStatus={gamepad2Status} setGamepadStatus={setGamepad2Status} gamepadData={gamepad2Data} setGamepadData={setGamepad2Data} gamepadIndex={1} camera0Active={camera0Active} camera4Active={camera4Active} />
+          <ArmIndicator frontArmActive={frontArmActive} backArmActive={backArmActive} label="Arm Control" />
+          {/* <GamepadPanel gamepadStatus={gamepad2Status} setGamepadStatus={setGamepad2Status} gamepadData={gamepad2Data} setGamepadData={setGamepad2Data} gamepadIndex={1} camera0Active={camera0Active} camera4Active={camera4Active} /> */}
           {/* Hiding the displays that don't do anything currently */}
           {/* <DisplayMeter current={80} total={100} left = {155} top = {580} height = {40} width = {180} label="Current" />  */} {/*ADD THE METHODS OF GETTING THESE VALUES!!*/}
           {/* <DisplayMeter current={80} total={100} left = {155} top = {655} height = {40} width = {180} label="Capacity" /> */}
           {/* <ActuatorDataDisplay lastDataPoint={lastDataPoint}/> */}
-          {/* bitwise by zero into integer */}
+
           <RightButtonPanel feedback={robotState}></RightButtonPanel>
+          <Timer />
         </div>
 
         <div className="middle-panel">
-          <WebcamPanel signalingPort="6767" index="0" />
           <WebcamPanel signalingPort="6969" index="4" />
+          <WebcamPanel signalingPort="6767" index="0" />
         </div>
 
         <div className="right-panel">
           <LiveDataPanel lastDataPoint={lastDataPoint} timestamp={timestamp} chartData={chartData} />
           {/* <TiltingRods/> hiding since they're incomplete*/}
         </div>
-        <Draggable>
-          <Timer />
-        </Draggable>
         <ThemeChanger />
       </div>
     </div>

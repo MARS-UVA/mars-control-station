@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import { getActionState, setActionState } from '../robotState';
 import { sendCustomCommandState } from '../packets';
 
@@ -32,7 +32,8 @@ const doFunction = label => {
     else if (label.toLowerCase() === 'stop')   sendCustomCommandState(actions_enum['Stop']);
 
 }
-console.log(feedback)
+//console.log(feedback)
+
 
 // Render the component UI
   return (

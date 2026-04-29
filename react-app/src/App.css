@@ -16,6 +16,10 @@ body {
   margin: 0;
 }
 
+* {
+  box-sizing: border-box;
+}
+
 .content {
   display: flex;
   flex-direction: row;
@@ -29,7 +33,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 16px;
-  width: 27%;
+  width: 22%;
   padding: 10px;
   height: 100%;
   color: var(--primary-color);
@@ -40,13 +44,18 @@ body {
 .middle-panel {
   width: 46%;
   padding: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  max-height: calc(100vh - 30px);
+  gap: 10px;
   /* background-color: #e0e0e0; Optional for visual distinction */
 }
 
 .right-panel {
   width: 27%;
   height: 100%;
-  padding: 10px;
+  padding: 20px;
   /* background-color: #d0d0d0; Optional for visual distinction */
 }
 
@@ -143,15 +152,16 @@ body {
 /*changes text under "Controls" box*/
 
 .chart-grid {
-  display: grid;
+  display: flex;
   height: calc(100vh - 100px);
-  grid-template-columns: repeat(1, 1fr);
+  flex-direction: column;
   gap: 4px;
 }
 
 .chart-space {
   text-align: center;
   padding: 10px;
+  height: 100%;
   font-variant-numeric: tabular-nums;
 }
 
@@ -386,6 +396,7 @@ body {
 .command-button-sstop {
   background-color: rgb(215, 69, 69);
 }
+
 .command-button-sstop-feedback {
   background-color: var(--active-color);
 }
@@ -397,6 +408,7 @@ body {
 .command-button-dumpauto {
   background-color: var(--accent-color3);
 }
+
 .command-button-digauto-feedback {
   background-color: var(--active-color);
 }
@@ -441,20 +453,19 @@ body {
   color: var(--primary-color);
 }
 
+.timer-controls {
+  display: flex;
+  gap: 8px;
+}
+
 /* 
 TODO: Change right and bottom values to offset timer in the right and bottom screen
 */
 .timer-overlay {
-  position: absolute;
-  /* was fixed */
-  right: 30%;
-  /* aligns with camera edge */
-  top: 50%;
-  /* vertical center */
-  transform: translateY(-50%);
-
-  background-color: var(--bg-color);
-  padding: 16px 20px;          /* thinner */
+  position: relative;
+  background-color: var(--panel-bg-color);
+  padding: 16px 20px;
+  /* thinner */
   border-radius: 8px;
   border: 1px solid var(--border-color);
 
@@ -466,22 +477,32 @@ TODO: Change right and bottom values to offset timer in the right and bottom scr
   z-index: 50;
 
   box-shadow: 0 4px 6px var(--box-shadow-color);
-
 }
 
 .timer-display {
   font-size: 2rem;
   font-weight: bold;
-  color: var(--primary-color);
+  color: #ff8c00;
   margin-bottom: 8px;
   font-family: monospace;
   /* Critical for keeping numbers aligned */
   cursor: grab;
-  background-color: var(--bg-color);
 }
 
-.timer-button-start {
-  background-color: var(--bg-color);
+.lap-display {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #0088ff;
+  margin-bottom: 8px;
+  font-family: monospace;
+  /* Critical for keeping numbers aligned */
+  cursor: grab;
+}
+
+.timer-button-reset,
+.timer-button-start,
+.timer-button-lap {
+  background-color: var(--panel-bg-color);
   color: var(--primary-color);
   border: none;
   padding: 8px 20px;
@@ -492,16 +513,29 @@ TODO: Change right and bottom values to offset timer in the right and bottom scr
   margin: 2px 0;
 }
 
-.timer-button-reset {
-  background-color: var(--bg-color);
+.timer-button-lap:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.laps {
+  margin-top: 8px;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.lap {
+  border-color: var(--bg-color);
+  border-width: 2px;
+  border-style: solid;
   color: var(--primary-color);
-  border: none;
-  padding: 8px 20px;
-  font-size: 1rem;
+  padding: 6px 10px;
   border-radius: 4px;
-  cursor: pointer;
-  border: 1px solid var(--border-color);
-  margin: 2px 0;
+  margin-bottom: 4px;
+  font-size: 0.9rem;
 }
 
 .theme-changer {
