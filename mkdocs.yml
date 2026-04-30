@@ -1,1 +1,11 @@
-site_name: My Docs
+site_name: Mars Control Station Documentation
+
+site_url: https://MARS-UVA.github.io/mars-jetson/
+
+theme:
+  name: material
+
+nav:
+  - Home: index.md
+  - Troubleshooting: troubleshooting.md
+  
