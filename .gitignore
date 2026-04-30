@@ -5,3 +5,7 @@ build/
 log/
 
 node_modules/
+
+/site
+/venv
+.venv
