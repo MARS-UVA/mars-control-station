@@ -21,6 +21,8 @@ import TiltingRods from "./Components/TiltingRods";
 import DisplayMeter from "./Components/DisplayMeter";
 import RightButtonPanel from "./Components/RightButtonPanel";
 import ArmIndicator from "./gamepad/ArmIndicator";
+import DirectionChangeButton from "./Components/DirectionChangeButton";
+import { setDirection } from './gamepad/directionStore';
 
 const App = () => {
 
@@ -36,6 +38,11 @@ const App = () => {
   const [backArmActive, setBackArmActive] = useState(false);
   const [prevGamepadData, setPrevGamepadData] = useState(null);
   const [robotState, setRobotState] = useState(0);
+  const [directionSwitched, setDirectionSwitched] = useState(false);
+
+  useEffect(() => {
+    setDirection(directionSwitched);
+  }, [directionSwitched]);
 
 
   const [timestamp, setTimestamp] = useState(0);
@@ -70,7 +77,7 @@ const App = () => {
       <div className="content">
         <div className="left-panel">
           <GamepadPanel gamepadStatus={gamepadStatus} setGamepadStatus={setGamepadStatus} gamepadData={gamepadData} setGamepadData={setGamepadData} gamepadIndex={0} camera0Active={camera0Active} camera4Active={camera4Active} />
-          <ArmIndicator frontArmActive={frontArmActive} backArmActive={backArmActive} label="Arm Control" />
+          <ArmIndicator frontArmActive={frontArmActive} backArmActive={backArmActive} label="Arm Control" directionSwitched={directionSwitched} />
           {/* <GamepadPanel gamepadStatus={gamepad2Status} setGamepadStatus={setGamepad2Status} gamepadData={gamepad2Data} setGamepadData={setGamepad2Data} gamepadIndex={1} camera0Active={camera0Active} camera4Active={camera4Active} /> */}
           {/* Hiding the displays that don't do anything currently */}
           {/* <DisplayMeter current={80} total={100} left = {155} top = {580} height = {40} width = {180} label="Current" />  */} {/*ADD THE METHODS OF GETTING THESE VALUES!!*/}
@@ -78,12 +85,13 @@ const App = () => {
           {/* <ActuatorDataDisplay lastDataPoint={lastDataPoint}/> */}
 
           <RightButtonPanel feedback={robotState}></RightButtonPanel>
+          <DirectionChangeButton directionSwitched={directionSwitched} setDirectionSwitched={setDirectionSwitched} />
           <Timer />
         </div>
 
         <div className="middle-panel">
-          <WebcamPanel signalingPort="6969" index="4" />
-          <WebcamPanel signalingPort="6767" index="0" />
+          <WebcamPanel signalingPort="6969" index="4" isActive={!directionSwitched} />
+          <WebcamPanel signalingPort="6767" index="0" isActive={directionSwitched} />
         </div>
 
         <div className="right-panel">

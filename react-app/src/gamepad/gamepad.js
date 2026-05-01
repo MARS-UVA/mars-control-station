@@ -1,4 +1,5 @@
 import { getTransmissionActive } from "../packets"
+import { getDirection } from "./directionStore"
 let gamepads = navigator.getGamepads()
 
 window.addEventListener('gamepadconnected', e => {
@@ -35,11 +36,12 @@ const getButtonObjectFromGamepad = (index) => {
     }
 }
 
-const getLeftStickFromGamepad = (index) => {
+const getLeftStickFromGamepad = (index, directionOverride = null) => {
     const gamepad = navigator.getGamepads()[index];
+    const directionSwitched = directionOverride !== null ? directionOverride : getDirection();
     return {
         x: gamepad.axes[0],
-        y: -gamepad.axes[1]
+        y: directionSwitched ? gamepad.axes[1] : -gamepad.axes[1]
     }
 }
 
@@ -54,11 +56,11 @@ const getRightStickFromGamepad = (index) => {
 const gamepadText = document.getElementById('gamepad-text')
 
 
-function getGamepadState(index = 0) {
+function getGamepadState(index = 0, directionOverride = null) {
     // Add safety check in case gamepad is disconnected but index is requested
     if (!gamepads[index]) return null;
     return {
-        leftStick: getLeftStickFromGamepad(index),
+        leftStick: getLeftStickFromGamepad(index, directionOverride),
         rightStick: getRightStickFromGamepad(index),
         buttons: getButtonObjectFromGamepad(index)
     }

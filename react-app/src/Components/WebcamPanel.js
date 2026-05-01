@@ -66,7 +66,8 @@ const styles = {
   }
 };
 
-function WebcamPanel({ signalingPort, gamepadData, index }) {
+function WebcamPanel({ signalingPort, gamepadData, index, isActive }) {
+  const accentColor = index === "0" ? "#ff8c00" : index === "4" ? "#0088ff" : "#cccccc";
   const videoRef = useRef(null);
   const wsRef = useRef(null);
   const pcRef = useRef(null);
@@ -174,7 +175,9 @@ function WebcamPanel({ signalingPort, gamepadData, index }) {
     <div style={styles.container}>
       <div style={{
         ...styles.cameraContainer,
-        borderColor: index === "0" ? "#ff8c00" : index === "4" ? "#0088ff" : "#cccccc"
+        borderColor: accentColor,
+        boxShadow: isActive ? `0 0 0 6px ${accentColor}, 0 0 24px rgba(0,0,0,0.35)` : "none",
+        transition: "box-shadow 0.18s ease",
       }}>
         <video
           ref={videoRef}

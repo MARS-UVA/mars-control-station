@@ -45,7 +45,7 @@ function GamepadPanel({ gamepadStatus, setGamepadStatus, gamepadData, setGamepad
 
       const gamepads = navigator.getGamepads();
       if (gamepads[gamepadIndex]) {
-        const state = getGamepadState(gamepadIndex);
+        const state = getGamepadState(gamepadIndex, false);
         if (state) {
           setGamepadData(state);
 
