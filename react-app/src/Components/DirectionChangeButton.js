@@ -11,7 +11,7 @@ function DirectionChangeButton({ directionSwitched, setDirectionSwitched }) {
 			type="button"
 			onClick={handleClick}
 			style={{
-				backgroundColor: directionSwitched ? '#ffe6cc' : '#cce6ff',
+				backgroundColor: directionSwitched ? '#fab164' : '#6eb9ff',
 				color: 'black',
 				border: directionSwitched ? '2px solid #ff8c00' : '2px solid #0088ff',
 				borderRadius: 6,
