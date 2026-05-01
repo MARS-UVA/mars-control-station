@@ -8,7 +8,22 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
 
   const degToRad = deg => deg * (Math.PI / 180);
 
-  const actuatorToDrum = num => ((12.0625 * Math.sin(degToRad(142.920267719) - Math.acos((Math.pow((23.6224274544 + (12 * (1-num))), 2) - 737.506048128) / (-643.804738952)))) - (2.015 * Math.cos(degToRad(142.920267719) - Math.acos((Math.pow((23.6224274544 + (12 * (1-num))), 2) - 737.506048128) / (-643.804738952)))) - 1.75);
+  const actuatorToDrum = num => ((12.0625 * Math.sin(degToRad(142.920267719) - Math.acos((Math.pow((23.6224274544 + (12 * (num))), 2) - 737.506048128) / (-643.804738952)))) - (2.015 * Math.cos(degToRad(142.920267719) - Math.acos((Math.pow((23.6224274544 + (12 * (num))), 2) - 737.506048128) / (-643.804738952)))) - 1.75);
+
+  const cardTitleStyle = {
+    padding: "4px",
+    borderRadius: "4px",
+    fontWeight: 500,
+    fontSize: "0.95rem",
+    opacity: 0.9,
+  };
+
+  const cardValueStyle = {
+    margin: "6px 0 2px",
+    fontSize: "20px",
+    fontWeight: 800,
+    lineHeight: 1.2,
+  };
 
   const renderChart = (dataKey) => (
     <ResponsiveContainer width="100%" height={120}>
@@ -123,7 +138,7 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
         <div className="chart-grid">
           <div className="chart-space">
 
-            <h3>Battery Voltage</h3>
+            <h3 style={{ fontSize: "1rem", fontWeight: 500, opacity: 0.85 }}>Battery Voltage</h3>
             <div style={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", margin: "10px 0", gap: "10px" }}>
               {
                 [
@@ -142,10 +157,10 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
                   }
                 ].map((item, index) => (
                   <div key={index} style={{ ...voltageToColors(item.voltage, item.warningVoltage, item.minimumVoltage), width: "100%", marginBottom: "4px", padding: "0.5rem", borderRadius: "8px" }}>
-                    <div style={{ padding: "4px", borderRadius: "4px", fontWeight: "bold" }}>
+                    <div style={cardTitleStyle}>
                       {item.key}
                     </div>
-                    <div style={{ margin: "4px 0", fontSize: "18px" }}>
+                    <div style={cardValueStyle}>
                       {round(item.voltage)} V ({round(item.voltage / item.maximumVoltage * 100)}%)
                     </div>
                   </div>
@@ -155,7 +170,7 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
             {/* Current: {lastDataPoint["globalDataRate"]} Mbps */}
           </div>
           <div className="chart-space">
-            <h3>Temperatures (°C)</h3>
+            <h3 style={{ fontSize: "1rem", fontWeight: 500, opacity: 0.85 }}>Temperatures (°C)</h3>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px", marginBottom: "10px" }}>
               {
                 [
@@ -188,10 +203,10 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
                   const { backgroundColor, color } = temperatureToColors(temp.temperature);
                   return (
                     <div key={index} style={{ marginBottom: "4px", padding: "0.5rem", borderRadius: "8px", backgroundColor, color }}>
-                      <div style={{ padding: "4px", borderRadius: "4px", fontWeight: "bold" }}>
+                      <div style={cardTitleStyle}>
                         {temp.key}
                       </div>
-                      <div style={{ margin: "4px 0", fontSize: "18px" }}>
+                      <div style={cardValueStyle}>
                         {round(temp.temperature)} °C
                       </div>
                     </div>
@@ -207,7 +222,7 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
           </div> */}
           <div className="chart-space">
 
-            <h3>Actuator Positions</h3>
+            <h3 style={{ fontSize: "1rem", fontWeight: 500, opacity: 0.85 }}>Actuator Positions</h3>
             <div style={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", margin: "10px 0", gap: "10px" }}>
               {
                 [
@@ -220,10 +235,10 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
                   }
                 ].map((item, index) => (
                   <div key={index} style={{ backgroundColor: "#f44336", color: "#ffffff", width: "100%", marginBottom: "4px", padding: "0.5rem", borderRadius: "8px" }}>
-                    <div style={{ padding: "4px", borderRadius: "4px", fontWeight: "bold" }}>
+                    <div style={cardTitleStyle}>
                       {item.key}
                     </div>
-                    <div style={{ margin: "4px 0", fontSize: "18px" }}>
+                    <div style={cardValueStyle}>
                       {round(actuatorToDrum(item.position))} in (Raw: {round(item.position)})
                     </div>
                   </div>
