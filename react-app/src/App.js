@@ -21,6 +21,7 @@ import TiltingRods from "./Components/TiltingRods";
 import DisplayMeter from "./Components/DisplayMeter";
 import RightButtonPanel from "./Components/RightButtonPanel";
 import ArmIndicator from "./gamepad/ArmIndicator";
+import DirectionChangeButton from "./Components/DirectionChangeButton";
 
 const App = () => {
 
@@ -36,6 +37,7 @@ const App = () => {
   const [backArmActive, setBackArmActive] = useState(false);
   const [prevGamepadData, setPrevGamepadData] = useState(null);
   const [robotState, setRobotState] = useState(0);
+  const [directionSwitched, setDirectionSwitched] = useState(false);
 
 
   const [timestamp, setTimestamp] = useState(0);
@@ -78,6 +80,7 @@ const App = () => {
           {/* <ActuatorDataDisplay lastDataPoint={lastDataPoint}/> */}
 
           <RightButtonPanel feedback={robotState}></RightButtonPanel>
+          <DirectionChangeButton directionSwitched={directionSwitched} setDirectionSwitched={setDirectionSwitched} />
           <Timer />
         </div>
 
