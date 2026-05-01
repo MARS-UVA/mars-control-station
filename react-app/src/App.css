@@ -453,90 +453,123 @@ body {
   color: var(--primary-color);
 }
 
-.timer-controls {
-  display: flex;
-  gap: 8px;
-}
-
-/* 
-TODO: Change right and bottom values to offset timer in the right and bottom screen
-*/
+/* Timer (ported from vibecode branch) */
 .timer-overlay {
   position: relative;
+  background: var(--panel-bg-gradient, var(--panel-bg-color));
   background-color: var(--panel-bg-color);
-  padding: 16px 20px;
-  /* thinner */
-  border-radius: 8px;
+  padding: 16px 16px 14px;
+  border-radius: var(--radius-lg, 12px);
   border: 1px solid var(--border-color);
-
   display: flex;
   flex-direction: column;
   align-items: center;
-
   min-width: 200px;
-  /* thinner width */
   z-index: 50;
+  box-shadow: var(--shadow-md, 0 4px 12px var(--box-shadow-color));
+  transition: all var(--transition-base, 200ms cubic-bezier(0.16, 1, 0.3, 1));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
 
-  box-shadow: 0 4px 6px var(--box-shadow-color);
+.timer-overlay:hover {
+  border-color: var(--border-color-strong, var(--border-color));
 }
 
 .timer-display {
-  font-size: 2rem;
-  font-weight: bold;
-  color: #ff8c00;
-  margin-bottom: 8px;
-  font-family: monospace;
-  /* Critical for keeping numbers aligned */
+  font-size: 2.6rem;
+  font-weight: 600;
+  color: var(--uva-orange, #E57200);
+  margin-bottom: 2px;
+  font-family: var(--font-mono, 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Monaco, Consolas, 'Courier New', monospace);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
   cursor: grab;
+  line-height: 1;
 }
 
 .lap-display {
-  font-size: 2rem;
-  font-weight: bold;
-  color: #0088ff;
-  margin-bottom: 8px;
-  font-family: monospace;
-  /* Critical for keeping numbers aligned */
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--uva-blue-text, #2a3e5c);
+  margin-bottom: 10px;
+  font-family: var(--font-mono, 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Monaco, Consolas, 'Courier New', monospace);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
   cursor: grab;
+}
+
+.timer-controls {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  width: 100%;
 }
 
 .timer-button-reset,
 .timer-button-start,
 .timer-button-lap {
-  background-color: var(--panel-bg-color);
+  flex: 1;
+  background-color: var(--bg-color-deep, var(--bg-color));
   color: var(--primary-color);
-  border: none;
-  padding: 8px 20px;
-  font-size: 1rem;
-  border-radius: 4px;
+  border: 1px solid var(--border-color-strong, var(--border-color));
+  padding: 14px 14px;
+  font-size: 1.05rem;
+  font-weight: 700;
+  border-radius: var(--radius-md, 8px);
   cursor: pointer;
-  border: 1px solid var(--border-color);
-  margin: 2px 0;
+  transition: all var(--transition-fast, 120ms cubic-bezier(0.16, 1, 0.3, 1));
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.timer-button-lap:hover:not(:disabled),
+.timer-button-reset:hover {
+  background-color: var(--neutral-color-hover);
+  border-color: var(--brand-color, var(--uva-orange, #E57200));
+  color: var(--brand-color, var(--uva-orange, #E57200));
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm, 0 1px 2px var(--box-shadow-color));
+}
+
+.timer-button-start {
+  background: var(--uva-orange, #E57200);
+  color: #ffffff;
+  border-color: rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-sm, 0 1px 2px var(--box-shadow-color));
+}
+
+.timer-button-start:hover {
+  background: var(--uva-orange-hover, #c96400);
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md, 0 4px 12px var(--box-shadow-color));
 }
 
 .timer-button-lap:disabled {
-  opacity: 0.5;
+  opacity: 0.35;
   cursor: not-allowed;
 }
 
 .laps {
-  margin-top: 8px;
+  margin-top: 12px;
   width: 100%;
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
   justify-content: center;
+  gap: 4px;
 }
 
 .lap {
-  border-color: var(--bg-color);
-  border-width: 2px;
-  border-style: solid;
-  color: var(--primary-color);
-  padding: 6px 10px;
-  border-radius: 4px;
-  margin-bottom: 4px;
-  font-size: 0.9rem;
+  background-color: var(--bg-color-deep, var(--bg-color));
+  border: 1px solid var(--border-color);
+  color: var(--secondary-color);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm, 6px);
+  font-size: 0.74rem;
+  font-family: var(--font-mono, 'JetBrains Mono', 'Fira Code', 'SF Mono', Menlo, Monaco, Consolas, 'Courier New', monospace);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
 }
 
 .theme-changer {

@@ -123,50 +123,61 @@ const Timer = () => {
           Reset
         </button>
       </div>
-      <div style={{ position: 'absolute', top: '8px', right: '8px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+      <div style={{ position: 'absolute', top: '10px', right: '10px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '6px' }}>
         <div
           onClick={toggleMode}
           style={{
             display: 'flex',
-            background: '#333',
-            borderRadius: '20px',
+            background: 'var(--bg-color-deep, var(--bg-color))',
+            border: '1px solid var(--border-color)',
+            borderRadius: '999px',
             padding: '2px',
             cursor: 'pointer',
-            fontSize: '12px',
+            fontSize: '10px',
+            fontWeight: 600,
+            letterSpacing: '0.06em',
+            textTransform: 'uppercase',
+            boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.06)',
           }}
         >
           <span style={{
-            padding: '3px 10px',
-            borderRadius: '18px',
-            background: beepTimes === beep15min ? '#fff' : 'transparent',
-            color: beepTimes === beep15min ? '#000' : '#aaa',
-            transition: 'all 0.2s',
+            padding: '3px 9px',
+            borderRadius: '999px',
+            background: beepTimes === beep15min ? 'var(--accent-color3)' : 'transparent',
+            color: beepTimes === beep15min ? '#fff' : 'var(--secondary-color)',
+            transition: 'all 0.2s ease',
+            boxShadow: beepTimes === beep15min ? '0 1px 3px var(--box-shadow-color)' : 'none',
           }}>
-            15 min
+            15m
           </span>
           <span style={{
-            padding: '3px 10px',
-            borderRadius: '18px',
-            background: beepTimes !== beep15min ? '#fff' : 'transparent',
-            color: beepTimes !== beep15min ? '#000' : '#aaa',
-            transition: 'all 0.2s',
+            padding: '3px 9px',
+            borderRadius: '999px',
+            background: beepTimes !== beep15min ? 'var(--accent-color3)' : 'transparent',
+            color: beepTimes !== beep15min ? '#fff' : 'var(--secondary-color)',
+            transition: 'all 0.2s ease',
+            boxShadow: beepTimes !== beep15min ? '0 1px 3px var(--box-shadow-color)' : 'none',
           }}>
-            30 min
+            30m
           </span>
         </div>
         <button
           onClick={() => setMuted(prev => !prev)}
           style={{
-            background: 'none',
-            border: 'none',
+            background: 'var(--bg-color-deep, var(--bg-color))',
+            border: '1px solid var(--border-color)',
             cursor: 'pointer',
-            fontSize: '14px',
-            padding: '2px',
-            opacity: muted ? 0.4 : 1,
+            padding: '4px',
+            borderRadius: '6px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            color: muted ? 'var(--muted-color, #8892ab)' : 'var(--secondary-color)',
+            transition: 'all 0.15s ease',
           }}
           title={muted ? 'Unmute' : 'Mute'}
         >
-          {muted ? <VolumeX size={16} /> : <Volume2 size={16} />}
+          {muted ? <VolumeX size={14} /> : <Volume2 size={14} />}
         </button>
       </div>
       {laps.length > 0 && (
