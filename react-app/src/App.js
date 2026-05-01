@@ -22,6 +22,7 @@ import DisplayMeter from "./Components/DisplayMeter";
 import RightButtonPanel from "./Components/RightButtonPanel";
 import ArmIndicator from "./gamepad/ArmIndicator";
 import DirectionChangeButton from "./Components/DirectionChangeButton";
+import { setDirection } from './gamepad/directionStore';
 
 const App = () => {
 
@@ -38,6 +39,10 @@ const App = () => {
   const [prevGamepadData, setPrevGamepadData] = useState(null);
   const [robotState, setRobotState] = useState(0);
   const [directionSwitched, setDirectionSwitched] = useState(false);
+
+  useEffect(() => {
+    setDirection(directionSwitched);
+  }, [directionSwitched]);
 
 
   const [timestamp, setTimestamp] = useState(0);

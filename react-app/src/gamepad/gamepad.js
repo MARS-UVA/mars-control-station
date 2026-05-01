@@ -1,4 +1,5 @@
 import { getTransmissionActive } from "../packets"
+import { getDirection } from "./directionStore"
 let gamepads = navigator.getGamepads()
 
 window.addEventListener('gamepadconnected', e => {
@@ -37,9 +38,10 @@ const getButtonObjectFromGamepad = (index) => {
 
 const getLeftStickFromGamepad = (index) => {
     const gamepad = navigator.getGamepads()[index];
+    const directionSwitched = getDirection();
     return {
-        x: gamepad.axes[0],
-        y: -gamepad.axes[1]
+        x: directionSwitched ? -gamepad.axes[0] : gamepad.axes[0],
+        y: directionSwitched ? gamepad.axes[1] : -gamepad.axes[1]
     }
 }
 
