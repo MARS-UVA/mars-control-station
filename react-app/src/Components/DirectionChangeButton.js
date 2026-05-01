@@ -1,4 +1,5 @@
 import React from 'react';
+import { ArrowLeftRight } from 'lucide-react';
 
 function DirectionChangeButton({ directionSwitched, setDirectionSwitched }) {
 	const handleClick = () => {
@@ -18,8 +19,20 @@ function DirectionChangeButton({ directionSwitched, setDirectionSwitched }) {
 				cursor: 'pointer',
 				fontSize: 16,
 				fontWeight: 600,
+				display: 'flex',
+				alignItems: 'center',
+				justifyContent: 'center',
+				width: '100%',
+				gap: 8,
 			}}
 		>
+			<ArrowLeftRight
+				size={18}
+				style={{
+					transform: directionSwitched ? 'rotate(180deg)' : 'rotate(0deg)',
+					transition: 'transform 0.28s cubic-bezier(0.34, 1.4, 0.64, 1)',
+				}}
+			/>
 			Switch Direction
 		</button>
 	);
