@@ -90,8 +90,8 @@ const App = () => {
         </div>
 
         <div className="middle-panel">
-          <WebcamPanel signalingPort="6969" index="4" />
-          <WebcamPanel signalingPort="6767" index="0" />
+          <WebcamPanel signalingPort="6969" index="4" isActive={!directionSwitched} />
+          <WebcamPanel signalingPort="6767" index="0" isActive={directionSwitched} />
         </div>
 
         <div className="right-panel">
