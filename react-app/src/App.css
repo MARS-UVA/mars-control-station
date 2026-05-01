@@ -402,11 +402,13 @@ body {
 }
 
 .command-button-digauto {
-  background-color: var(--accent-color2);
+  background-color: var(--uva-orange, #E57200);
+  color: #ffffff;
 }
 
 .command-button-dumpauto {
-  background-color: var(--accent-color3);
+  background-color: var(--uva-blue-deep, #15192b);
+  color: #ffffff;
 }
 
 .command-button-digauto-feedback {
@@ -431,8 +433,8 @@ body {
 
 .command-button-digauto:hover {
   transform: scale(1.05);
-  background-color: var(--accent-color2-hover);
-  color: var(--primary-color);
+  background-color: var(--uva-orange-hover, #c96400);
+  color: #ffffff;
 }
 
 .command-button-digauto-feedback:hover {
@@ -443,8 +445,8 @@ body {
 
 .command-button-dumpauto:hover {
   transform: scale(1.05);
-  background-color: var(--accent-color3-hover);
-  color: var(--primary-color);
+  background-color: var(--uva-blue, #232D4B);
+  color: #ffffff;
 }
 
 .command-button-dumpauto-feedback:hover {

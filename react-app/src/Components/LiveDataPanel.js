@@ -16,7 +16,7 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
         <CartesianGrid strokeDasharray="3 3" />
         <YAxis label={/*dataKey === "actuatorCapacity" ? "%" :*/ dataKey === "globalDataRate" ? "Mbps" : "Value"} />
         <Tooltip />
-        <Legend wrapperStyle={{ paddingTop: '5px' }} height={20} />
+        <Legend wrapperStyle={{ paddingTop: '5px', fontSize: '15px' }} height={26} />
         <Line type="monotone" dataKey={dataKey} stroke="#8884d8" dot={false} isAnimationActive={false} name={dataKey === "globalDataRate" ? "Data Rate (Mbps)" : dataKey} />
       </LineChart>
     </ResponsiveContainer>
@@ -34,10 +34,10 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
     <ResponsiveContainer width="100%" height={200}>
       <LineChart data={chartData} margin={{ right: 20, top: 5, bottom: 5 }} isAnimationActive={false}>
         <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="time" height={20} />
+        <XAxis dataKey="time" height={20} tick={false} />
         <YAxis width={40} label={{ value: dataKeyToLabel[dataKey], angle: -90, position: "insideLeft" }} domain={["wheel-current", "drum-current"].includes(dataKey) ? [0, 20] : [0, 'dataMax']} />
         <Tooltip />
-        <Legend wrapperStyle={{ paddingTop: '5px' }} height={20} />
+        <Legend wrapperStyle={{ paddingTop: '5px', fontSize: '15px' }} height={26} />
         {dataKey === "battery-voltage" && (
           <>
             <Line type="monotone" dataKey="main_battery_voltage" stroke="#ff6b6b" dot={false} isAnimationActive={false} name="Main Batt" strokeWidth={2} />
