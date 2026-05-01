@@ -8,7 +8,7 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
 
   const degToRad = deg => deg * (Math.PI / 180);
 
-  const actuatorToDrum = num => ((12.0625 * Math.sin(degToRad(142.920267719) - Math.acos((Math.pow((23.6224274544 + (12 * num)), 2) - 737.506048128) / (-643.804738952)))) - (2.015 * Math.cos(degToRad(142.920267719) - Math.acos((Math.pow((23.6224274544 + (12 * num)), 2) - 737.506048128) / (-643.804738952)))) - 1.75);
+  const actuatorToDrum = num => ((12.0625 * Math.sin(degToRad(142.920267719) - Math.acos((Math.pow((23.6224274544 + (12 * (1-num))), 2) - 737.506048128) / (-643.804738952)))) - (2.015 * Math.cos(degToRad(142.920267719) - Math.acos((Math.pow((23.6224274544 + (12 * (1-num))), 2) - 737.506048128) / (-643.804738952)))) - 1.75);
 
   const renderChart = (dataKey) => (
     <ResponsiveContainer width="100%" height={120}>
