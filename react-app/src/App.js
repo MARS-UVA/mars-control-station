@@ -85,7 +85,7 @@ const App = () => {
           {/* <ActuatorDataDisplay lastDataPoint={lastDataPoint}/> */}
 
           <RightButtonPanel feedback={robotState}></RightButtonPanel>
-          <DirectionChangeButton directionSwitched={directionSwitched} setDirectionSwitched={setDirectionSwitched} />
+          <DirectionChangeButton directionSwitched={directionSwitched} setDirectionSwitched={setDirectionSwitched} gamepadData={gamepadData} />
           <Timer />
         </div>
 

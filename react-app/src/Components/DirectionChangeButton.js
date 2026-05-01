@@ -1,10 +1,22 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { ArrowLeftRight } from 'lucide-react';
 
-function DirectionChangeButton({ directionSwitched, setDirectionSwitched }) {
+function DirectionChangeButton({ directionSwitched, setDirectionSwitched, gamepadData }) {
+	const previousDdPressed = useRef(false);
+
 	const handleClick = () => {
-		setDirectionSwitched(!directionSwitched);
+		setDirectionSwitched((currentValue) => !currentValue);
 	};
+
+	useEffect(() => {
+		const currentDdPressed = Boolean(gamepadData?.buttons?.dd);
+
+		if (currentDdPressed && !previousDdPressed.current) {
+			setDirectionSwitched((currentValue) => !currentValue);
+		}
+
+		previousDdPressed.current = currentDdPressed;
+	}, [gamepadData, setDirectionSwitched]);
 
 	return (
 		<button
