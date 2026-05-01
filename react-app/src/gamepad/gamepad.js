@@ -40,7 +40,7 @@ const getLeftStickFromGamepad = (index, directionOverride = null) => {
     const gamepad = navigator.getGamepads()[index];
     const directionSwitched = directionOverride !== null ? directionOverride : getDirection();
     return {
-        x: directionSwitched ? -gamepad.axes[0] : gamepad.axes[0],
+        x: gamepad.axes[0],
         y: directionSwitched ? gamepad.axes[1] : -gamepad.axes[1]
     }
 }
