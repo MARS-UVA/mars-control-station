@@ -24,13 +24,14 @@ const CommandButton = React.memo(({ label, className, onClick, style }) => (
   </button>
 ));
 
-function RightButtonPanel({ feedback, backArmActive }) {
+function RightButtonPanel({ feedback, backArmActive, espWorking, currentActionState }) {
 
 const doFunction = label => { 
-   if (label.toLowerCase() === 'dig auto')   sendCustomCommandState(actions_enum['Dig Auto']);
+  if (espWorking) {
+    if (label.toLowerCase() === 'dig auto')   sendCustomCommandState(actions_enum['Dig Auto']);
     else if (label.toLowerCase() === 'dump auto')   sendCustomCommandState(actions_enum['Dump Auto']);
     else if (label.toLowerCase() === 'stop')   sendCustomCommandState(actions_enum['Stop']);
-
+  } 
 }
 //console.log(feedback)
 
