@@ -3,7 +3,7 @@ const DATA_UPDATE_DELAY_MS = 200;
 const DATA_WINDOW_WIDTH = 60000 / DATA_UPDATE_DELAY_MS;
 // This component will handle backend/API calls with useEffect blocks, and send the data to the UI components
 
-function Socket({ setGamePadStatus, setChartData, setRobotState, setFrontArmActive, setBackArmActive, setLastDataPoint, timestamp, setTimestamp, setData: setData }) {
+function Socket({ setGamePadStatus, setChartData, setRobotState, setFrontArmActive, setBackArmActive, setESPWorking, setLastDataPoint, timestamp, setTimestamp, setData: setData }) {
   const motorValuesRef = useRef(new Float32Array(4));
   const alertAudioRef = useRef(null);
   const oscillatorRef = useRef(null);
@@ -90,11 +90,13 @@ function Socket({ setGamePadStatus, setChartData, setRobotState, setFrontArmActi
       let robotState = view.getInt32(18 * 4, true); // Assuming robot state is sent as an int32 right after the motor values
       let frontArmActive = view.getInt32(18 * 4 + 4, true); // Assuming front arm state is sent as an int32 right after robot state
       let backArmActive = view.getInt32(18 * 4 + 8, true); // Assuming back arm state is sent as an int32 right after front arm state
+      let espWorking = view.getInt32(18 * 4 + 12, true); // Assuming ESP working state is sent as an int32 right after back arm state
       motorValuesRef.current = newValues;
-      setRobotState(robotState);
       //console.log(`Robot state: ${robotState}, Front Arm: ${frontArmActive}, Back Arm: ${backArmActive}`);
+      setRobotState(robotState);
       setFrontArmActive(frontArmActive === 1);
       setBackArmActive(backArmActive === 1);
+      setESPWorking(espWorking === 1);
     };
 
     return () => {

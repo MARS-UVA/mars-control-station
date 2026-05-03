@@ -39,6 +39,7 @@ const App = () => {
   const [prevGamepadData, setPrevGamepadData] = useState(null);
   const [robotState, setRobotState] = useState(0);
   const [directionSwitched, setDirectionSwitched] = useState(false);
+  const [ESPWorking, setESPWorking] = useState(false);
 
   useEffect(() => {
     setDirection(directionSwitched);
@@ -71,7 +72,7 @@ const App = () => {
   return (
     <div className="app-container">
       {/* <h1 className="title">MARS Web UI</h1> */}
-      <Socket setGamePadStatus={setGamepadStatus} setRobotState={setRobotState} setFrontArmActive={setFrontArmActive} setBackArmActive={setBackArmActive} setChartData={setChartData} setLastDataPoint={setLastDataPoint} timestamp={timestamp} setTimestamp={setTimestamp} setData={setData} />
+      <Socket setGamePadStatus={setGamepadStatus} setRobotState={setRobotState} setFrontArmActive={setFrontArmActive} setBackArmActive={setBackArmActive} setESPWorking={setESPWorking} setChartData={setChartData} setLastDataPoint={setLastDataPoint} timestamp={timestamp} setTimestamp={setTimestamp} setData={setData} />
 
 
       <div className="content">
