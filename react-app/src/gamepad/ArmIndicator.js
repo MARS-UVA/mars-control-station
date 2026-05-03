@@ -12,9 +12,9 @@ const ArmIndicator = ({
   if (frontArmActive && backArmActive) {
     armStatus = 'Both';
   } else if (frontArmActive) {
-    armStatus = directionSwitched ? 'Back' : 'Front';
+    armStatus = 'Blue';
   } else if (backArmActive) {
-    armStatus = directionSwitched ? 'Front' : 'Back';
+    armStatus = 'Orange';
   }
 
   return (
