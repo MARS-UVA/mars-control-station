@@ -4,6 +4,8 @@ import TiltMeter from "./TiltMeter";
 
 // This component renders a panel with charts and live values
 function LiveDataPanel({ lastDataPoint, chartData }) {
+  const GROUNDLEVEL = 0.69; // Example threshold for actuator position to determine if it's on the ground
+
   const round = num => (Math.round((num + Number.EPSILON) * 100) / 100).toFixed(2);
 
   const degToRad = deg => deg * (Math.PI / 180);
@@ -234,7 +236,16 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
                     position: lastDataPoint.back_actuator_position,
                   }
                 ].map((item, index) => (
-                  <div key={index} style={{ backgroundColor: "#f44336", color: "#ffffff", width: "100%", marginBottom: "4px", padding: "0.5rem", borderRadius: "8px" }}>
+                  item.position < GROUNDLEVEL ? (
+                    <div key={index} style={{ backgroundColor: "#8acfce", color: "#ffffff", width: "100%", marginBottom: "4px", padding: "0.5rem", borderRadius: "8px" }}>
+                    <div style={cardTitleStyle}>
+                      {item.key}
+                    </div>
+                    <div style={cardValueStyle}>
+                      {round(actuatorToDrum(item.position))} in (Raw: {round(item.position)})
+                    </div>
+                  </div>) :
+                  (<div key={index} style={{ backgroundColor: "#cdc0a7", color: "#ffffff", width: "100%", marginBottom: "4px", padding: "0.5rem", borderRadius: "8px" }}>
                     <div style={cardTitleStyle}>
                       {item.key}
                     </div>
@@ -242,6 +253,8 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
                       {round(actuatorToDrum(item.position))} in (Raw: {round(item.position)})
                     </div>
                   </div>
+                  )
+                  
                 ))
               }
             </div>
