@@ -27,6 +27,62 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
     lineHeight: 1.2,
   };
 
+  const getBatteryPercentage = (voltage, batteryCapacityRanges) => {
+    for (const [percentage, rangeVoltage] of Object.entries(batteryCapacityRanges)) {
+      if (percentage > 0 && voltage <= rangeVoltage && voltage > batteryCapacityRanges[percentage - 5]) {
+        return round((percentage - 5) + 5 * (voltage - batteryCapacityRanges[percentage - 5]) / (rangeVoltage - batteryCapacityRanges[percentage - 5]));
+      }
+    }
+  }
+
+  const mainBatteryCapacityRanges = {
+    100: 16.8,
+    95: 16.6,
+    90: 16.45,
+    85: 16.33,
+    80: 16.09,
+    75: 15.93,
+    70: 15.81,
+    65: 15.66,
+    60: 15.5,
+    55: 15.42,
+    50: 15.34,
+    45: 15.26,
+    40: 15.18,
+    35: 15.14,
+    30: 15.06,
+    25: 14.99,
+    20: 14.91,
+    15: 14.83,
+    10: 14.75,
+    5: 14.43,
+    0: 13.09
+  }
+
+  const auxBatteryCapacityRanges = {
+    100: 12.6,
+    95: 12.45,
+    90: 12.33,
+    85: 12.25,
+    80: 12.07,
+    75: 11.95,
+    70: 11.86,
+    65: 11.74,
+    60: 11.62,
+    55: 11.56,
+    50: 11.51,
+    45: 11.45,
+    40: 11.39,
+    35: 11.36,
+    30: 11.3,
+    25: 11.24,
+    20: 11.18,
+    15: 11.12,
+    10: 11.06,
+    5: 10.83,
+    0: 9.82
+  }
+
   const renderChart = (dataKey) => (
     <ResponsiveContainer width="100%" height={120}>
       <LineChart data={chartData} margin={{ left: 0, right: 20, top: 5, bottom: 5 }} isAnimationActive={false}>
@@ -146,24 +202,20 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
                 [
                   {
                     key: "Main Battery Voltage",
-                    maximumVoltage: 16.6,
-                    warningVoltage: 14.8,
-                    minimumVoltage: 13.1,
+                    voltageRanges: mainBatteryCapacityRanges,
                     voltage: lastDataPoint.main_battery_voltage,
                   }, {
                     key: "Aux Battery Voltage",
-                    maximumVoltage: 12.8,
-                    warningVoltage: 11.1,
-                    minimumVoltage: 9.8,
+                    voltageRanges: auxBatteryCapacityRanges,
                     voltage: lastDataPoint.aux_battery_voltage,
                   }
                 ].map((item, index) => (
-                  <div key={index} style={{ ...voltageToColors(item.voltage, item.warningVoltage, item.minimumVoltage), width: "100%", marginBottom: "4px", padding: "0.5rem", borderRadius: "8px" }}>
+                  <div key={index} style={{ ...voltageToColors(item.voltage, item.voltageRanges[30], item.voltageRanges[15]), width: "100%", marginBottom: "4px", padding: "0.5rem", borderRadius: "8px" }}>
                     <div style={cardTitleStyle}>
                       {item.key}
                     </div>
                     <div style={cardValueStyle}>
-                      {round(item.voltage)} V ({round(item.voltage / item.maximumVoltage * 100)}%)
+                      {round(item.voltage)} V ({getBatteryPercentage(item.voltage, item.voltageRanges)}%)
                     </div>
                   </div>
                 ))
