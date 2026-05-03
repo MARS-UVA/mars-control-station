@@ -93,6 +93,7 @@ const App = () => {
         <div className="middle-panel">
           <WebcamPanel signalingPort="6969" index="4" isActive={!directionSwitched} />
           <WebcamPanel signalingPort="6767" index="0" isActive={directionSwitched} />
+          {ESPWorking ?  null : <div className="esp-not-working">ESP Not Receiving Packets</div>}
         </div>
 
         <div className="right-panel">
