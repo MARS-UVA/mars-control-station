@@ -24,7 +24,7 @@ const CommandButton = React.memo(({ label, className, onClick, style }) => (
   </button>
 ));
 
-function RightButtonPanel({ feedback }) {
+function RightButtonPanel({ feedback, backArmActive }) {
 
 const doFunction = label => { 
    if (label.toLowerCase() === 'dig auto')   sendCustomCommandState(actions_enum['Dig Auto']);
@@ -73,7 +73,11 @@ useEffect(() => {
           {feedback == 2 ? (
             <CommandButton key = 'Dump Auto' label = 'Dump Auto' className = 'command-button-dumpauto-feedback' onClick = {() => doFunction('Dump Auto')}></CommandButton>
           ) : (
-            <CommandButton key = 'Dump Auto' label = 'Dump Auto' className = 'command-button-dumpauto' onClick = {() => doFunction('Dump Auto')}></CommandButton>
+            backArmActive ? (
+              <CommandButton key = 'Dump Auto' label = 'Dump Auto' className = 'command-button-dumpauto-back' onClick = {() => doFunction('Dump Auto')}></CommandButton>
+            ) : (
+              <CommandButton key = 'Dump Auto' label = 'Dump Auto' className = 'command-button-dumpauto-front' onClick = {() => doFunction('Dump Auto')}></CommandButton>
+            )
           )}
         </div>
         </div>
