@@ -30,8 +30,11 @@ const doFunction = label => {
   if (espWorking) {
     if (label.toLowerCase() === 'dig auto')   sendCustomCommandState(actions_enum['Dig Auto']);
     else if (label.toLowerCase() === 'dump auto')   sendCustomCommandState(actions_enum['Dump Auto']);
-    else if (label.toLowerCase() === 'stop')   sendCustomCommandState(actions_enum['Stop']);
+    
   } 
+  if (label.toLowerCase() === 'stop')   {
+    sendCustomCommandState(actions_enum['Stop']);
+  }
 }
 //console.log(feedback)
 
