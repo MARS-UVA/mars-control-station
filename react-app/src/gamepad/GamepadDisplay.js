@@ -12,6 +12,9 @@ export const buttonPositions = {
   x:  { x: 230, y: 75 }, // These might be swapped? or else my controller is cooked
   y:  { x: 253, y: 50 },
 
+  back: { x: 128, y: 55 },
+  start: { x: 194, y: 55 },
+
   du: { x: 69, y: 55 },
   dd: { x: 69, y: 90 },
   dl: { x: 50, y: 72 },
