@@ -85,7 +85,7 @@ const App = () => {
           {/* <DisplayMeter current={80} total={100} left = {155} top = {655} height = {40} width = {180} label="Capacity" /> */}
           {/* <ActuatorDataDisplay lastDataPoint={lastDataPoint}/> */}
 
-          <RightButtonPanel feedback={robotState} backArmActive={backArmActive} espWorking={ESPWorking} currentActionState={currentActionState} ></RightButtonPanel>
+          <RightButtonPanel currentActionState={robotState} backArmActive={backArmActive} espWorking={ESPWorking} ></RightButtonPanel>
           <DirectionChangeButton directionSwitched={directionSwitched} setDirectionSwitched={setDirectionSwitched} gamepadData={gamepadData} />
           <Timer />
         </div>

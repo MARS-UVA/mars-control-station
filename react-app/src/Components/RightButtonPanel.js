@@ -24,7 +24,7 @@ const CommandButton = React.memo(({ label, className, onClick, style }) => (
   </button>
 ));
 
-function RightButtonPanel({ feedback, backArmActive, espWorking, currentActionState }) {
+function RightButtonPanel({ currentActionState, backArmActive, espWorking }) {
 
 const doFunction = label => { 
   if (espWorking) {
@@ -61,7 +61,7 @@ useEffect(() => {
       <h2 className="panel-title">Control Panel</h2>
       <div className="drive-panel-grid">
         <div className='drive-panel-stop-col'>
-          {feedback == 3 ? (
+          {currentActionState == 3 ? (
             <CommandButton key = 'STOP' label = 'STOP' className = 'command-button-sstop-feedback' onClick = {() => doFunction('STOP')}></CommandButton>
           ) : (
             <CommandButton key = 'STOP' label = 'STOP' className = 'command-button-sstop' onClick = {() => doFunction('STOP')}></CommandButton>
@@ -69,12 +69,12 @@ useEffect(() => {
         </div>
         <div className='drive-panel-other-col'>
           
-          {feedback == 1 ? (
+          {currentActionState == 1 ? (
             <CommandButton key = 'Dig Auto' label = 'Dig Auto' className = 'command-button-digauto-feedback' onClick = {() => doFunction('Dig Auto')}></CommandButton>
           ) : (
             <CommandButton key = 'Dig Auto' label = 'Dig Auto' className = 'command-button-digauto' onClick = {() => doFunction('Dig Auto')}></CommandButton>
           )}
-          {feedback == 2 ? (
+          {currentActionState == 2 ? (
             <CommandButton key = 'Dump Auto' label = 'Dump Auto' className = 'command-button-dumpauto-feedback' onClick = {() => doFunction('Dump Auto')}></CommandButton>
           ) : (
             backArmActive ? (
