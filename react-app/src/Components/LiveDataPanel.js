@@ -119,16 +119,16 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
         )}
         {dataKey === "wheel-current" && (
           <>
-            <Line type="monotone" dataKey="front_left_wheel_current" stroke="#fc2803" dot={false} isAnimationActive={false} name="FL Wheel" />
-            <Line type="monotone" dataKey="front_right_wheel_current" stroke="#03fc2c" dot={false} isAnimationActive={false} name="FR Wheel" />
-            <Line type="monotone" dataKey="back_left_wheel_current" stroke="#031cfc" dot={false} isAnimationActive={false} name="BL Wheel" />
-            <Line type="monotone" dataKey="back_right_wheel_current" stroke="#fc03ba" dot={false} isAnimationActive={false} name="BR Wheel" />
+            <Line type="monotone" dataKey="front_left_wheel_current" stroke="#03b5fc" dot={false} isAnimationActive={false} name="BL Wheel" />
+            <Line type="monotone" dataKey="front_right_wheel_current" stroke="#036ffc" dot={false} isAnimationActive={false} name="BR Wheel" />
+            <Line type="monotone" dataKey="back_left_wheel_current" stroke="#fcb103" dot={false} isAnimationActive={false} name="OL Wheel" />
+            <Line type="monotone" dataKey="back_right_wheel_current" stroke="#fc8c03" dot={false} isAnimationActive={false} name="OR Wheel" />
           </>
         )}
         {dataKey === "drum-current" && (
           <>
-            <Line type="monotone" dataKey="front_drum_current" stroke="#ffa500" dot={false} isAnimationActive={false} name="F Drum" strokeWidth={1.5} />
-            <Line type="monotone" dataKey="back_drum_current" stroke="#22e0e0" dot={false} isAnimationActive={false} name="B Drum" strokeWidth={1.5} />
+            <Line type="monotone" dataKey="front_drum_current" stroke="#0066ff" dot={false} isAnimationActive={false} name="B Drum" strokeWidth={1.5} />
+            <Line type="monotone" dataKey="back_drum_current" stroke="#fc8c03" dot={false} isAnimationActive={false} name="O Drum" strokeWidth={1.5} />
           </>
         )}
         {dataKey === "bucketDrum" && (
