@@ -478,10 +478,14 @@ body {
   color: var(--primary-color);
 }
 
-.command-button-dumpauto-front:hover,
+.command-button-dumpauto-front:hover {
+  transform: scale(1.05);
+  background-color: var(--uva-blue, #4d5ca1);
+  color: #ffffff;
+}
 .command-button-dumpauto-back:hover {
   transform: scale(1.05);
-  background-color: var(--uva-blue, #232D4B);
+  background-color: var(--uva-orange-hover, #c96400);
   color: #ffffff;
 }
 
