@@ -172,19 +172,29 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
     };
   }
 
-  const temperatureToColors = (temperature) => {
-    if (temperature < 60) return {
-      backgroundColor: "#4caf50", // Green
+  const temperatureToColors = (temperature, isBlue) => {
+    if (temperature < 60) 
+      return isBlue ? {
+        backgroundColor: "#2196f3", // Blue
+        color: "#ffffff" // White text
+      } : {
+        backgroundColor: "#ea8b0f", // light Orange
+        color: "#ffffff" // White text
+      }
+    if (temperature < 80) return isBlue ?{
+      backgroundColor: "#14578e", // Darker Blue
       color: "#ffffff" // White text
-    };
-    if (temperature < 80) return {
-      backgroundColor: "#ff9800", // Orange
+    } : {
+      backgroundColor: "#a4630f", // Dark Orange
       color: "#ffffff" // White text
-    };
-    return {
-      backgroundColor: "#f44336", // Red
+    }
+    return isBlue ?{
+      backgroundColor: "#601b99", // Purple
       color: "#ffffff" // White text
-    };
+    } : {
+      backgroundColor: "#7a2c0f", // Dark Red
+      color: "#ffffff" // White text
+    }
   }
 
   // Render the component UI
@@ -229,32 +239,32 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
               {
                 [
                   {
-                    key: "FL Wheel",
+                    key: "BL Wheel",
                     temperature: lastDataPoint.front_left_wheel_temperature,
 
                   },
                   {
-                    key: "FR Wheel",
+                    key: "BR Wheel",
                     temperature: lastDataPoint.front_right_wheel_temperature,
                   },
                   {
-                    key: "F Drum",
+                    key: "B Drum",
                     temperature: lastDataPoint.front_drum_temperature,
                   },
                   {
-                    key: "BL Wheel",
+                    key: "OL Wheel",
                     temperature: lastDataPoint.back_left_wheel_temperature,
                   },
                   {
-                    key: "BR Wheel",
+                    key: "OR Wheel",
                     temperature: lastDataPoint.back_right_wheel_temperature,
                   },
                   {
-                    key: "B Drum",
+                    key: "O Drum",
                     temperature: lastDataPoint.back_drum_temperature,
                   }
                 ].map((temp, index) => {
-                  const { backgroundColor, color } = temperatureToColors(temp.temperature);
+                  const { backgroundColor, color } = temperatureToColors(temp.temperature, temp.key.startsWith("B"));
                   return (
                     <div key={index} style={{ marginBottom: "4px", padding: "0.5rem", borderRadius: "8px", backgroundColor, color }}>
                       <div style={cardTitleStyle}>
