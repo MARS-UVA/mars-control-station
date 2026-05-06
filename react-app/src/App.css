@@ -478,7 +478,8 @@ body {
   color: var(--primary-color);
 }
 
-.command-button-dumpauto:hover {
+.command-button-dumpauto-front:hover,
+.command-button-dumpauto-back:hover {
   transform: scale(1.05);
   background-color: var(--uva-blue, #232D4B);
   color: #ffffff;
