@@ -291,10 +291,10 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
               {
                 [
                   {
-                    key: "Front Actuator",
+                    key: "Blue Actuator",
                     position: lastDataPoint.front_actuator_position,
                   }, {
-                    key: "Back Actuator",
+                    key: "Orange Actuator",
                     position: lastDataPoint.back_actuator_position,
                   }
                 ].map((item, index) => (
