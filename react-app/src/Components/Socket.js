@@ -5,15 +5,24 @@ const DATA_WINDOW_WIDTH = 60000 / DATA_UPDATE_DELAY_MS;
 
 function Socket({ setGamePadStatus, setChartData, setRobotState, setFrontArmActive, setBackArmActive, setESPWorking, setLastDataPoint, timestamp, setTimestamp, setData: setData }) {
   const motorValuesRef = useRef(new Float32Array(4));
+  const motorFeedbackReceivedRef = useRef(false);
   const alertAudioRef = useRef(null);
   const oscillatorRef = useRef(null);
   const gainNodeRef = useRef(null);
   const overStallCurrent = useRef(false);
   const STALL_CURRENT = 366; // Amps from https://docs.wcproducts.com/welcome/frc-build-system/electronics-and-pneumatics/brushless-motors
 
+  const WHEEL_TEMP_ALERT_C = 70;
+  const WHEEL_TEMP_BEEP_TOTAL_MS = 5000;
+  const WHEEL_TEMP_BEEP_INTERVAL_MS = 400;
+  const WHEEL_TEMP_BEEP_LENGTH_MS = 100;
+  const prevWheelTempOkRef = useRef(true);
+  const wheelTempBeepCleanupRef = useRef(null);
+
   useEffect(() => {
     return () => {
       StopOverCurrentAlarm();
+      wheelTempBeepCleanupRef.current?.();
       alertAudioRef.current?.close();
     };
   }, []);
@@ -50,7 +59,42 @@ function Socket({ setGamePadStatus, setChartData, setRobotState, setFrontArmActi
       oscillatorRef.current = null;
       gainNodeRef.current = null;
     }
-  }
+  };
+
+  const startWheelTempBeepPattern = () => {
+    const context = alertAudioRef.current;
+    if (!context) return;
+    context.resume?.();
+
+    wheelTempBeepCleanupRef.current?.();
+
+    const playShortBeep = () => {
+      const oscillator = context.createOscillator();
+      const gainNode = context.createGain();
+      oscillator.type = 'sine';
+      oscillator.frequency.value = 880;
+      gainNode.gain.value = 0.22;
+      oscillator.connect(gainNode);
+      gainNode.connect(context.destination);
+      const t0 = context.currentTime;
+      const lenSec = WHEEL_TEMP_BEEP_LENGTH_MS / 1000;
+      oscillator.start(t0);
+      oscillator.stop(t0 + lenSec);
+    };
+
+    playShortBeep();
+    const intervalId = setInterval(playShortBeep, WHEEL_TEMP_BEEP_INTERVAL_MS);
+    const timeoutId = setTimeout(() => {
+      clearInterval(intervalId);
+      wheelTempBeepCleanupRef.current = null;
+    }, WHEEL_TEMP_BEEP_TOTAL_MS);
+
+    wheelTempBeepCleanupRef.current = () => {
+      clearInterval(intervalId);
+      clearTimeout(timeoutId);
+      wheelTempBeepCleanupRef.current = null;
+    };
+  };
 
   // Setups Gamepad connection status handling
   // Creates event listeners for gamepad connection and disconnection
@@ -91,6 +135,7 @@ function Socket({ setGamePadStatus, setChartData, setRobotState, setFrontArmActi
       let frontArmActive = view.getInt32(18 * 4 + 4, true); // Assuming front arm state is sent as an int32 right after robot state
       let backArmActive = view.getInt32(18 * 4 + 8, true); // Assuming back arm state is sent as an int32 right after front arm state
       let espWorking = view.getInt32(18 * 4 + 12, true); // Assuming ESP working state is sent as an int32 right after back arm state
+      motorFeedbackReceivedRef.current = true;
       motorValuesRef.current = newValues;
       //console.log(`Robot state: ${robotState}, Front Arm: ${frontArmActive}, Back Arm: ${backArmActive}`);
       setRobotState(robotState);
@@ -196,6 +241,20 @@ function Socket({ setGamePadStatus, setChartData, setRobotState, setFrontArmActi
           StopOverCurrentAlarm();
         }
         overStallCurrent.current = isOverStallCurrent;
+
+        if (motorFeedbackReceivedRef.current) {
+          const maxWheelTemp = Math.max(
+            newData.front_left_wheel_temperature,
+            newData.back_left_wheel_temperature,
+            newData.front_right_wheel_temperature,
+            newData.back_right_wheel_temperature,
+          );
+          const wheelTempOk = maxWheelTemp <= WHEEL_TEMP_ALERT_C;
+          if (!wheelTempOk && prevWheelTempOkRef.current) {
+            startWheelTempBeepPattern();
+          }
+          prevWheelTempOkRef.current = wheelTempOk;
+        }
 
         setChartData((prevData) => {
           setLastDataPoint(newData);
