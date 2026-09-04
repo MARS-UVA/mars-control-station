@@ -3,6 +3,11 @@
 ## How to Run
 Run `./start.sh`
 
+For container-based development on macOS, WSL, or Linux, see
+[`.devcontainer/README.md`](.devcontainer/README.md). After opening the matching
+development container, run `./start-dev.sh`. This starts the current React and
+Node WebSocket stack without attempting to configure Wi-Fi or ROS.
+
 ## Gateway Server
 
 - `server.c` : Creates a socket to listen to incoming messages (future improvement is to include a set of sockets to lighten load on server socket and have different reciever socket)

@@ -3,7 +3,9 @@
 SSID="Team_39"
 PASSWORD="lunabotics#1"
 
-if [ $# -eq 0 ]; then
+if [ -n "${JETSON_IP:-}" ]; then
+    echo "Using preconfigured Jetson address; skipping Wi-Fi configuration"
+elif [ $# -eq 0 ]; then
     echo "No arguments supplied, connecting to MARS network"
     nmcli device wifi connect "$SSID" password "$PASSWORD"
     export JETSON_IP="192.168.50.105"
@@ -29,7 +31,7 @@ fi
 
 # nmcli dev eth connect $SSID password $PASSWORD
 
-if [ -n "$JETSON_IP" ]; then
+if [ -n "${JETSON_IP:-}" ]; then
     echo "Using $JETSON_IP as the Jetson's IP"
 else
     echo "Jetson IP address: "
@@ -42,4 +44,3 @@ cd react-app
 node ../server/ws_server.js &
 npm start &
 wait
-

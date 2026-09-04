@@ -1,0 +1,36 @@
+{
+  "name": "Mars Control Station (macOS)",
+  "build": {
+    "dockerfile": "../Dockerfile",
+    "context": "../.."
+  },
+  "remoteUser": "node",
+  "updateRemoteUserUID": true,
+  "initializeCommand": "docker network inspect mars-dev >/dev/null 2>&1 || docker network create mars-dev",
+  "runArgs": [
+    "--network=mars-dev",
+    "--network-alias=mars-control-station"
+  ],
+  "containerEnv": {
+    "HOST": "0.0.0.0",
+    "CHOKIDAR_USEPOLLING": "true",
+    "JETSON_IP": "mars-jetson"
+  },
+  "forwardPorts": [3000, 3001, 6767, 6969],
+  "appPort": ["2001:2001/udp"],
+  "portsAttributes": {
+    "3000": { "label": "React UI", "onAutoForward": "openBrowser" },
+    "3001": { "label": "Application WebSocket" },
+    "6767": { "label": "Camera 1 signaling" },
+    "6969": { "label": "Camera 2 signaling" }
+  },
+  "postCreateCommand": "npm --prefix server ci && npm --prefix react-app ci",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode"
+      ]
+    }
+  }
+}
