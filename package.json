@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "roslib": "^2.1.0"
+  }
+}
