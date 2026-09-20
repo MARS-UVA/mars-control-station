@@ -4,20 +4,17 @@
     "dockerfile": "../Dockerfile",
     "context": "../.."
   },
-  "remoteUser": "node",
+  "remoteUser": "mars",
   "updateRemoteUserUID": true,
   "initializeCommand": "docker network inspect mars-dev >/dev/null 2>&1 || docker network create mars-dev",
-  "runArgs": [
-    "--network=mars-dev",
-    "--network-alias=mars-control-station"
-  ],
+  "runArgs": ["--network=mars-dev", "--network-alias=mars-control-station"],
   "containerEnv": {
     "HOST": "0.0.0.0",
-    "CHOKIDAR_USEPOLLING": "true",
-    "JETSON_IP": "mars-jetson"
+    "JETSON_IP": "mars-jetson",
+    "ROS_AUTOMATIC_DISCOVERY_RANGE": "LOCALHOST",
+    "ROS_DOMAIN_ID": "42"
   },
-  "forwardPorts": [3000, 3001, 6767, 6969],
-  "appPort": ["2001:2001/udp"],
+  "forwardPorts": [3000, 3001, 6767, 6969, 9090],
   "portsAttributes": {
     "3000": { "label": "React UI", "onAutoForward": "openBrowser" },
     "3001": { "label": "Application WebSocket" },
@@ -29,7 +26,9 @@
     "vscode": {
       "extensions": [
         "dbaeumer.vscode-eslint",
-        "esbenp.prettier-vscode"
+        "esbenp.prettier-vscode",
+        "eamodio.gitlens",
+        "ms-iot.vscode-ros"
       ]
     }
   }
