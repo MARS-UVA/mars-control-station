@@ -7,11 +7,15 @@ When prompted, choose the configuration that matches the host running Docker:
 - **WSL**: `.devcontainer/wsl/devcontainer.json`
 - **Linux**: `.devcontainer/linux/devcontainer.json`
 
+Before opening any profile, export `MARS_JETSON_SRC` on the host (the path to
+your mars-jetson checkout) or the container won't start. See
+`docs/devcontainer-ros-setup.md`.
+
 Each profile installs the dependencies for both the React application and the
-Node WebSocket server. The container does not install ROS yet; it is intended
-for the application's current WebSocket/UDP implementation. ROS/rosbridge can
-be added later without affecting the host-specific container selection.
-All three profiles build from the shared `.devcontainer/Dockerfile`.
+Node WebSocket server. The image is based on `ros:jazzy` and also includes
+`rmw_zenoh_cpp` and `rosbridge_server`, so rosbridge runs in this container next
+to the dev server. All three profiles build from the shared
+`.devcontainer/Dockerfile`.
 
 Inside the container, run:
 
@@ -20,11 +24,12 @@ Inside the container, run:
 ```
 
 The React UI is available on port 3000. WebSocket ports 3001, 6767, and 6969
-are also forwarded. The Linux profile uses host networking so the UDP server
-can communicate directly with devices on the host network. macOS and WSL use
-Docker port forwarding because host networking is not consistently available
-across Docker Desktop versions. Those two profiles explicitly publish UDP port
-2001 for robot feedback.
+are also forwarded, along with 9090 for the rosbridge websocket. All three
+profiles use the same Docker bridge network (below) and VS Code port
+forwarding. None of them uses host networking or publishes UDP ports.
+ROS traffic goes over Zenoh in client mode: this container dials out to the
+router the Jetson runs on port 7447 (`ros/ros-env.sh`), so nothing has to reach
+back into the container.
 
 The profiles create and join the shared `mars-dev` Docker network with the
 hostname `mars-control-station`. The companion Jetson container is reachable as
