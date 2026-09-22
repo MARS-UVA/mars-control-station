@@ -55,6 +55,13 @@ export RMW_IMPLEMENTATION=rmw_zenoh_cpp
 # This host does NOT run its own rmw_zenohd. It attaches to the router the
 # Jetson already starts (mars-jetson setup_terminal.sh). JETSON_IP is the same
 # variable start.sh already exports.
+#
+# mode="client" is not optional here. Zenoh's default is peer mode, in which
+# this host also opens its own listener and advertises itself as reachable.
+# Behind WSL2's default NAT (docs/ros-env-setup.md §7) nothing can dial back in,
+# so those advertised endpoints are dead addresses that peers waste time on.
+# A client only ever dials out to the router, which is exactly the topology we
+# want and sidesteps the NAT question entirely.
 if [ -n "${JETSON_IP:-}" ]; then
-    export ZENOH_CONFIG_OVERRIDE="connect/endpoints=[\"tcp/${JETSON_IP}:7447\"]"
+    export ZENOH_CONFIG_OVERRIDE="mode=\"client\";connect/endpoints=[\"tcp/${JETSON_IP}:7447\"]"
 fi

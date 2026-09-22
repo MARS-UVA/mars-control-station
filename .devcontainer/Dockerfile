@@ -47,6 +47,10 @@ RUN echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesourc
     && apt-get install -y --no-install-recommends nodejs \
     && rm -rf /var/lib/apt/lists/*
 
+# The ros:jazzy base normally runs this already; it errors if the sources list
+# exists, so it is guarded.
+RUN rosdep init || true
+
 RUN echo "source /opt/ros/jazzy/setup.bash" >> "/home/${USERNAME}/.bashrc"
 
 WORKDIR /workspaces/mars-control-station
