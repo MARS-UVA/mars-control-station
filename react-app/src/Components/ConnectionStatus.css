@@ -1,0 +1,62 @@
+.connection-status-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--primary-color);
+}
+
+.connection-status-label {
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--secondary-color);
+}
+
+.connection-status-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 2px solid var(--border-color);
+  background-color: var(--panel-bg-color);
+  color: var(--primary-color);
+  font-size: 14px;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 4px var(--box-shadow-color);
+}
+
+.connection-status-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: var(--secondary-color);
+}
+
+.connection-status-box.status-connected {
+  border-color: var(--active-color);
+}
+
+.connection-status-box.status-connected .connection-status-dot {
+  background-color: var(--active-color);
+}
+
+.connection-status-box.status-connecting {
+  border-color: var(--accent-color2);
+}
+
+.connection-status-box.status-connecting .connection-status-dot {
+  background-color: var(--accent-color2);
+}
+
+.connection-status-box.status-error,
+.connection-status-box.status-closed {
+  border-color: var(--accent-color1);
+}
+
+.connection-status-box.status-error .connection-status-dot,
+.connection-status-box.status-closed .connection-status-dot {
+  background-color: var(--accent-color1);
+}
