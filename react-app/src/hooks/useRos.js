@@ -16,13 +16,22 @@ function getRosbridgeUrl() {
  *
  * ros is null until the effect has run; every consumer hook accepts that.
  *
+ * With enabled: false nothing is ever connected: ros stays null and status is
+ * 'closed'. App.js uses this to keep the hook call unconditional while the
+ * legacy Socket.js path is the active one.
+ *
  * @returns {{ ros: Ros|null, status: 'connecting'|'connected'|'error'|'closed', isConnected: boolean }}
  */
-export default function useRos() {
+export default function useRos({ enabled = true } = {}) {
   const [ros, setRos] = useState(null);
-  const [status, setStatus] = useState('connecting');
+  const [status, setStatus] = useState(enabled ? 'connecting' : 'closed');
 
   useEffect(() => {
+    if (!enabled) {
+      setRos(null);
+      setStatus('closed');
+      return undefined;
+    }
     const url = getRosbridgeUrl();
     // Constructed without a url so it does not auto-connect. A fresh instance
     // per effect run means a remount never reuses a transport that is still
@@ -72,7 +81,7 @@ export default function useRos() {
       instance.off('close', onClose);
       instance.close();
     };
-  }, []);
+  }, [enabled]);
 
   return { ros, status, isConnected: status === 'connected' };
 }

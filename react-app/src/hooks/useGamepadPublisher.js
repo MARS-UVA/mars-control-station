@@ -16,7 +16,7 @@ const BUTTON = {
 const AXIS = { LEFT_X: 0, LEFT_Y: 1, RIGHT_X: 2, RIGHT_Y: 3 };
 
 /** teleop_msgs/msg/GamepadState with every field at rest. */
-function neutralGamepadState() {
+export function neutralGamepadState() {
   return {
     x_pressed: false,
     y_pressed: false,
@@ -40,42 +40,51 @@ function neutralGamepadState() {
 }
 
 /**
- * Reads pad GAMEPAD_INDEX into a teleop_msgs/msg/GamepadState.
+ * Converts one Gamepad object into a teleop_msgs/msg/GamepadState.
+ *
  * Stick y is negated so pushing up is positive, matching gamepad/gamepad.js.
+ * directionSwitched applies the same left-stick inversion the legacy path
+ * applied through gamepad/directionStore: when the operator has switched
+ * direction, left_stick.y keeps the raw axis sign instead of being negated
+ * (gamepad.js:44). The right stick is never affected, as before.
  */
-function readGamepadState() {
-  const pad = navigator.getGamepads?.()[GAMEPAD_INDEX];
-  if (!pad || !pad.connected || pad.mapping !== 'standard') {
-    return { frame: neutralGamepadState(), gamepadStatus: pad ? 'unsupported-mapping' : 'none' };
-  }
-
+export function padToGamepadState(pad, directionSwitched = false) {
   const pressed = (i) => Boolean(pad.buttons[i]?.pressed);
   const value = (i) => pad.buttons[i]?.value ?? 0.0;
   const axis = (i) => pad.axes[i] ?? 0.0;
 
   return {
-    gamepadStatus: 'connected',
-    frame: {
-      x_pressed: pressed(BUTTON.X),
-      y_pressed: pressed(BUTTON.Y),
-      a_pressed: pressed(BUTTON.A),
-      b_pressed: pressed(BUTTON.B),
-      lt_pressed: value(BUTTON.LT),
-      rt_pressed: value(BUTTON.RT),
-      lb_pressed: pressed(BUTTON.LB),
-      rb_pressed: pressed(BUTTON.RB),
-      dd_pressed: pressed(BUTTON.DPAD_DOWN),
-      du_pressed: pressed(BUTTON.DPAD_UP),
-      dl_pressed: pressed(BUTTON.DPAD_LEFT),
-      dr_pressed: pressed(BUTTON.DPAD_RIGHT),
-      l3_pressed: pressed(BUTTON.L3),
-      r3_pressed: pressed(BUTTON.R3),
-      back_pressed: pressed(BUTTON.BACK),
-      start_pressed: pressed(BUTTON.START),
-      left_stick: { x: axis(AXIS.LEFT_X), y: -axis(AXIS.LEFT_Y) },
-      right_stick: { x: axis(AXIS.RIGHT_X), y: -axis(AXIS.RIGHT_Y) },
+    x_pressed: pressed(BUTTON.X),
+    y_pressed: pressed(BUTTON.Y),
+    a_pressed: pressed(BUTTON.A),
+    b_pressed: pressed(BUTTON.B),
+    lt_pressed: value(BUTTON.LT),
+    rt_pressed: value(BUTTON.RT),
+    lb_pressed: pressed(BUTTON.LB),
+    rb_pressed: pressed(BUTTON.RB),
+    dd_pressed: pressed(BUTTON.DPAD_DOWN),
+    du_pressed: pressed(BUTTON.DPAD_UP),
+    dl_pressed: pressed(BUTTON.DPAD_LEFT),
+    dr_pressed: pressed(BUTTON.DPAD_RIGHT),
+    l3_pressed: pressed(BUTTON.L3),
+    r3_pressed: pressed(BUTTON.R3),
+    back_pressed: pressed(BUTTON.BACK),
+    start_pressed: pressed(BUTTON.START),
+    left_stick: {
+      x: axis(AXIS.LEFT_X),
+      y: directionSwitched ? axis(AXIS.LEFT_Y) : -axis(AXIS.LEFT_Y),
     },
+    right_stick: { x: axis(AXIS.RIGHT_X), y: -axis(AXIS.RIGHT_Y) },
   };
+}
+
+/** Reads pad GAMEPAD_INDEX into a GamepadState, neutral unless it is a standard-mapping pad. */
+function readGamepadState(directionSwitched) {
+  const pad = navigator.getGamepads?.()[GAMEPAD_INDEX];
+  if (!pad || !pad.connected || pad.mapping !== 'standard') {
+    return { frame: neutralGamepadState(), gamepadStatus: pad ? 'unsupported-mapping' : 'none' };
+  }
+  return { gamepadStatus: 'connected', frame: padToGamepadState(pad, directionSwitched) };
 }
 
 /**
@@ -90,10 +99,25 @@ function readGamepadState() {
  *
  * drive_mode takes HumanInputState's DRIVEMODE_* values (see rosTypes.js).
  *
+ * Options:
+ *  - directionSwitched: the UI's direction-switch state. Applied to every
+ *    live frame at publish time (see padToGamepadState), which is where the
+ *    legacy directionStore flag was applied too.
+ *
+ * Extra controls for the GamepadPanel macro recorder (its legacy
+ * setTransmissionActive / sendCustomGamepadState equivalents):
+ *  - setLiveEnabled(false) stops the timer publishing live pad frames. The
+ *    pad is still read (gamepadStatus keeps updating) and a blurred/hidden
+ *    window still publishes neutral.
+ *  - publishCustomFrame(gamepadState) publishes one caller-supplied frame
+ *    through the same disconnect guard. Returns whether it was sent.
+ *
  * @returns {{ driveMode: number, setDriveMode: (mode: number) => void,
- *             gamepadStatus: 'none'|'unsupported-mapping'|'connected'|'suspended' }}
+ *             gamepadStatus: 'none'|'unsupported-mapping'|'connected'|'suspended',
+ *             setLiveEnabled: (enabled: boolean) => void,
+ *             publishCustomFrame: (gamepadState: object) => boolean }}
  */
-export default function useGamepadPublisher(ros) {
+export default function useGamepadPublisher(ros, { directionSwitched = false } = {}) {
   const [driveMode, setDriveModeState] = useState(DRIVE_MODE.TELEOP);
   const [gamepadStatus, setGamepadStatus] = useState('none');
 
@@ -101,6 +125,10 @@ export default function useGamepadPublisher(ros) {
   const espTopicRef = useRef(null);
   const driveModeRef = useRef(DRIVE_MODE.TELEOP);
   const suspendedRef = useRef(false);
+  const liveEnabledRef = useRef(true);
+  // Read by the 30 ms tick, so it must be current without restarting the timer.
+  const directionSwitchedRef = useRef(directionSwitched);
+  directionSwitchedRef.current = Boolean(directionSwitched);
 
   const setDriveMode = useCallback((mode) => {
     if (!Object.values(DRIVE_MODE).includes(mode)) {
@@ -113,7 +141,7 @@ export default function useGamepadPublisher(ros) {
   const publishFrame = useCallback((gamepadState) => {
     // roslib queues publishes made while disconnected and flushes them all on
     // reconnect. Stale stick frames must be dropped, never replayed.
-    if (!humanInputTopicRef.current?.ros.isConnected) return;
+    if (!humanInputTopicRef.current?.ros.isConnected) return false;
     humanInputTopicRef.current.publish({
       gamepad_state: gamepadState,
       drive_mode: driveModeRef.current,
@@ -121,11 +149,18 @@ export default function useGamepadPublisher(ros) {
       e_stop: false,
     });
     espTopicRef.current.publish(gamepadState);
+    return true;
   }, []);
 
   const publishNeutral = useCallback(() => {
     publishFrame(neutralGamepadState());
   }, [publishFrame]);
+
+  const setLiveEnabled = useCallback((enabled) => {
+    liveEnabledRef.current = Boolean(enabled);
+  }, []);
+
+  const publishCustomFrame = useCallback((gamepadState) => publishFrame(gamepadState), [publishFrame]);
 
   const tick = useCallback(() => {
     if (suspendedRef.current) {
@@ -133,8 +168,8 @@ export default function useGamepadPublisher(ros) {
       setGamepadStatus('suspended');
       return;
     }
-    const { frame, gamepadStatus: next } = readGamepadState();
-    publishFrame(frame);
+    const { frame, gamepadStatus: next } = readGamepadState(directionSwitchedRef.current);
+    if (liveEnabledRef.current) publishFrame(frame);
     setGamepadStatus(next);
   }, [publishFrame, publishNeutral]);
 
@@ -181,5 +216,5 @@ export default function useGamepadPublisher(ros) {
     };
   }, [ros, tick, publishNeutral]);
 
-  return { driveMode, setDriveMode, gamepadStatus };
+  return { driveMode, setDriveMode, gamepadStatus, setLiveEnabled, publishCustomFrame };
 }

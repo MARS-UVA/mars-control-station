@@ -1,6 +1,4 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { getGamepadState } from '../gamepad/gamepad';
-import { setTransmissionActive, sendCustomGamepadState } from '../packets';
 import GamepadDisplay from './GamepadDisplay';
 
 const BUTTON_POSITIONS = {
@@ -21,7 +19,26 @@ const CommandButton = React.memo(({ label, className, onClick, style }) => (
   </button>
 ));
 
-function GamepadPanel({ gamepadStatus, setGamepadStatus, gamepadData, setGamepadData, gamepadIndex }) {
+/**
+ * The three networking functions used to be imported from gamepad/gamepad.js
+ * and packets.js. They are props now so App.js can supply either the legacy
+ * implementations or the rosbridge adapters (see docs/app-wiring.md):
+ *  - getGamepadState(index, directionOverride): legacy-shaped pad snapshot
+ *    ({ leftStick, rightStick, buttons }) or null when no pad at that index.
+ *  - setTransmissionActive(bool): pause/resume the live transmit loop while a
+ *    recorded macro is played back.
+ *  - sendCustomGamepadState(frame): transmit one recorded frame.
+ */
+function GamepadPanel({
+  gamepadStatus,
+  setGamepadStatus,
+  gamepadData,
+  setGamepadData,
+  gamepadIndex,
+  getGamepadState,
+  setTransmissionActive,
+  sendCustomGamepadState,
+}) {
   const [isRecording, setIsRecording] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [recordedMacros, setRecordedMacros] = useState([]);
@@ -64,7 +81,7 @@ function GamepadPanel({ gamepadStatus, setGamepadStatus, gamepadData, setGamepad
       window.removeEventListener('gamepaddisconnected', handleGamepadDisconnected);
       clearInterval(interval);
     };
-  }, [isRecording, isPlaying, setGamepadData, setGamepadStatus]);
+  }, [isRecording, isPlaying, setGamepadData, setGamepadStatus, getGamepadState, gamepadIndex]);
 
   // Playback
   useEffect(() => {
@@ -91,7 +108,7 @@ function GamepadPanel({ gamepadStatus, setGamepadStatus, gamepadData, setGamepad
     }
 
     return () => clearInterval(playbackInterval);
-  }, [isPlaying]);
+  }, [isPlaying, setTransmissionActive, sendCustomGamepadState]);
 
   // Handlers
   const handleStartRecording = () => {
