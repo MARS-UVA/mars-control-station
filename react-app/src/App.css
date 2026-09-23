@@ -665,3 +665,21 @@ body {
 .meter_fill {
   height: 2;
 }
+
+/* rosbridge-path status block (REACT_APP_USE_ROSBRIDGE=true only) */
+.rosbridge-status {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rosbridge-status-line {
+  font-size: 12px;
+  color: var(--secondary-color);
+}
+
+.rosbridge-status-error {
+  font-size: 12px;
+  font-weight: bold;
+  color: var(--accent-color1);
+}

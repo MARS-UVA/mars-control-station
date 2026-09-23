@@ -1,12 +1,4 @@
-import React, {useState, useEffect} from 'react';
-import { getActionState, setActionState } from '../robotState';
-import { sendCustomCommandState } from '../packets';
-
-const actions_enum = {
-    'Dig Auto': 1,
-    'Dump Auto': 2,
-    'Stop': 3,
-}
+import React, {useEffect} from 'react';
 
 const BUTTON_CLASSES = {
   'STOP': 'command-button-sstop',
@@ -24,16 +16,26 @@ const CommandButton = React.memo(({ label, className, onClick, style }) => (
   </button>
 ));
 
-function RightButtonPanel({ currentActionState, backArmActive, espWorking }) {
+/**
+ * The command senders used to be imported from packets.js
+ * (sendCustomCommandState with actionType 1 / 2 / 3). They are props now so
+ * App.js can supply either the legacy senders or the rosbridge ones
+ * (see docs/app-wiring.md):
+ *  - onDig(): start Dig autonomy   (legacy actionType 1)
+ *  - onDump(): start Dump autonomy (legacy actionType 2)
+ *  - onStop(): e-stop              (legacy actionType 3)
+ * Dig/Dump stay gated on espWorking here; Stop is never gated.
+ */
+function RightButtonPanel({ currentActionState, backArmActive, espWorking, onDig, onDump, onStop }) {
 
 const doFunction = label => { 
   if (espWorking) {
-    if (label.toLowerCase() === 'dig auto')   sendCustomCommandState(actions_enum['Dig Auto']);
-    else if (label.toLowerCase() === 'dump auto')   sendCustomCommandState(actions_enum['Dump Auto']);
+    if (label.toLowerCase() === 'dig auto')   onDig();
+    else if (label.toLowerCase() === 'dump auto')   onDump();
     
   } 
   if (label.toLowerCase() === 'stop')   {
-    sendCustomCommandState(actions_enum['Stop']);
+    onStop();
   }
 }
 //console.log(feedback)
