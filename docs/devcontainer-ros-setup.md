@@ -11,53 +11,38 @@ since these edits, and rosbridge has not been launched in it yet.
 
 ---
 
-## ⚠️ Required before you open the container: set `MARS_JETSON_SRC`
+## Where mars-jetson has to be
 
 All three devcontainer profiles bind-mount your local `mars-jetson` checkout
-into the container at `/workspaces/mars-jetson`. The source path comes from an
-environment variable **on your host machine**. If that variable isn't set, the
-container won't start.
+into the container at `/workspaces/mars-jetson`.
 
-Add this line to your shell profile (`~/.bashrc`, `~/.zshrc`, etc.) on the
-machine that runs Docker. Change the path to wherever you checked out
-mars-jetson:
+**Default setup:** clone `mars-jetson` next to `mars-control-station`, in the
+same parent directory. Nothing else is needed.
 
-```bash
-export MARS_JETSON_SRC=$HOME/UVA_Projects/mars-jetson   # adjust path per teammate's actual checkout location
-```
+**Custom layout:** set `MARS_JETSON_REL` on the host to your checkout's path
+relative to this repo (for example `../../mars-jetson`). It must be relative.
+It only takes effect when the container is built or rebuilt, not inside a
+running one.
 
-Then open a new terminal, or fully restart VS Code, so the variable is visible
-before you run **Dev Containers: Reopen in Container**. VS Code reads
-`localEnv` from the environment it was launched from, so a variable exported
-after VS Code started won't be picked up.
+If mars-jetson isn't where the mount expects, container creation fails with
+`invalid mount config for type "bind": bind source path does not exist: <path>`.
 
-- **WSL:** put it in your WSL `~/.bashrc` and start VS Code from a WSL shell
-  (`code .`).
-- **macOS:** put it in `~/.zshrc`. If you start VS Code from the Dock, it might
-  not read your shell profile, so run `code .` from a terminal.
-- **Linux:** put it in `~/.bashrc` or `~/.profile`.
-
-Check it with `echo $MARS_JETSON_SRC` before you open the container.
-
-### Why a `localEnv` variable and not a fixed path
+### Why this mount form
 
 The mount is:
 
 ```json
 "mounts": [
-  "source=${localEnv:MARS_JETSON_SRC},target=/workspaces/mars-jetson,type=bind"
+  "source=${localWorkspaceFolder}/${localEnv:MARS_JETSON_REL:../mars-jetson},target=/workspaces/mars-jetson,type=bind"
 ]
 ```
-
-We considered and rejected two alternatives:
 
 | Option | Problem |
 | --- | --- |
 | Hardcoded path, e.g. `/home/yogeshwar/UVA_Projects/mars-jetson` | Commits one person's username and directory layout into a shared file. It breaks for everyone else. |
-| Sibling checkout, `${localWorkspaceFolder}/../mars-jetson` | Assumes everyone keeps both repos in the same parent directory. They don't. This repo is nested under `control_station_ui/`, for example. |
-| **`${localEnv:MARS_JETSON_SRC}` (chosen)** | Each teammate sets the path once in their own shell profile. No committed file contains anyone's username or checkout layout. |
-
-We chose this knowing it costs one required setup step per person.
+| Required `${localEnv:MARS_JETSON_SRC}` (previous) | Everyone had to export it in a persistent shell profile before VS Code started, or the container wouldn't start. |
+| `${localEnv:MARS_JETSON_SRC:${localWorkspaceFolder}/../mars-jetson}` | Doesn't resolve. The devcontainer CLI substitutes in one non-greedy pass (`\$\{(.*?)\}`), so a nested `${...}` in a default breaks both the default and the override. |
+| **Sibling default plus relative `MARS_JETSON_REL` (chosen)** | Needs no setup for the common layout. The override has to be relative, which is why it's a separate variable from the absolute `MARS_JETSON_SRC` that `ros/setup-ros-ws.sh` reads. |
 
 ---
 
@@ -84,7 +69,7 @@ This covers the full current state: the earlier partial session plus this one.
 
 All three profiles got the same changes:
 
-- `mounts`: the `MARS_JETSON_SRC` bind mount above.
+- `mounts`: the mars-jetson bind mount above.
 - `containerEnv` added `RMW_IMPLEMENTATION: "rmw_zenoh_cpp"` and, in a later
   pass, `ZENOH_CONFIG_OVERRIDE` (see below). `ROS_DOMAIN_ID`
   stays `"42"`, which matches all three mars-jetson devcontainer profiles

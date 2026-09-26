@@ -9,7 +9,7 @@
   "initializeCommand": "docker network inspect mars-dev >/dev/null 2>&1 || docker network create mars-dev",
   "runArgs": ["--network=mars-dev", "--network-alias=mars-control-station"],
   "mounts": [
-    "source=${localEnv:MARS_JETSON_SRC},target=/workspaces/mars-jetson,type=bind"
+    "source=${localWorkspaceFolder}/${localEnv:MARS_JETSON_REL:../mars-jetson},target=/workspaces/mars-jetson,type=bind"
   ],
   "containerEnv": {
     "HOST": "0.0.0.0",
