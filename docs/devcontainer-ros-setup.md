@@ -11,38 +11,19 @@ since these edits, and rosbridge has not been launched in it yet.
 
 ---
 
-## Where mars-jetson has to be
+## Where the message packages come from
 
-All three devcontainer profiles bind-mount your local `mars-jetson` checkout
-into the container at `/workspaces/mars-jetson`.
+The four interface packages (`serial_msgs`, `teleop_msgs`,
+`robot_control_msgs`, `autonomy_msgs`) come from the `mars-ros-interfaces`
+git submodule at `ros/mars-ros-interfaces`, pinned to the same commit as
+mars-jetson's `src/mars-ros-interfaces`. The container needs no mars-jetson
+checkout or mount. The earlier `MARS_JETSON_REL` bind mount and the
+`MARS_JETSON_SRC` variable are gone.
 
-**Default setup:** clone `mars-jetson` next to `mars-control-station`, in the
-same parent directory. Nothing else is needed.
-
-**Custom layout:** set `MARS_JETSON_REL` on the host to your checkout's path
-relative to this repo (for example `../../mars-jetson`). It must be relative.
-It only takes effect when the container is built or rebuilt, not inside a
-running one.
-
-If mars-jetson isn't where the mount expects, container creation fails with
-`invalid mount config for type "bind": bind source path does not exist: <path>`.
-
-### Why this mount form
-
-The mount is:
-
-```json
-"mounts": [
-  "source=${localWorkspaceFolder}/${localEnv:MARS_JETSON_REL:../mars-jetson},target=/workspaces/mars-jetson,type=bind"
-]
-```
-
-| Option | Problem |
-| --- | --- |
-| Hardcoded path, e.g. `/home/yogeshwar/UVA_Projects/mars-jetson` | Commits one person's username and directory layout into a shared file. It breaks for everyone else. |
-| Required `${localEnv:MARS_JETSON_SRC}` (previous) | Everyone had to export it in a persistent shell profile before VS Code started, or the container wouldn't start. |
-| `${localEnv:MARS_JETSON_SRC:${localWorkspaceFolder}/../mars-jetson}` | Doesn't resolve. The devcontainer CLI substitutes in one non-greedy pass (`\$\{(.*?)\}`), so a nested `${...}` in a default breaks both the default and the override. |
-| **Sibling default plus relative `MARS_JETSON_REL` (chosen)** | Needs no setup for the common layout. The override has to be relative, which is why it's a separate variable from the absolute `MARS_JETSON_SRC` that `ros/setup-ros-ws.sh` reads. |
+The path differs from mars-jetson's on purpose: this repo keeps all ROS files
+under `ros/` and has no top-level `src/`, and colcon never sees the submodule
+directly - `ros/setup-ros-ws.sh` symlinks its packages into the workspace
+outside the repo.
 
 ---
 
@@ -69,7 +50,8 @@ This covers the full current state: the earlier partial session plus this one.
 
 All three profiles got the same changes:
 
-- `mounts`: the mars-jetson bind mount above.
+- `mounts`: none. (A mars-jetson bind mount lived here until the
+  `ros/mars-ros-interfaces` submodule replaced it.)
 - `containerEnv` added `RMW_IMPLEMENTATION: "rmw_zenoh_cpp"` and, in a later
   pass, `ZENOH_CONFIG_OVERRIDE` (see below). `ROS_DOMAIN_ID`
   stays `"42"`, which matches all three mars-jetson devcontainer profiles
@@ -144,14 +126,16 @@ custom types. Each profile's `postCreateCommand` now builds them right after
 the `.bashrc` line and before the Node steps:
 
 ```
-rosdep update --rosdistro jazzy && MARS_JETSON_SRC=/workspaces/mars-jetson ./ros/setup-ros-ws.sh
+git submodule update --init --recursive && rosdep update --rosdistro jazzy && ./ros/setup-ros-ws.sh
 ```
 
 - **Decision: build fresh in the container, don't mount a prebuilt `install/`.**
   This matches how `npm ci` already handles Node dependencies: the build is
   reproducible in each container and doesn't depend on the host.
-- `/workspaces/mars-jetson` is the fixed mount target from `mounts`. It's
-  deliberately hardcoded rather than derived from `${containerWorkspaceFolder}`.
+- The packages come from the `ros/mars-ros-interfaces` submodule only (see
+  "Where the message packages come from" above). The submodule step runs
+  first, inside the `&&` chain, so a failed fetch stops container creation
+  instead of reaching the build with nothing to link.
 - The workspace lands at the same `MARS_ROS_WS` default that `ros-env.sh`
   reads (`~/UVA_Projects/mars-control-station-ros_ws`, so `/home/mars/...` in
   the container), so the two agree without any extra configuration.
@@ -167,9 +151,8 @@ rosdep update --rosdistro jazzy && MARS_JETSON_SRC=/workspaces/mars-jetson ./ros
   deletes the apt lists.
 - The ROS steps are joined to the Node steps with `&&`. This was changed from
   `;`, which let `npm ci` run and report success after a failed message build.
-  It's the same reasoning as the `MARS_JETSON_SRC` decision: a broken ROS
-  environment should fail container creation loudly instead of being hidden by
-  `npm ci`. The `.bashrc` line still ends in `;`, because it's idempotent and
+  A broken ROS environment should fail container creation loudly instead of
+  being hidden by `npm ci`. The `.bashrc` line still ends in `;`, because it's idempotent and
   can't really fail.
 - **To verify at rebuild:** once the build has run, the
   `ros-env.sh: no build at .../install` warning should stop appearing when a

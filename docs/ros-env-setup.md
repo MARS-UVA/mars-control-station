@@ -28,13 +28,10 @@ ROS 2, colcon and `rmw_zenoh_cpp` do not run on Windows, so all of the ROS work
 happens in the WSL Ubuntu instance, operating on that same checkout. There is
 no second clone.
 
-`mars-jetson` is already checked out natively in the same WSL instance at
-`/home/yogeshwar/UVA_Projects/mars-jetson`.
-
 | Thing | Path | In git? |
 | --- | --- | --- |
 | This repo | `/mnt/c/.../mars-control-station` | yes |
-| Jetson checkout | `~/UVA_Projects/mars-jetson` | separate repo |
+| Interface packages | `ros/mars-ros-interfaces` | git submodule |
 | Message workspace | `~/UVA_Projects/mars-control-station-ros_ws` | **no** (outside the repo) |
 | Bench-test workspace | `~/UVA_Projects/mars-bench-ws` | **no** (throwaway, test only) |
 
@@ -42,8 +39,8 @@ no second clone.
 
 ## 2. How the message packages are vendored
 
-Four packages from `mars-jetson` are needed here. All four are `ament_cmake`
-IDL-only with no hardware dependencies, so they build standalone:
+Four packages are needed here. All four are `ament_cmake` IDL-only with no
+hardware dependencies, so they build standalone:
 
 | Package | Provides |
 | --- | --- |
@@ -54,48 +51,43 @@ IDL-only with no hardware dependencies, so they build standalone:
 
 `serial_msgs` depends on `teleop_msgs`; colcon resolves that ordering itself.
 
-### Decision: symlink from the existing local checkout, via a tracked script
+### Decision: the `mars-ros-interfaces` submodule, built by a tracked script
 
-**There was no existing convention to follow.** Before choosing, I checked the
-repo for one — there is no `vendor/` directory, no `.repos` file, no
-`.rosinstall`, and no `.gitmodules`. The only pre-existing hint is that
-`.gitignore` already lists `install/`, `build/` and `log/` at the repo root,
-i.e. a colcon workspace at the root was anticipated at some point.
-
-What this step does instead: **`ros/setup-ros-ws.sh`** (tracked) creates a
-workspace outside the repo and symlinks the four packages out of an existing
-`mars-jetson` checkout.
+The packages live in the `MARS-UVA/mars-ros-interfaces` repo, checked out as a
+submodule at `ros/mars-ros-interfaces`. mars-jetson consumes the same repo as
+a submodule pinned to the same commit, so both ends of the bridge build
+identical IDL. After cloning this repo:
 
 ```bash
+git submodule update --init --recursive
 ./ros/setup-ros-ws.sh
 ```
 
-It reads three overridable variables:
+`ros/setup-ros-ws.sh` symlinks the four packages from the submodule into a
+workspace outside the repo (section 3) and builds them. It reads two
+overridable variables:
 
 | Variable | Default |
 | --- | --- |
-| `MARS_JETSON_SRC` | `$HOME/UVA_Projects/mars-jetson` |
 | `MARS_ROS_WS` | `$HOME/UVA_Projects/mars-control-station-ros_ws` |
 | `MARS_ROS_DISTRO` | `jazzy` |
 
-Why this and not the alternatives:
+This replaces the original approach, which symlinked the packages out of a
+local mars-jetson checkout (`MARS_JETSON_SRC`). That was chosen over a
+submodule because a submodule of mars-jetson would have cloned the whole
+Jetson repo just for four directories of `.msg` files. Once the interfaces
+moved into their own small repo that objection no longer applied, and the
+mars-jetson dependency was dropped entirely - there is no fallback to it.
 
-- **Why not a git submodule?** `mars-jetson` is already on this disk. A
-  submodule would clone the entire Jetson repo (hardware nodes, Catch2, docker
-  assets) a second time over the network and require SSH access to
-  `git@github.com:MARS-UVA/mars-jetson.git` just to obtain four directories of
-  `.msg` files.
-- **Why not commit copies of the `.msg` files?** They would silently drift from
+Still true from the original decision:
+
+- **Don't commit copies of the `.msg` files.** They would silently drift from
   the Jetson's definitions, and a mismatched IDL is exactly the failure mode
-  that is hardest to debug at competition — topics appear, types look right,
-  payloads decode to garbage.
-- **Why not commit the symlinks?** They point at `/home/yogeshwar/...`, which is
-  meaningless on anyone else's machine, and Git-for-Windows handles symlinks
-  inconsistently. The symlinks are generated, never tracked.
-
-The tracked artifact is therefore the *script*, not the vendored code. A
-teammate with a `mars-jetson` checkout runs one command; a teammate without one
-gets told to clone it.
+  that is hardest to debug at competition - topics appear, types look right,
+  payloads decode to garbage. The pinned submodule commit is what prevents
+  that drift now.
+- **Don't commit the workspace symlinks.** They point at a machine-specific
+  path. They are generated, never tracked.
 
 ---
 

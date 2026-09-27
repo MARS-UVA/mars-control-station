@@ -7,25 +7,11 @@ When prompted, choose the configuration that matches the host running Docker:
 - **WSL**: `.devcontainer/wsl/devcontainer.json`
 - **Linux**: `.devcontainer/linux/devcontainer.json`
 
-**Default setup:** clone `mars-jetson` next to this repo, in the same parent
-directory. Nothing else is needed. The container mounts it at
-`/workspaces/mars-jetson`.
-
-```
-parent/
-├── mars-control-station/
-└── mars-jetson/
-```
-
-**Custom layout:** set `MARS_JETSON_REL` on the host to the path of your
-mars-jetson checkout, relative to this repo (for example `../../mars-jetson`).
-It has to be relative, not absolute. It only takes effect when the container is
-built or rebuilt, so changing it inside a running container does nothing.
-
-If mars-jetson isn't at the expected path, container creation fails with
-Docker's `invalid mount config for type "bind": bind source path does not
-exist: <path>`. The `<path>` in that message is where it looked. See
-`docs/devcontainer-ros-setup.md` for details.
+No other checkout is needed. The ROS message packages come from the
+`ros/mars-ros-interfaces` git submodule, which each profile's
+`postCreateCommand` initializes (`git submodule update --init --recursive`)
+before building them with `ros/setup-ros-ws.sh`. mars-jetson pins the same
+submodule commit, so both sides build identical interface definitions.
 
 Each profile installs the dependencies for both the React application and the
 Node WebSocket server. The image is based on `ros:jazzy` and also includes
