@@ -1,0 +1,3 @@
+[submodule "ros/mars-ros-interfaces"]
+	path = ros/mars-ros-interfaces
+	url = https://github.com/MARS-UVA/mars-ros-interfaces
