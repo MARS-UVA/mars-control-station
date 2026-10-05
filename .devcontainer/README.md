@@ -30,9 +30,11 @@ are also forwarded, along with 9090 for the rosbridge websocket. All three
 profiles use the same Docker bridge network (below) and VS Code port
 forwarding. None of them uses host networking or publishes UDP ports.
 ROS traffic goes over Zenoh in client mode: this container dials out to the
-router the Jetson runs on port 7447 (`ros/ros-env.sh`), so nothing has to reach
-back into the container.
+router the Jetson runs on port 7447 (`ros/ros-env.sh`).
 
-The profiles create and join the shared `mars-dev` Docker network with the
-hostname `mars-control-station`. The companion Jetson container is reachable as
-`mars-jetson`, which is also supplied to the server through `JETSON_IP`.
+The profiles create and join the shared `mars-dev` Docker network. The
+companion Jetson container runs with host networking, so it is not on
+`mars-dev` and is reached through the host gateway as `host.docker.internal`
+(supplied as `JETSON_IP`). The camera signaling ports 6767 and 6969 are
+published to the host so the Jetson's streamers can dial the relay here at
+`127.0.0.1`.

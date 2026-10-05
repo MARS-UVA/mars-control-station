@@ -29,6 +29,7 @@ import { setDirection } from './gamepad/directionStore';
 import useRos from './hooks/useRos';
 import useTelemetry from './hooks/useTelemetry';
 import useRobotState from './hooks/useRobotState';
+import useEspStatus, { ESP_STATUS } from './hooks/useEspStatus';
 import useGamepadPublisher, { padToGamepadState } from './hooks/useGamepadPublisher';
 import useRobotStateToggle from './hooks/useRobotStateToggle';
 import useDigDumpAction from './hooks/useDigDumpAction';
@@ -98,6 +99,7 @@ const App = () => {
   const { ros, status: rosStatus, isConnected } = useRos({ enabled: USE_ROSBRIDGE });
   const telemetry = useTelemetry(ros);
   const robot = useRobotState(ros, isConnected);
+  const espStatus = useEspStatus(ros, isConnected, telemetry.lastReceived);
   const { gamepadStatus: publisherStatus, setLiveEnabled, publishCustomFrame } =
     useGamepadPublisher(ros, { directionSwitched });
   const { estop } = useRobotStateToggle(ros);
@@ -158,10 +160,12 @@ const App = () => {
   // the same test Socket.js applied.
   const panelFrontArmActive = USE_ROSBRIDGE ? robot.armControlMode?.front_arm_control === 1 : frontArmActive;
   const panelBackArmActive = USE_ROSBRIDGE ? robot.armControlMode?.back_arm_control === 1 : backArmActive;
-  // SAFETY: espWorking is null until /esp_working has been received at least
-  // once. null is treated exactly like 0: Dig/Dump stay disabled and the
-  // "ESP Not Receiving Packets" banner stays up. Only a received 1 enables them.
-  const panelEspWorking = USE_ROSBRIDGE ? robot.espWorking === 1 : ESPWorking;
+  // SAFETY: only 'online' (serial feedback within the last 2 s) enables
+  // Dig/Dump. 'offline' keeps them disabled and shows the "ESP Not Receiving
+  // Packets" banner. 'not-present' (gazebo: no ESP to report on) keeps them
+  // disabled too, but is not a fault, so the banner is hidden. See useEspStatus.
+  const panelEspWorking = USE_ROSBRIDGE ? espStatus === ESP_STATUS.ONLINE : ESPWorking;
+  const espNotPresent = USE_ROSBRIDGE && espStatus === ESP_STATUS.NOT_PRESENT;
 
   return (
     <div className="app-container">
@@ -183,6 +187,9 @@ const App = () => {
                 Robot state: {robot.robotStateName} · digdump: {digDump.status}
                 {digDump.feedback?.status ? ` (${digDump.feedback.status})` : ''}
               </div>
+              {espNotPresent && (
+                <div className="rosbridge-status-line">ESP: not present (simulation backend) · Dig/Dump disabled</div>
+              )}
               {(commandNotice || digDump.error) && (
                 <div className="rosbridge-status-error">{commandNotice || digDump.error}</div>
               )}
@@ -204,7 +211,7 @@ const App = () => {
         <div className="middle-panel">
           <WebcamPanel signalingPort="6969" index="4" isActive={!directionSwitched} />
           <WebcamPanel signalingPort="6767" index="0" isActive={directionSwitched} />
-          {panelEspWorking ?  null : <div className="esp-not-working">ESP Not Receiving Packets</div>}
+          {panelEspWorking || espNotPresent ? null : <div className="esp-not-working">ESP Not Receiving Packets</div>}
         </div>
 
         <div className="right-panel">

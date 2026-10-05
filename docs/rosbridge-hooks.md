@@ -7,7 +7,8 @@ The roslib hooks in `react-app/src/hooks/` connect the UI to the robot's ROS gra
 | `hooks/useRos.js` | The one `Ros` connection: status, retry every 2 s |
 | `hooks/useTelemetry.js` | `/current_bus_voltage`, `/temperature`, `/position` |
 | `hooks/useRobotState.js` | `/robot_state`, `/arm_control_mode`, `/esp_working` |
-| `hooks/useGamepadPublisher.js` | `/human_input_state` + `/esp_gamepad_state` at 30 ms |
+| `hooks/useEspStatus.js` | ESP `online` / `offline` / `not-present`, from telemetry freshness and the rosapi node list (see `app-wiring.md`) |
+| `hooks/useGamepadPublisher.js` | `/human_input_state` at 30 ms |
 | `hooks/useRobotStateToggle.js` | `/robot_state/toggle` (event-driven) |
 | `hooks/useDigDumpAction.js` | `/digdump` action client |
 | `hooks/rosTypes.js` | Message constants (`ROBOT_STATE`, `DRIVE_MODE`, `DIGDUMP_INDEX`) |
@@ -61,9 +62,10 @@ The `.msg` comments label the sticks backwards (`#right stick#` sits above `left
 | `/robot_state/toggle` | **`std_msgs/msg/UInt8`**, not RobotState | `robot_state_controller` subscribes (VOLATILE, KEEP_LAST 1). `digdump` also publishes to it |
 | `/robot_state` | `RobotState` | `robot_state_controller` publishes TRANSIENT_LOCAL, KEEP_LAST 1 |
 | `/esp_working` | `std_msgs/msg/UInt8` | `network_communication` *subscribes*. No publisher exists |
-| `/esp_gamepad_state` | `GamepadState` | `esp32_bridge` subscribes |
 | `/human_input_state` | `HumanInputState` | `teleop` subscribes |
 | `/digdump` | `AutonomousActions` | `digdump` action server |
+
+`/esp_gamepad_state` (bare `GamepadState`) used to be published as well, for an `esp32_bridge` node meant to replace the legacy gateway's direct UDP link to a network ESP32 (`server/client_udp.js` `send_esp`). That node was never committed to mars-jetson (it exists only in local stashes, with a frame layout that doesn't match `send_esp`), and the network ESP32 hardware is retired, so the topic had no subscriber and was removed from `useGamepadPublisher`.
 
 ## Deviations from the brief
 
@@ -88,7 +90,7 @@ In roslib 2.1, a canceled, aborted or rejected goal arrives through `failedCallb
 ## Nothing is queued while disconnected
 
 roslib's `callOnConnection` queues any publish, goal or cancel made while disconnected and flushes the whole queue on reconnect. For this robot that is unsafe, so every outbound path checks `ros.isConnected` first and drops the message instead:
-- **Gamepad:** a 16 s outage would otherwise replay about 1,000 stale stick frames per topic.
+- **Gamepad:** a 16 s outage would otherwise replay about 1,000 stale stick frames.
 - **Toggle:** a late ESTOP toggle can *release* the robot.
 - **digdump:** a queued goal would start autonomy by itself when the link returned.
 
@@ -122,7 +124,7 @@ Confirmed:
 - `useRos` reaches `connected`. After rosbridge is stopped and restarted, the status goes closed → error → connected, and roslib re-subscribes all six subscriptions (checked with `ros2 topic info`).
 - All five inbound topics arrive with the field names above and `lastReceived` timestamps. `/esp_working` `0` is distinct from `null`.
 - `/robot_state` shows `unknown` before the first message. After a reconnect it picked up a value changed *during* the outage (DIG → DUMP), so it isn't stale.
-- rosbridge resolved every type, and ROS received `/human_input_state` and `/esp_gamepad_state` with exactly the field set above. `drive_mode` changed 0 → 1 on `setDriveMode(DRIVE_MODE.AUTONOMOUS)`.
+- rosbridge resolved every type, and ROS received `/human_input_state` and `/esp_gamepad_state` (since removed, see *Topic types*) with exactly the field set above. `drive_mode` changed 0 → 1 on `setDriveMode(DRIVE_MODE.AUTONOMOUS)`.
 - `/robot_state/toggle` carried `{data: 3}` for estop and `{data: 1}` for DIG.
 - digdump: dig → cancel settled as `canceled`. Dig → dump: the old goal was canceled and dump accepted only after `Goal Canceled` (server log). Cancel during a supersede also behaved correctly.
 - CRA eslint config: clean. `react-scripts start`: compiled with all hooks bundled.

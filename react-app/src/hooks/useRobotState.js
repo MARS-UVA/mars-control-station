@@ -20,8 +20,9 @@ const STATE_NAMES = Object.fromEntries(
  * recreated every time the connection comes up, and reset to unknown while
  * disconnected so a stale state is never displayed as current.
  *
- * /esp_working has no confirmed publisher on mars-jetson. espWorking stays
- * null until a message actually arrives, which is distinct from a real 0.
+ * /esp_working has no publisher on mars-jetson. espWorking stays null until a
+ * message actually arrives, which is distinct from a real 0. The ESP banner
+ * and the Dig/Dump gate do not read it: see useEspStatus.
  *
  * @returns {{ robotState: number|null, robotStateName: string,
  *             armControlMode: { front_arm_control: number, back_arm_control: number }|null,

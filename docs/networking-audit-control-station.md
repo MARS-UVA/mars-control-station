@@ -39,7 +39,7 @@ There is no context provider, no hook, and no service class. Networking is sprea
 | `server/udp_server.js` | `ServerSocket` class. Binds UDP `0.0.0.0:2001`, strips a 10-byte header, forwards the payload into `:3001` as the `udpServer` client. |
 | `server/client_udp.js` | `UDPClient` class. Serializes gamepad/action JSON into two different binary UDP frames (Jetson and ESP32). Holds mutable actuator state. |
 | `server/signaling_server.js` | `SignalingServer` class. Dumb WebSocket broadcast relay for WebRTC SDP/ICE. Two instances, `:6767` and `:6969`. |
-| `server/packets.js`, `server/robotState.js` | **Dead.** Stale copies of the React-side files. Never `require`d, and use ESM `import`/`export` in a CommonJS tree, so they would not even load. |
+| `server/packets.js`, `server/robotState.js` | **Dead.** Stale copies of the React-side files. Never `require`d, and use ESM `import`/`export` in a CommonJS tree, so they would not even load. *(Since deleted.)* |
 | `react-app/src/Components/Socket.js` | Headless React component (renders nothing). Opens **three** browser WebSockets to `:3001` and owns all inbound telemetry, the chart buffer, and the audio alarms. |
 | `react-app/src/packets.js` | Module-level singleton WebSocket to `:3001` + a 30 ms `setInterval` transmit loop. All outbound commands. |
 | `react-app/src/robotState.js` | Module-level mutable command state (`pause`, `action`) read by the transmit loop. |

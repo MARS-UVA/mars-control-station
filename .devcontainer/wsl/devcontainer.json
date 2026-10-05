@@ -7,14 +7,24 @@
   "remoteUser": "mars",
   "updateRemoteUserUID": true,
   "initializeCommand": "docker network inspect mars-dev >/dev/null 2>&1 || docker network create mars-dev",
-  "runArgs": ["--network=mars-dev", "--network-alias=mars-control-station"],
+  // The Jetson container runs with --network=host, so it is not on mars-dev and
+  // its container name no longer resolves: reach it through the host gateway.
+  // 6767/6969 are published so the Jetson's WebRTC streamers (which dial
+  // CONTROL_STATION_IP=127.0.0.1 from the host namespace) reach the relay here.
+  "runArgs": [
+    "--network=mars-dev",
+    "--network-alias=mars-control-station",
+    "--add-host=host.docker.internal:host-gateway",
+    "-p", "6767:6767",
+    "-p", "6969:6969"
+  ],
   "containerEnv": {
     "HOST": "0.0.0.0",
-    "JETSON_IP": "mars-jetson",
+    "JETSON_IP": "host.docker.internal",
     "RMW_IMPLEMENTATION": "rmw_zenoh_cpp",
     "ROS_AUTOMATIC_DISCOVERY_RANGE": "LOCALHOST",
     "ROS_DOMAIN_ID": "42",
-    "ZENOH_CONFIG_OVERRIDE": "mode=\"client\";connect/endpoints=[\"tcp/mars-jetson:7447\"]"
+    "ZENOH_CONFIG_OVERRIDE": "mode=\"client\";connect/endpoints=[\"tcp/host.docker.internal:7447\"]"
   },
   "forwardPorts": [3000, 3001, 6767, 6969, 9090],
   "portsAttributes": {

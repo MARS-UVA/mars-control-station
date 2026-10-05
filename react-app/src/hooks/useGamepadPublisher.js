@@ -88,9 +88,8 @@ function readGamepadState(directionSwitched) {
 }
 
 /**
- * Publishes one gamepad frame every PUBLISH_INTERVAL_MS to both
- * /human_input_state (wrapped in HumanInputState) and /esp_gamepad_state
- * (the bare GamepadState), from a single timer and a single read.
+ * Publishes one gamepad frame every PUBLISH_INTERVAL_MS to
+ * /human_input_state, wrapped in HumanInputState.
  *
  * While the window is blurred or the page hidden, every tick publishes a
  * neutral frame; the transition itself also publishes one immediately.
@@ -122,7 +121,6 @@ export default function useGamepadPublisher(ros, { directionSwitched = false } =
   const [gamepadStatus, setGamepadStatus] = useState('none');
 
   const humanInputTopicRef = useRef(null);
-  const espTopicRef = useRef(null);
   const driveModeRef = useRef(DRIVE_MODE.TELEOP);
   const suspendedRef = useRef(false);
   const liveEnabledRef = useRef(true);
@@ -148,7 +146,6 @@ export default function useGamepadPublisher(ros, { directionSwitched = false } =
       a_stop: false,
       e_stop: false,
     });
-    espTopicRef.current.publish(gamepadState);
     return true;
   }, []);
 
@@ -181,11 +178,6 @@ export default function useGamepadPublisher(ros, { directionSwitched = false } =
       name: '/human_input_state',
       messageType: 'teleop_msgs/msg/HumanInputState',
     });
-    espTopicRef.current = new Topic({
-      ros,
-      name: '/esp_gamepad_state',
-      messageType: 'teleop_msgs/msg/GamepadState',
-    });
 
     const suspend = () => {
       suspendedRef.current = true;
@@ -210,9 +202,7 @@ export default function useGamepadPublisher(ros, { directionSwitched = false } =
       // Leave the robot at rest rather than on the last live frame.
       publishNeutral();
       humanInputTopicRef.current.unadvertise();
-      espTopicRef.current.unadvertise();
       humanInputTopicRef.current = null;
-      espTopicRef.current = null;
     };
   }, [ros, tick, publishNeutral]);
 

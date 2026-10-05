@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
-# Start only rosbridge and the React dev server (REACT_APP_USE_ROSBRIDGE=true),
-# to sanity-check the rosbridge/roslib wiring in isolation. The legacy Node
-# gateway (server/) is not started, and nothing here needs mars-jetson to be
-# mounted, running, or reachable.
+# Start rosbridge, the camera signaling relay (server/ws_server.js, ports 6767
+# and 6969) and the React dev server (REACT_APP_USE_ROSBRIDGE=true), to
+# sanity-check the rosbridge/roslib wiring in isolation. Nothing here needs
+# mars-jetson to be mounted, running, or reachable: with no streamer attached,
+# the relay just holds its ports and the camera panels stay blank.
 set -euo pipefail
 
 cd "$(dirname "$0")"
@@ -10,8 +11,12 @@ cd "$(dirname "$0")"
 ROSBRIDGE_PORT=9090
 REACT_PORT=3000
 ROSBRIDGE_WAIT_SECS=20
+# Must match CAMERA1/CAMERA2_SIGNALING_PORT in server/ws_server.js.
+SIGNALING_PORTS=(6767 6969)
+SIGNALING_WAIT_SECS=10
 
 rosbridge_pid=""
+signaling_pid=""
 react_pid=""
 
 # Each child runs in its own session (setsid), so its pid is also its process
@@ -39,10 +44,11 @@ cleanup() {
     # EIO. Under set -e the first failed echo would abort cleanup before any
     # group is stopped, so nothing in here may be fatal.
     set +e
-    [[ -n "$rosbridge_pid$react_pid" ]] || return 0
+    [[ -n "$rosbridge_pid$signaling_pid$react_pid" ]] || return 0
     echo
-    echo "Stopping React dev server and rosbridge..."
+    echo "Stopping React dev server, camera signaling relay and rosbridge..."
     stop_group "$react_pid"
+    stop_group "$signaling_pid"
     stop_group "$rosbridge_pid"
 }
 
@@ -104,6 +110,15 @@ if port_open "$ROSBRIDGE_PORT"; then
     exit 1
 fi
 
+# A leftover relay (or start-dev.sh's) would otherwise make ws_server.js die
+# with EADDRINUSE, or worse, leave the browser on the old relay's clients.
+for port in "${SIGNALING_PORTS[@]}"; do
+    if port_open "$port"; then
+        echo "error: port $port is already in use (a previous camera signaling relay still running?)." >&2
+        exit 1
+    fi
+done
+
 # Without this, react-scripts offers the next free port instead, and a second
 # dev server comes up next to a leftover one - each with its own rosbridge
 # client and browser tab.
@@ -130,10 +145,37 @@ if ! port_open "$ROSBRIDGE_PORT"; then
     exit 1
 fi
 
+echo "Starting camera signaling relay on ports ${SIGNALING_PORTS[*]}..."
+setsid node server/ws_server.js &
+signaling_pid=$!
+
+signaling_up() {
+    local port
+    for port in "${SIGNALING_PORTS[@]}"; do
+        port_open "$port" || return 1
+    done
+}
+
+for ((i = 0; i < SIGNALING_WAIT_SECS * 4; i++)); do
+    if ! kill -0 "$signaling_pid" 2>/dev/null; then
+        echo "error: the camera signaling relay exited before opening its ports; see its output above." >&2
+        exit 1
+    fi
+    signaling_up && break
+    sleep 0.25
+done
+
+if ! signaling_up; then
+    echo "error: the camera signaling relay did not open ports ${SIGNALING_PORTS[*]} within ${SIGNALING_WAIT_SECS}s." >&2
+    exit 1
+fi
+
 echo
 echo "rosbridge is up on ws://localhost:$ROSBRIDGE_PORT."
+echo "Camera signaling relay is up on ports ${SIGNALING_PORTS[*]}."
 echo "NOTE: no robot nodes are running. The UI should show rosbridge as"
-echo "connected with no live telemetry - that is expected for this check."
+echo "connected with no live telemetry and blank camera panels - that is"
+echo "expected for this check."
 echo
 
 # Explicit <&0: a backgrounded command otherwise gets /dev/null on stdin, and
@@ -142,5 +184,5 @@ cd react-app
 PORT=$REACT_PORT REACT_APP_USE_ROSBRIDGE=true setsid npm start <&0 &
 react_pid=$!
 
-# Return as soon as either side exits; the EXIT trap stops the other.
-wait -n "$rosbridge_pid" "$react_pid"
+# Return as soon as any of the three exits; the EXIT trap stops the others.
+wait -n "$rosbridge_pid" "$signaling_pid" "$react_pid"

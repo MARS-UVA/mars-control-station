@@ -174,15 +174,22 @@ Until then, operators should treat STOP during autonomy as "goal cancelled, robo
 
 ## ESP-working gating (safety decision)
 
-`useRobotState().espWorking` is `null` until a `/esp_working` message arrives, then `0` or `1`.
+`/esp_working` has **no publisher** on mars-jetson, on any backend (`network_communication` only subscribes to it). The legacy path never used the topic either: `network_communication` computed the flag itself, as "any serial feedback (`/current_bus_voltage`, `/temperature`, `/position`) in the last 2 s". Reading the topic therefore left the banner up and Dig/Dump disabled permanently.
 
-**Decision: `null` is treated as not online.** `App.js` computes `panelEspWorking = robot.espWorking === 1`, so with `null` or `0`:
-- `RightButtonPanel` keeps Dig / Dump disabled (only Stop works),
-- the "ESP Not Receiving Packets" banner is shown.
+`hooks/useEspStatus.js` now applies that same 2 s rule to `useTelemetry().lastReceived` and returns one of three values:
 
-Only a received `1` enables autonomy. "Never heard from the ESP" must not read as "ESP fine".
+| Status | When | Banner | Dig / Dump |
+|---|---|---|---|
+| `online` | serial feedback within the last 2 s | hidden | enabled |
+| `offline` | anything else, including rosbridge down and a failed node query | shown | disabled |
+| `not-present` | gazebo backend: `/actuator_position_feedback` or `/ros_gz_bridge` is on the graph and `/serial_node` is not (node list from rosapi, polled every 2 s) | hidden, replaced by a status line under the rosbridge block | disabled |
 
-Consequence to be aware of: per `rosbridge-hooks.md`, `/esp_working` has **no publisher** on mars-jetson today. On the legacy path this flag was computed locally by `network_communication` from its own 2 s ESP feedback timeout and never came from the topic. So on the rosbridge path, until something publishes `/esp_working`, Dig and Dump are permanently disabled and the banner is permanently up. That is the safe failure mode, and it is intentional, but it means the rosbridge path cannot run autonomy against the current Jetson graph. Follow-up for the Jetson side, not the UI.
+"Never heard from the ESP" still must not read as "ESP fine": only `online` enables autonomy, and `not-present` needs positive evidence of gazebo. With a gazebo node on the graph `/position` is not counted as ESP feedback, because gazebo's `actuator_position_feedback` publishes it too.
+
+Known limits:
+- `robot_backend:=mock` starts neither `serial_node` nor any gazebo node, so from here it looks exactly like real hardware with `serial_node` down, and it shows the banner. Telling them apart needs mars-jetson to advertise its backend.
+- Dig/Dump stay disabled on gazebo. Enabling them there is a separate decision.
+- `useRobotState` still subscribes to `/esp_working`, but nothing reads the value.
 
 ## Where the direction switch lives now
 
