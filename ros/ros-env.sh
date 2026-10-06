@@ -58,7 +58,7 @@ export RMW_IMPLEMENTATION=rmw_zenoh_cpp
 #
 # mode="client" is not optional here. Zenoh's default is peer mode, in which
 # this host also opens its own listener and advertises itself as reachable.
-# Behind WSL2's default NAT (docs/ros-env-setup.md §7) nothing can dial back in,
+# Behind WSL2's default NAT (docs/rosbridge.md) nothing can dial back in,
 # so those advertised endpoints are dead addresses that peers waste time on.
 # A client only ever dials out to the router, which is exactly the topology we
 # want and sidesteps the NAT question entirely.

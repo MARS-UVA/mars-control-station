@@ -1,7 +1,7 @@
 /*
 Renders dashboard with gamepad status, drive state, live data, and webcam feed
 Updates through socket connection (legacy path) or rosbridge (REACT_APP_USE_ROSBRIDGE=true)
-See docs/app-wiring.md.
+See docs/rosbridge.md.
 */
 
 import React, { useState, useEffect, useMemo, useRef } from "react";
@@ -143,7 +143,7 @@ const App = () => {
       setCommandNotice(estopSent ? null : 'STOP not sent: rosbridge disconnected');
       // Then retire the digdump goal so it cannot release ESTOP later by
       // finishing on its own. On the current Jetson code the cancel itself
-      // still ends in TELEOP: see "Known safety gap" in docs/app-wiring.md.
+      // still ends in TELEOP: see "Known gaps" in docs/rosbridge.md.
       cancelGoal();
     },
   }), [sendGoal, cancelGoal, estop]);

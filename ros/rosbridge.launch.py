@@ -2,7 +2,7 @@
 
 rosbridge is colocated with the React dev server (this container), not with the
 robot: the browser connects to ws://localhost:9090 and rosbridge reaches the
-robot's ROS graph over Zenoh. See docs/devcontainer-ros-setup.md.
+robot's ROS graph over Zenoh. See docs/rosbridge.md.
 
 Run with:  ros2 launch ros/rosbridge.launch.py
 """

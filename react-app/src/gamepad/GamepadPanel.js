@@ -22,7 +22,7 @@ const CommandButton = React.memo(({ label, className, onClick, style }) => (
 /**
  * The three networking functions used to be imported from gamepad/gamepad.js
  * and packets.js. They are props now so App.js can supply either the legacy
- * implementations or the rosbridge adapters (see docs/app-wiring.md):
+ * implementations or the rosbridge adapters (see docs/rosbridge.md):
  *  - getGamepadState(index, directionOverride): legacy-shaped pad snapshot
  *    ({ leftStick, rightStick, buttons }) or null when no pad at that index.
  *  - setTransmissionActive(bool): pause/resume the live transmit loop while a

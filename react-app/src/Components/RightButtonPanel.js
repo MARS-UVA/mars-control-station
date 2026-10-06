@@ -20,7 +20,7 @@ const CommandButton = React.memo(({ label, className, onClick, style }) => (
  * The command senders used to be imported from packets.js
  * (sendCustomCommandState with actionType 1 / 2 / 3). They are props now so
  * App.js can supply either the legacy senders or the rosbridge ones
- * (see docs/app-wiring.md):
+ * (see docs/rosbridge.md):
  *  - onDig(): start Dig autonomy   (legacy actionType 1)
  *  - onDump(): start Dump autonomy (legacy actionType 2)
  *  - onStop(): e-stop              (legacy actionType 3)

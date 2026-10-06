@@ -39,9 +39,7 @@ To test the UI and rosbridge wiring with no robot at all:
 ./start-rosbridge.sh
 ```
 
-Details: `docs/devcontainer-ros-setup.md` (container and message packages),
-`docs/ros-env-setup.md` (ROS/Zenoh environment), `docs/app-wiring.md` (how the
-UI uses rosbridge), `docs/rosbridge-hooks.md` (the React hooks).
+How it fits together, the topics, and the known gaps: [`docs/rosbridge.md`](docs/rosbridge.md).
 
 ## Gateway Server
 

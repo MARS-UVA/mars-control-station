@@ -73,7 +73,7 @@ port_open() {
 unset JETSON_IP ZENOH_CONFIG_OVERRIDE
 
 # ROS 2 / Zenoh host environment. No-op on machines without ROS 2
-# installed, so this is safe for UI-only teammates. See docs/ros-env-setup.md.
+# installed, so this is safe for UI-only teammates. See docs/rosbridge.md.
 if [ -f "ros/ros-env.sh" ]; then
     source "ros/ros-env.sh"
 fi
@@ -84,7 +84,7 @@ export ZENOH_ROUTER_CHECK_ATTEMPTS=-1
 export ZENOH_CONFIG_OVERRIDE='scouting/multicast/enabled=false'
 
 if ! command -v ros2 >/dev/null 2>&1; then
-    echo "error: ros2 not found. Run this inside the ROS devcontainer (see docs/devcontainer-ros-setup.md)." >&2
+    echo "error: ros2 not found. Run this inside the ROS devcontainer (see docs/rosbridge.md)." >&2
     exit 1
 fi
 
@@ -102,7 +102,7 @@ for pkg in serial_msgs teleop_msgs robot_control_msgs autonomy_msgs; do
 done
 if [ ${#missing_pkgs[@]} -gt 0 ]; then
     echo "warning: rosbridge cannot load ${missing_pkgs[*]}; topics of those types will fail." >&2
-    echo "         Build them with ros/setup-ros-ws.sh (see docs/devcontainer-ros-setup.md)." >&2
+    echo "         Build them with ros/setup-ros-ws.sh (see docs/rosbridge.md)." >&2
 fi
 
 if port_open "$ROSBRIDGE_PORT"; then

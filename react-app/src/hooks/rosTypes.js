@@ -1,7 +1,7 @@
 /**
  * Constants mirrored from the ROS interface definitions, as reported by
  * `ros2 interface show` against the built message workspace. See
- * docs/rosbridge-hooks.md before changing anything here.
+ * docs/rosbridge.md before changing anything here.
  */
 
 // robot_control_msgs/msg/RobotState

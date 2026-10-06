@@ -13,7 +13,7 @@ else
 fi
 
 # ROS 2 / Zenoh host environment. No-op on machines without ROS 2
-# installed, so this is safe for UI-only teammates. See docs/ros-env-setup.md.
+# installed, so this is safe for UI-only teammates. See docs/rosbridge.md.
 if [ -f "$(dirname "$0")/ros/ros-env.sh" ]; then
     source "$(dirname "$0")/ros/ros-env.sh"
 fi
