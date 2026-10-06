@@ -1,12 +1,47 @@
 # Mars Control Station
 
 ## How to Run
-Run `./start.sh`
 
-For container-based development on macOS, WSL, or Linux, see
-[`.devcontainer/README.md`](.devcontainer/README.md). After opening the matching
-development container, run `./start-dev.sh`. This starts the current React and
-Node WebSocket stack without attempting to configure Wi-Fi or ROS.
+The UI talks to the robot over ROS 2 through [rosbridge](https://github.com/RobotWebTools/rosbridge_suite):
+rosbridge runs next to the React dev server, the browser connects to it on
+`ws://localhost:9090`, and rosbridge reaches the robot's ROS graph over Zenoh.
+That needs ROS 2 Jazzy, so run everything from the development container
+(see [`.devcontainer/README.md`](.devcontainer/README.md)).
+
+Inside the container:
+
+```bash
+./start.sh
+```
+
+This starts rosbridge, waits for it to listen on 9090, then starts the camera
+signaling relay (ports 6767 and 6969) and the React dev server on port 3000
+with `REACT_APP_USE_ROSBRIDGE=true`. Ctrl+C stops all three.
+
+`start.sh` connects to the Jetson at `$JETSON_IP`. The devcontainer presets it to
+`host.docker.internal` for a Jetson container running on the same machine (the
+Gazebo simulation setup). For a real robot, pass the robot's address instead
+and match its ROS domain:
+
+```bash
+JETSON_IP=<robot ip> ROS_DOMAIN_ID=0 ./start.sh
+```
+
+To check the link once both sides are up, from a second terminal in the container:
+
+```bash
+./ros/verify-jetson-link.sh
+```
+
+To test the UI and rosbridge wiring with no robot at all:
+
+```bash
+./start-rosbridge.sh
+```
+
+Details: `docs/devcontainer-ros-setup.md` (container and message packages),
+`docs/ros-env-setup.md` (ROS/Zenoh environment), `docs/app-wiring.md` (how the
+UI uses rosbridge), `docs/rosbridge-hooks.md` (the React hooks).
 
 ## Gateway Server
 
