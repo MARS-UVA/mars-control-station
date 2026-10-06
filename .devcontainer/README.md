@@ -7,25 +7,43 @@ When prompted, choose the configuration that matches the host running Docker:
 - **WSL**: `.devcontainer/wsl/devcontainer.json`
 - **Linux**: `.devcontainer/linux/devcontainer.json`
 
+No other checkout is needed. The ROS message packages come from the
+`ros/mars-ros-interfaces` git submodule, which each profile's
+`postCreateCommand` initializes (`git submodule update --init --recursive`)
+before building them with `ros/setup-ros-ws.sh`. mars-jetson currently keeps
+its own copy of these packages in-tree; when updating the submodule pin, check
+that they still match, or rosbridge will fail to load the changed types.
+
 Each profile installs the dependencies for both the React application and the
-Node WebSocket server. The container does not install ROS yet; it is intended
-for the application's current WebSocket/UDP implementation. ROS/rosbridge can
-be added later without affecting the host-specific container selection.
-All three profiles build from the shared `.devcontainer/Dockerfile`.
+Node WebSocket server. The image is based on `ros:jazzy` and also includes
+`rmw_zenoh_cpp` and `rosbridge_server`, so rosbridge runs in this container next
+to the dev server. All three profiles build from the shared
+`.devcontainer/Dockerfile`.
 
 Inside the container, run:
 
 ```bash
-./start-dev.sh
+./start.sh
 ```
 
-The React UI is available on port 3000. WebSocket ports 3001, 6767, and 6969
-are also forwarded. The Linux profile uses host networking so the UDP server
-can communicate directly with devices on the host network. macOS and WSL use
-Docker port forwarding because host networking is not consistently available
-across Docker Desktop versions. Those two profiles explicitly publish UDP port
-2001 for robot feedback.
+This starts rosbridge (`ros/rosbridge.launch.py`), waits for it to listen on
+9090, then starts the camera signaling relay and the React dev server with
+`REACT_APP_USE_ROSBRIDGE=true`. `JETSON_IP` is preset to `host.docker.internal`
+in every profile, so there is no prompt; override it for a real robot. To check
+the UI against rosbridge with no Jetson running, use `./start-rosbridge.sh`
+instead, and to confirm a live Jetson link, run `./ros/verify-jetson-link.sh`
+from a second terminal.
 
-The profiles create and join the shared `mars-dev` Docker network with the
-hostname `mars-control-station`. The companion Jetson container is reachable as
-`mars-jetson`, which is also supplied to the server through `JETSON_IP`.
+The React UI is available on port 3000. WebSocket ports 3001, 6767, and 6969
+are also forwarded, along with 9090 for the rosbridge websocket. All three
+profiles use the same Docker bridge network (below) and VS Code port
+forwarding. None of them uses host networking or publishes UDP ports.
+ROS traffic goes over Zenoh in client mode: this container dials out to the
+router the Jetson runs on port 7447 (`ros/ros-env.sh`).
+
+The profiles create and join the shared `mars-dev` Docker network. The
+companion Jetson container runs with host networking, so it is not on
+`mars-dev` and is reached through the host gateway as `host.docker.internal`
+(supplied as `JETSON_IP`). The camera signaling ports 6767 and 6969 are
+published to the host so the Jetson's streamers can dial the relay here at
+`127.0.0.1`.

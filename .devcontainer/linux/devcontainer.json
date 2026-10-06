@@ -4,30 +4,44 @@
     "dockerfile": "../Dockerfile",
     "context": "../.."
   },
-  "remoteUser": "node",
+  "remoteUser": "mars",
   "updateRemoteUserUID": true,
   "initializeCommand": "docker network inspect mars-dev >/dev/null 2>&1 || docker network create mars-dev",
+  // The Jetson container runs with --network=host, so it is not on mars-dev and
+  // its container name no longer resolves: reach it through the host gateway.
+  // 6767/6969 are published so the Jetson's WebRTC streamers (which dial
+  // CONTROL_STATION_IP=127.0.0.1 from the host namespace) reach the relay here.
   "runArgs": [
     "--network=mars-dev",
-    "--network-alias=mars-control-station"
+    "--network-alias=mars-control-station",
+    "--add-host=host.docker.internal:host-gateway",
+    "-p", "6767:6767",
+    "-p", "6969:6969"
   ],
   "containerEnv": {
     "HOST": "0.0.0.0",
-    "JETSON_IP": "mars-jetson"
+    "JETSON_IP": "host.docker.internal",
+    "RMW_IMPLEMENTATION": "rmw_zenoh_cpp",
+    "ROS_AUTOMATIC_DISCOVERY_RANGE": "LOCALHOST",
+    "ROS_DOMAIN_ID": "42",
+    "ZENOH_CONFIG_OVERRIDE": "mode=\"client\";connect/endpoints=[\"tcp/host.docker.internal:7447\"]"
   },
-  "forwardPorts": [3000, 3001, 6767, 6969],
+  "forwardPorts": [3000, 3001, 6767, 6969, 9090],
   "portsAttributes": {
     "3000": { "label": "React UI", "onAutoForward": "openBrowser" },
     "3001": { "label": "Application WebSocket" },
     "6767": { "label": "Camera 1 signaling" },
-    "6969": { "label": "Camera 2 signaling" }
+    "6969": { "label": "Camera 2 signaling" },
+    "9090": { "label": "rosbridge websocket" }
   },
-  "postCreateCommand": "npm --prefix server ci && npm --prefix react-app ci",
+  "postCreateCommand": "LINE='source ${containerWorkspaceFolder}/ros/ros-env.sh'; grep -qxF \"$LINE\" ~/.bashrc || echo \"$LINE\" >> ~/.bashrc; git submodule update --init --recursive && rosdep update --rosdistro jazzy && ./ros/setup-ros-ws.sh && npm --prefix server ci && npm --prefix react-app ci",
   "customizations": {
     "vscode": {
       "extensions": [
         "dbaeumer.vscode-eslint",
-        "esbenp.prettier-vscode"
+        "esbenp.prettier-vscode",
+        "eamodio.gitlens",
+        "ms-iot.vscode-ros"
       ]
     }
   }
