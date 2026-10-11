@@ -28,7 +28,7 @@ Inside the container, run:
 
 This starts rosbridge (`ros/rosbridge.launch.py`), waits for it to listen on
 9090, then starts the camera signaling relay and the React dev server with
-`REACT_APP_USE_ROSBRIDGE=true`. `JETSON_IP` is preset to `host.docker.internal`
+`REACT_APP_USE_ROSBRIDGE=true`. `JETSON_IP` is preset to `mars-jetson`
 in every profile, so there is no prompt; override it for a real robot. To check
 the UI against rosbridge with no Jetson running, use `./start-rosbridge.sh`
 instead, and to confirm a live Jetson link, run `./ros/verify-jetson-link.sh`
@@ -41,9 +41,21 @@ forwarding. None of them uses host networking or publishes UDP ports.
 ROS traffic goes over Zenoh in client mode: this container dials out to the
 router the Jetson runs on port 7447 (`ros/ros-env.sh`).
 
-The profiles create and join the shared `mars-dev` Docker network. The
-companion Jetson container runs with host networking, so it is not on
-`mars-dev` and is reached through the host gateway as `host.docker.internal`
-(supplied as `JETSON_IP`). The camera signaling ports 6767 and 6969 are
-published to the host so the Jetson's streamers can dial the relay here at
-`127.0.0.1`.
+The profiles create and join the shared `mars-dev` Docker bridge network with
+alias `mars-control-station`. The companion Jetson container joins the same
+network with alias `mars-jetson`. On one Docker host, use
+`JETSON_IP=mars-jetson` here and `CONTROL_STATION_IP=mars-control-station` on
+the Jetson. Both containers must use the same `ROS_DOMAIN_ID` (42 in the
+devcontainer profiles).
+
+For a robot and laptop on separate Docker hosts, use the Jetson's LAN IP as
+`JETSON_IP` and the laptop's LAN IP as the Jetson's `CONTROL_STATION_IP`.
+The Jetson publishes TCP 7447 for Zenoh; these profiles publish TCP 6767 and
+6969 for camera signaling. Creating `mars-dev` on both machines does not join
+their networks. Match the ROS domain on both sides; for a robot using domain
+0, run `JETSON_IP=<robot ip> ROS_DOMAIN_ID=0 ./start.sh`.
+
+WebRTC video uses ICE-selected connections separately from signaling. The
+published signaling ports do not ensure that video can traverse Docker NAT.
+Verify camera connectivity with the browser; a reachable TURN relay may be
+needed if direct ICE connectivity fails.

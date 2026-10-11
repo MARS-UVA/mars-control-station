@@ -14,11 +14,21 @@ rosbridge runs in this devcontainer next to the React dev server, not on the
 Jetson. It joins the robot's ROS graph as a Zenoh client of the router the
 Jetson's `launch.py` starts. This container never runs its own router.
 
-The Jetson devcontainer uses host networking so its router and its WebRTC ICE
-candidates carry an address the browser can reach. This container stays on the
-`mars-dev` bridge network, reaches the Jetson as `host.docker.internal`, and
-publishes 6767 and 6969 to the host so the Jetson's streamers can dial the
-relay at `127.0.0.1`.
+Both devcontainers join the `mars-dev` Docker bridge network. On the same
+Docker host, this container reaches the Jetson router as `mars-jetson:7447`,
+and the Jetson's streamers reach the signaling relay as
+`mars-control-station:6767` / `mars-control-station:6969` using
+`CONTROL_STATION_IP=mars-control-station`.
+
+A bridge network belongs to one Docker host. For a robot and laptop on separate
+hosts, set `JETSON_IP` here to the Jetson's LAN IP and `CONTROL_STATION_IP` on
+the Jetson to the laptop's LAN IP. The Jetson must publish TCP 7447; this
+container publishes TCP 6767 and 6969. Match `ROS_DOMAIN_ID` on both sides.
+
+WebRTC video travels separately over ICE-selected connections. Publishing the
+signaling ports does not make the video reachable through Docker NAT. Camera
+connectivity needs verification; if direct ICE connectivity fails, configure
+a reachable TURN relay in both the Jetson streamer and browser.
 
 ## Environment
 
@@ -31,7 +41,7 @@ which nothing behind WSL2's NAT can reach.
 
 | Variable | Devcontainer | Real robot |
 | --- | --- | --- |
-| `JETSON_IP` | `host.docker.internal` | the robot's IP |
+| `JETSON_IP` | `mars-jetson` (same Docker host) | the robot's IP |
 | `ROS_DOMAIN_ID` | 42 (forced by `containerEnv`) | 0 (bare-metal default), override on the command line |
 | `ROS_AUTOMATIC_DISCOVERY_RANGE` | `LOCALHOST` | ignored by rmw_zenoh either way |
 

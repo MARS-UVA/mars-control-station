@@ -19,9 +19,9 @@ signaling relay (ports 6767 and 6969) and the React dev server on port 3000
 with `REACT_APP_USE_ROSBRIDGE=true`. Ctrl+C stops all three.
 
 `start.sh` connects to the Jetson at `$JETSON_IP`. The devcontainer presets it to
-`host.docker.internal` for a Jetson container running on the same machine (the
-Gazebo simulation setup). For a real robot, pass the robot's address instead
-and match its ROS domain:
+`mars-jetson` for a Jetson container on the same Docker host and shared
+`mars-dev` bridge network (the Gazebo simulation setup). For a real robot, pass
+the robot's address instead and match its ROS domain:
 
 ```bash
 JETSON_IP=<robot ip> ROS_DOMAIN_ID=0 ./start.sh
