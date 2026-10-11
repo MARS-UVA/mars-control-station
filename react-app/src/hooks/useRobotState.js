@@ -22,7 +22,7 @@ const STATE_NAMES = Object.fromEntries(
  *
  * /esp_working has no publisher on mars-jetson. espWorking stays null until a
  * message actually arrives, which is distinct from a real 0. The ESP banner
- * and the Dig/Dump gate do not read it: see useEspStatus.
+ * does not read it: see useEspStatus. ESP status does not gate commands.
  *
  * @returns {{ robotState: number|null, robotStateName: string,
  *             armControlMode: { front_arm_control: number, back_arm_control: number }|null,

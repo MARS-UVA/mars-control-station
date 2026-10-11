@@ -19,7 +19,8 @@ function clearPending(pendingRef) {
  *  a) cancelGoal() records the goal id as operator-canceled, so the server's
  *     resulting CANCELED result (delivered through roslib's failed callback)
  *     settles as 'canceled' and is never reported as 'aborted'.
- *  b) sendGoal() cancels any in-flight goal itself, and callbacks for any goal
+ *  b) sendGoal() cancels a repeated command without restarting it. A different
+ *     command replaces the in-flight goal, and callbacks for any goal
  *     id other than the current one are ignored, so a late result from the old
  *     goal can't overwrite the new goal's status.
  *
@@ -52,6 +53,7 @@ export default function useDigDumpAction(ros) {
 
   const actionRef = useRef(null);
   const goalIdRef = useRef(null);
+  const goalIndexRef = useRef(null);
   const operatorCanceledRef = useRef(new Set());
   // A goal waiting for the previous one to settle: { index, timer }.
   const pendingRef = useRef(null);
@@ -72,6 +74,7 @@ export default function useDigDumpAction(ros) {
       ros.removeAllListeners(lostId);
       operatorCanceledRef.current.delete(lostId);
       goalIdRef.current = null;
+      goalIndexRef.current = null;
       setError(hadPending
         ? 'Connection lost while replacing a goal; neither goal outcome is known'
         : 'Connection lost with a goal in flight; outcome unknown');
@@ -85,6 +88,7 @@ export default function useDigDumpAction(ros) {
       if (goalIdRef.current) ros.removeAllListeners(goalIdRef.current);
       actionRef.current = null;
       goalIdRef.current = null;
+      goalIndexRef.current = null;
     };
   }, [ros]);
 
@@ -109,7 +113,10 @@ export default function useDigDumpAction(ros) {
       operatorCanceledRef.current.delete(id);
       ros.removeAllListeners(id);
       const wasCurrent = isCurrent();
-      if (wasCurrent) goalIdRef.current = null;
+      if (wasCurrent) {
+        goalIdRef.current = null;
+        goalIndexRef.current = null;
+      }
       // The goal we were waiting on has finished: send the held one now.
       if (goalIdRef.current === null && pendingRef.current) {
         const next = pendingRef.current.index;
@@ -149,6 +156,7 @@ export default function useDigDumpAction(ros) {
     setStatus('active');
     id = action.sendGoal({ index }, onResult, onFeedback, onFailed) ?? null;
     goalIdRef.current = id;
+    goalIndexRef.current = id === null ? null : index;
     return true;
   };
 
@@ -174,6 +182,11 @@ export default function useDigDumpAction(ros) {
     const previousId = goalIdRef.current;
     if (!previousId) return dispatchRef.current(index);
 
+    // Repeating the running (or queued) command cancels it without restarting.
+    if (goalIndexRef.current === index || pendingRef.current?.index === index) {
+      return cancelGoal();
+    }
+
     // Fix (b): retire the in-flight goal, then send once it has settled.
     clearPending(pendingRef);
     operatorCanceledRef.current.add(previousId);
@@ -187,11 +200,12 @@ export default function useDigDumpAction(ros) {
         pendingRef.current = null;
         // Stop tracking the old goal so its late result is ignored.
         goalIdRef.current = null;
+        goalIndexRef.current = null;
         dispatchRef.current(next);
       }, SUPERSEDE_TIMEOUT_MS),
     };
     return true;
-  }, []);
+  }, [cancelGoal]);
 
   return { status, feedback, result, error, sendGoal, cancelGoal };
 }

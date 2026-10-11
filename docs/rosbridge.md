@@ -108,14 +108,21 @@ No hook sends while rosbridge is disconnected. roslib would queue the message an
 flush it on reconnect, and a late ESTOP toggle can release the robot as easily
 as stop it. The status block shows "not sent: rosbridge disconnected" instead.
 
+Clicking Dig or Dump again while that command is running attempts to cancel
+its goal without restarting it. Clicking the other command cancels the old
+goal and waits for it to settle before sending the replacement. Repeating a
+queued command cancels the replacement too. Keyboard shortcuts behave the same.
+
 STOP publishes ESTOP to `/robot_state/toggle` first, unconditionally, then
 cancels any digdump goal.
 
-The ESP banner and the Dig/Dump buttons use `useEspStatus`: the ESP is "online"
+The ESP banner uses `useEspStatus`: the ESP is "online"
 if any of the three serial topics arrived in the last 2 s, the same rule the old
 UDP gateway used. If the node list shows Gazebo nodes and no `serial_node`, the
-ESP is "not present", the banner is hidden, and Dig/Dump stay disabled. The
-`mock` backend looks like real hardware with a dead ESP and shows the banner.
+ESP is "not present" and the banner is hidden. The `mock` backend looks like
+real hardware with a dead ESP and shows the banner. Dig/Dump buttons and
+keyboard shortcuts remain available regardless of ESP status; goals are only
+sent while rosbridge is connected.
 
 ## Known gaps
 

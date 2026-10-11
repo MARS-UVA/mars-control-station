@@ -48,7 +48,7 @@ export function deriveEspStatus(lastReceived, nodes, now) {
 
 /**
  * Whether the ESP is sending feedback, for the "ESP Not Receiving Packets"
- * banner and the Dig/Dump gate.
+ * banner. ESP status does not gate commands.
  *
  * Nothing on mars-jetson publishes /esp_working. The legacy path never used
  * that topic either: network_communication computed the flag itself, as "any

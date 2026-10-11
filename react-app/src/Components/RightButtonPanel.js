@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useCallback, useEffect} from 'react';
 
 const BUTTON_CLASSES = {
   'STOP': 'command-button-sstop',
@@ -24,20 +24,15 @@ const CommandButton = React.memo(({ label, className, onClick, style }) => (
  *  - onDig(): start Dig autonomy   (legacy actionType 1)
  *  - onDump(): start Dump autonomy (legacy actionType 2)
  *  - onStop(): e-stop              (legacy actionType 3)
- * Dig/Dump stay gated on espWorking here; Stop is never gated.
+ * Commands are always available; the senders handle disconnected transports.
  */
-function RightButtonPanel({ currentActionState, backArmActive, espWorking, onDig, onDump, onStop }) {
+function RightButtonPanel({ currentActionState, backArmActive, onDig, onDump, onStop }) {
 
-const doFunction = label => { 
-  if (espWorking) {
-    if (label.toLowerCase() === 'dig auto')   onDig();
-    else if (label.toLowerCase() === 'dump auto')   onDump();
-    
-  } 
-  if (label.toLowerCase() === 'stop')   {
-    onStop();
-  }
-}
+const doFunction = useCallback(label => {
+  if (label.toLowerCase() === 'dig auto') onDig();
+  else if (label.toLowerCase() === 'dump auto') onDump();
+  else if (label.toLowerCase() === 'stop') onStop();
+}, [onDig, onDump, onStop]);
 //console.log(feedback)
 
 useEffect(() => {
@@ -54,7 +49,7 @@ useEffect(() => {
   };
   window.addEventListener('keydown', handleKeyDown);
   return () => window.removeEventListener('keydown', handleKeyDown);
-}, []);
+}, [doFunction]);
 
 
 // Render the component UI

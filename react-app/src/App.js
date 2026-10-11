@@ -160,10 +160,8 @@ const App = () => {
   // the same test Socket.js applied.
   const panelFrontArmActive = USE_ROSBRIDGE ? robot.armControlMode?.front_arm_control === 1 : frontArmActive;
   const panelBackArmActive = USE_ROSBRIDGE ? robot.armControlMode?.back_arm_control === 1 : backArmActive;
-  // SAFETY: only 'online' (serial feedback within the last 2 s) enables
-  // Dig/Dump. 'offline' keeps them disabled and shows the "ESP Not Receiving
-  // Packets" banner. 'not-present' (gazebo: no ESP to report on) keeps them
-  // disabled too, but is not a fault, so the banner is hidden. See useEspStatus.
+  // ESP feedback controls the status banner only; commands remain available
+  // regardless of whether an ESP is online, offline, or absent.
   const panelEspWorking = USE_ROSBRIDGE ? espStatus === ESP_STATUS.ONLINE : ESPWorking;
   const espNotPresent = USE_ROSBRIDGE && espStatus === ESP_STATUS.NOT_PRESENT;
 
@@ -188,7 +186,7 @@ const App = () => {
                 {digDump.feedback?.status ? ` (${digDump.feedback.status})` : ''}
               </div>
               {espNotPresent && (
-                <div className="rosbridge-status-line">ESP: not present (simulation backend) · Dig/Dump disabled</div>
+                <div className="rosbridge-status-line">ESP: not present (simulation backend)</div>
               )}
               {(commandNotice || digDump.error) && (
                 <div className="rosbridge-status-error">{commandNotice || digDump.error}</div>
@@ -203,7 +201,7 @@ const App = () => {
           {/* <DisplayMeter current={80} total={100} left = {155} top = {655} height = {40} width = {180} label="Capacity" /> */}
           {/* <ActuatorDataDisplay lastDataPoint={lastDataPoint}/> */}
 
-          <RightButtonPanel currentActionState={panelRobotState} backArmActive={panelBackArmActive} espWorking={panelEspWorking} onDig={commands.dig} onDump={commands.dump} onStop={commands.stop} ></RightButtonPanel>
+          <RightButtonPanel currentActionState={panelRobotState} backArmActive={panelBackArmActive} onDig={commands.dig} onDump={commands.dump} onStop={commands.stop} ></RightButtonPanel>
           <DirectionChangeButton directionSwitched={directionSwitched} setDirectionSwitched={setDirectionSwitched} gamepadData={gamepadData} />
           <Timer />
         </div>
