@@ -33,6 +33,7 @@ import useEspStatus, { ESP_STATUS } from './hooks/useEspStatus';
 import useGamepadPublisher, { padToGamepadState } from './hooks/useGamepadPublisher';
 import useRobotStateToggle from './hooks/useRobotStateToggle';
 import useDigDumpAction from './hooks/useDigDumpAction';
+import H264CameraPanel from "./Components/H264CameraPanel";
 import { DIGDUMP_INDEX } from './hooks/rosTypes';
 import { toLegacyGamepadData, toRosGamepadState } from './rosbridgeAdapters';
 
@@ -40,6 +41,9 @@ import { toLegacyGamepadData, toRosGamepadState } from './rosbridgeAdapters';
 // constant for the life of the bundle. Default (unset or anything but 'true')
 // is the legacy Socket.js / packets.js path.
 const USE_ROSBRIDGE = process.env.REACT_APP_USE_ROSBRIDGE === 'true';
+
+// Old WebRTC cameras stay available until step 4: REACT_APP_LEGACY_WEBRTC=true
+const LEGACY_WEBRTC = process.env.REACT_APP_LEGACY_WEBRTC === 'true';
 
 // packets.js opens ws://localhost:3001 and starts its 30 ms transmit loop the
 // moment it is evaluated, so the legacy modules are only loaded on the legacy
@@ -207,8 +211,19 @@ const App = () => {
         </div>
 
         <div className="middle-panel">
-          <WebcamPanel signalingPort="6969" index="4" isActive={!directionSwitched} />
-          <WebcamPanel signalingPort="6767" index="0" isActive={directionSwitched} />
+          {LEGACY_WEBRTC ? (
+            <>
+              <WebcamPanel signalingPort="6969" index="4" isActive={!directionSwitched} />
+              <WebcamPanel signalingPort="6767" index="0" isActive={directionSwitched} />
+            </>
+          ) : (
+            <>
+              <H264CameraPanel ros={ros} isConnected={isConnected} topic="/rear_camera/image_raw/ffmpeg"
+                label="Rear" index="4" isActive={!directionSwitched} />
+              <H264CameraPanel ros={ros} isConnected={isConnected} topic="/front_camera/image_raw/ffmpeg"
+                label="Front" index="0" isActive={directionSwitched} />
+            </>
+          )}
           {panelEspWorking || espNotPresent ? null : <div className="esp-not-working">ESP Not Receiving Packets</div>}
         </div>
 
