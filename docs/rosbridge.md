@@ -93,6 +93,7 @@ about 1 Hz, which makes the gamepad publish rate and topic rates look wrong.
 | `/human_input_state` | `teleop_msgs/HumanInputState`, 30 Hz | UI → robot | `useGamepadPublisher` |
 | `/robot_state/toggle` | `std_msgs/UInt8` | UI → robot | `useRobotStateToggle` |
 | `/digdump` | `autonomy_msgs/action/AutonomousActions` | UI → robot | `useDigDumpAction` |
+| `/rtabmap/cloud_map_decompressed` | `sensor_msgs/PointCloud2` (local Draco republisher output; CBOR, throttled to 2 Hz; subscribed only while the 3D map panel is open) | robot → UI | `PointCloudWindow` |
 
 Constants live in `react-app/src/hooks/rosTypes.js`. `RobotState` is TELEOP 0,
 DIG 1, DUMP 2, ESTOP 3. `HumanInputState.drive_mode` uses its own enum (TELEOP 0,

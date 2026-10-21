@@ -1,0 +1,35 @@
+diff --git a/react-app/src/Components/PointCloudPanel.js b/react-app/src/Components/PointCloudPanel.js
+index f3a550a..82da4b7 100644
+--- a/react-app/src/Components/PointCloudPanel.js
++++ b/react-app/src/Components/PointCloudPanel.js
+@@ -19,6 +19,8 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+  *
+  * Rendered inside PointCloudWindow, a floating panel next to the cameras.
+  *
++ * Debug stats per topic are on window.__pointCloudStats in the browser console.
++ *
+  * Same connection pattern as the other rosbridge hooks: the subscription is
+  * recreated whenever rosbridge reconnects.
+  */
+@@ -209,11 +211,20 @@ export default function PointCloudPanel({ ros, isConnected, topic = '/rtabmap/cl
+       return undefined;
+     }
+     let lastMessageAt = 0;
++    // Debug stats in the browser console: window.__pointCloudStats
++    const stats = { messages: 0, lastWidth: 0, lastBytes: 0, lastStamp: null, lastAt: null, drawn: 0 };
++    window.__pointCloudStats = { ...(window.__pointCloudStats || {}), [topic]: stats };
+     const onMessage = (msg) => {
+       const current = sceneRef.current;
+       if (!current) return;
+       lastMessageAt = performance.now();
+-      setCount(fillGeometry(msg, current.geometry));
++      stats.messages += 1;
++      stats.lastWidth = msg.width * msg.height;
++      stats.lastBytes = msg.data ? msg.data.length : 0;
++      stats.lastStamp = msg.header && msg.header.stamp;
++      stats.lastAt = new Date().toLocaleTimeString();
++      stats.drawn = fillGeometry(msg, current.geometry);
++      setCount(stats.drawn);
+     };
+ 
+     const rosTopic = new Topic({

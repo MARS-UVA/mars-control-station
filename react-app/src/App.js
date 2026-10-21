@@ -25,6 +25,7 @@ import ArmIndicator from "./gamepad/ArmIndicator";
 import DirectionChangeButton from "./Components/DirectionChangeButton";
 import ConnectionStatus from "./Components/ConnectionStatus";
 import RosbridgeFeed from "./Components/RosbridgeFeed";
+import PointCloudWindow from "./Components/PointCloudWindow";
 import { setDirection } from './gamepad/directionStore';
 import useRos from './hooks/useRos';
 import useTelemetry from './hooks/useTelemetry';
@@ -232,6 +233,11 @@ const App = () => {
           {/* <TiltingRods/> hiding since they're incomplete*/}
         </div>
         <ThemeChanger />
+        {/* Floating 3D map, closed by default. Shows the control station's
+            Draco republisher output (Point Cloud Compression task). */}
+        {USE_ROSBRIDGE && (
+          <PointCloudWindow ros={ros} isConnected={isConnected} topic="/rtabmap/cloud_map" />
+        )}
       </div>
     </div>
   );
