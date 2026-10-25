@@ -54,7 +54,7 @@ useEffect(() => {
 
 // Render the component UI
   return (
-    <div>
+    <div className="control-panel">
       <h2 className="panel-title">Control Panel</h2>
       <div className="drive-panel-grid">
         <div className='drive-panel-stop-col'>

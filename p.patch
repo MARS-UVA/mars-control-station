@@ -1,0 +1,934 @@
+diff --git a/docs/rosbridge.md b/docs/rosbridge.md
+index fc27f15..c178e7f 100644
+--- a/docs/rosbridge.md
++++ b/docs/rosbridge.md
+@@ -93,8 +93,8 @@ about 1 Hz, which makes the gamepad publish rate and topic rates look wrong.
+ | `/human_input_state` | `teleop_msgs/HumanInputState`, 30 Hz | UI → robot | `useGamepadPublisher` |
+ | `/robot_state/toggle` | `std_msgs/UInt8` | UI → robot | `useRobotStateToggle` |
+ | `/digdump` | `autonomy_msgs/action/AutonomousActions` | UI → robot | `useDigDumpAction` |
+-| `/unilidar/cloud` | `sensor_msgs/PointCloud2` (live lidar scan, not accumulated; CBOR, throttled to 5 Hz, voxel-thinned to 0.05 m in the browser; subscribed while the 3D view or the minimap is open, and the minimap is open by default; crosses the wireless link on the real robot) | robot → UI | `PointCloudWindow`, `MiniMapWindow` |
+-| `/tf`, `/tf_static` | `tf2_msgs/TFMessage` (JSON, unthrottled; used for `map → odom → base_link` and the lidar's fixed mount, to place the robot, camera and scans; subscribed while the 3D view or the minimap is open) | robot → UI | `PointCloudWindow`, `MiniMapWindow` (via `ros/tf.js`) |
++| `/unilidar/cloud` | `sensor_msgs/PointCloud2` (live lidar scan, not accumulated; CBOR, throttled to 5 Hz, voxel-thinned to 0.05 m in the browser; always subscribed: the 3D view and minimap are always on screen; crosses the wireless link on the real robot) | robot → UI | `PointCloudPanel`, `MiniMapPanel` |
++| `/tf`, `/tf_static` | `tf2_msgs/TFMessage` (JSON, unthrottled; used for `map → odom → base_link` and the lidar's fixed mount, to place the robot, camera and scans; always subscribed) | robot → UI | `PointCloudPanel`, `MiniMapPanel` (via `ros/tf.js`) |
+ 
+ Constants live in `react-app/src/hooks/rosTypes.js`. `RobotState` is TELEOP 0,
+ DIG 1, DUMP 2, ESTOP 3. `HumanInputState.drive_mode` uses its own enum (TELEOP 0,
+diff --git a/react-app/src/App.css b/react-app/src/App.css
+index a588f8c..c571293 100644
+--- a/react-app/src/App.css
++++ b/react-app/src/App.css
+@@ -684,80 +684,226 @@ body {
+   color: var(--accent-color1);
+ }
+ 
+-/* Floating 3D map panel (Components/PointCloudWindow.js) */
+-.point-cloud-toggle {
+-  position: fixed;
+-  right: 16px;
+-  bottom: 12px;
+-  z-index: 20;
+-  padding: 6px 12px;
+-  border: 1px solid var(--border-color);
+-  border-radius: 6px;
+-  background-color: var(--panel-bg-color);
+-  color: var(--primary-color);
+-  font: inherit;
+-  cursor: pointer;
++/* ------------------------------------------------------------------------
++   Single-screen layout. The dashboard always fills exactly one screen:
++   three full-height columns, nothing below the fold. The left and right
++   columns share out their height (control buttons and current charts
++   stretch or shrink) and only scroll as a last resort on very short
++   screens. These rules override the older sizes above.
++   ------------------------------------------------------------------------ */
++.app-container {
++  height: 100vh;
++  padding: 10px 12px;
++  overflow: hidden;
+ }
+ 
+-.point-cloud-window {
+-  position: fixed;
+-  right: 16px;
+-  bottom: 12px;
+-  z-index: 20;
+-  width: 520px;
+-  height: 380px;
+-  min-width: 280px;
+-  min-height: 200px;
+-  max-width: calc(100vw - 32px);
+-  max-height: calc(100vh - 24px);
++.content {
++  flex: 1;
++  min-height: 0;
++  height: auto;
++  gap: 12px;
++}
++
++.left-panel,
++.middle-panel,
++.right-panel {
++  height: 100%;
++  min-height: 0;
++  max-height: none;
++  padding: 2px;
++}
++
++.left-panel {
++  width: 22%;
++  gap: clamp(6px, 1.3vh, 14px);
++  overflow-y: auto;
++}
++
++.middle-panel {
++  width: 50%;
++  justify-content: flex-start;
++  gap: 10px;
++}
++
++.right-panel {
++  width: 28%;
++  overflow-y: auto;
++}
++
++/* Middle column: camera on top, lidar views below. */
++.camera-slot {
++  position: relative;
++  flex: 1.25 1 0;
++  min-height: 0;
++  container-type: size; /* the camera sizes itself to this box (cqw/cqh) */
++}
++
++.camera-slot .esp-not-working {
++  top: auto;
++  bottom: 18px;
++  transform: translateX(-50%);
++  padding: 10px 26px;
++  font-size: 1.25rem;
++  white-space: nowrap;
++  z-index: 15;
++}
++
++.map-row {
++  flex: 1 1 0;
++  min-height: 0;
++  display: grid;
++  grid-template-columns: 1fr 1fr;
++  gap: 10px;
++}
++
++.map-card {
+   display: flex;
+   flex-direction: column;
+-  resize: both;
++  min-width: 0;
++  min-height: 0;
+   overflow: hidden;
+   border: 1px solid var(--border-color);
+   border-radius: 8px;
+   background-color: var(--panel-bg-color);
+-  box-shadow: 0 8px 24px var(--box-shadow-color);
++  box-shadow: 0 4px 6px var(--box-shadow-color);
+ }
+ 
+-.point-cloud-window-bar {
+-  display: flex;
+-  align-items: center;
+-  justify-content: space-between;
+-  padding: 4px 8px 4px 12px;
+-  color: var(--primary-color);
++.map-card-title {
++  padding: 4px 10px;
++  font-size: 13px;
+   font-weight: 600;
+-  cursor: move;
+-  user-select: none;
++  color: var(--primary-color);
+ }
+ 
+-.point-cloud-window-bar button {
+-  padding: 2px 10px;
+-  border: 1px solid var(--border-color);
+-  border-radius: 4px;
+-  background: transparent;
+-  color: var(--primary-color);
+-  font: inherit;
+-  font-weight: 400;
+-  cursor: pointer;
++.map-card-body {
++  position: relative;
++  flex: 1;
++  min-height: 0;
++}
++
++/* Left column: the Control Panel buttons take whatever height is left,
++   down to a usable minimum. Everything else keeps its natural height. */
++.left-panel > * {
++  flex-shrink: 0;
++}
++
++.left-panel > .control-panel {
++  flex: 1 1 0;
++  min-height: 110px;
++  display: flex;
++  flex-direction: column;
++}
++
++.control-panel .panel-title {
++  margin: 0 0 6px;
+ }
+ 
+-.point-cloud-window-body {
++.control-panel .drive-panel-grid {
+   flex: 1;
+   min-height: 0;
++  height: auto;
++  gap: 10px;
++  grid-template-rows: minmax(0, 1fr);
++}
++
++.control-panel .drive-panel-stop-col,
++.control-panel .drive-panel-other-col {
++  min-height: 0;
++}
++
++.control-panel .drive-panel-other-col {
++  gap: 10px;
++}
++
++.control-panel .drive-panel-other-col > *,
++.control-panel .drive-panel-stop-col > * {
++  flex: 1 1 0;
++  min-height: 0;
+ }
+ 
+-/* Floating minimap (Components/MiniMapWindow.js): same window chrome as the
+-   3D view, but square, top right, with its toggle left of the 3D view's. */
+-.minimap-window {
+-  top: 12px;
+-  bottom: auto;
+-  width: 480px;
+-  height: 500px;
+-  min-width: 240px;
+-  min-height: 240px;
++.controller-record-buttons {
++  margin-top: 8px;
++  gap: 10px;
+ }
+ 
+-.minimap-toggle {
+-  right: 150px;
++.theme-changer {
++  position: static;
++  align-self: flex-start;
+ }
++
++/* Right column: the current charts take whatever height is left. */
++.right-panel > .panel {
++  height: 100%;
++  min-height: 0;
++  display: flex;
++  flex-direction: column;
++  padding: 10px;
++}
++
++.chart-grid {
++  flex: 1;
++  min-height: 0;
++  height: auto;
++}
++
++.chart-column {
++  flex: 1;
++  min-height: 0;
++  display: flex;
++  flex-direction: column;
++}
++
++.chart-fill {
++  flex: 1;
++  min-height: 0;
++  display: flex;
++  flex-direction: column;
++}
++
++.chart-fill h3 {
++  margin: 4px 0 2px;
++  font-size: 1rem;
++}
++
++.chart-fill-body {
++  flex: 1;
++  min-height: 90px;
++}
++
++/* Shorter screens (laptops): tighten the fixed-size blocks. */
++@media (max-height: 900px) {
++  /* Rules for elements styled in component CSS files are scoped with
++     .left-panel: those files load after App.css and would otherwise win. */
++  .app-container { padding: 6px 10px; }
++  .gamepad-status { font-size: 1rem; margin: 0; }
++  .left-panel .panel { padding: 8px 12px; }
++  .left-panel .arm-indicator-box { padding: 8px; font-size: 16px; }
++  .command-button-sstop,
++  .command-button-sstop-feedback { font-size: 2rem; }
++  .command-button-digauto,
++  .command-button-dumpauto,
++  .command-button-digauto-feedback,
++  .command-button-dumpauto-feedback,
++  .command-button-dumpauto-front { font-size: 1.2rem; }
++  .timer-overlay { padding: 8px 10px; }
++  .timer-display { font-size: 1.7rem; }
++  .timer-controls { margin-top: 6px; }
++  .timer-button-reset,
++  .timer-button-start,
++  .timer-button-lap { padding: 8px 10px; font-size: 0.95rem; }
++  .chart-space h3 { margin: 2px; font-size: 0.95rem; }
++  .left-panel { gap: 6px; }
++  .rosbridge-status { gap: 2px; }
++  .left-panel .controller-record-buttons { margin-top: 6px; }
++  .left-panel .command-button-record,
++  .left-panel .command-button-run,
++  .left-panel .command-button-reset { padding: 4px 6px; line-height: 1.15; font-size: 0.8rem; }
++  .left-panel .controller-record-buttons { align-items: stretch; }
++  .left-panel .arm-indicator-box { font-size: 15px; }
++  .rosbridge-status-line { font-size: 11px; }
++  .left-panel .arm-indicator-container { gap: 4px; }
++  .left-panel .arm-indicator-box { padding: 6px; }
++  .control-panel .panel-title { font-size: 1rem; margin-bottom: 4px; }
++  .lap-display { margin-bottom: 4px; }
++}
++
+diff --git a/react-app/src/App.js b/react-app/src/App.js
+index 2852161..16b78f6 100644
+--- a/react-app/src/App.js
++++ b/react-app/src/App.js
+@@ -26,8 +26,8 @@ import DirectionChangeButton from "./Components/DirectionChangeButton";
+ import SimDrivePad from "./Components/SimDrivePad";
+ import ConnectionStatus from "./Components/ConnectionStatus";
+ import RosbridgeFeed from "./Components/RosbridgeFeed";
+-import PointCloudWindow from "./Components/PointCloudWindow";
+-import MiniMapWindow from "./Components/MiniMapWindow";
++import PointCloudPanel from "./Components/PointCloudPanel";
++import MiniMapPanel from "./Components/MiniMapPanel";
+ import { setDirection } from './gamepad/directionStore';
+ import useRos from './hooks/useRos';
+ import useTelemetry from './hooks/useTelemetry';
+@@ -226,6 +226,7 @@ const App = () => {
+           {/* Gamepad-free driving, only with the gazebo backend detected. */}
+           {espNotPresent && <SimDrivePad setVirtualStick={setVirtualStick} />}
+           <Timer />
++          <ThemeChanger />
+         </div>
+ 
+         <div className="middle-panel">
+@@ -234,28 +235,41 @@ const App = () => {
+               topic) and mounts a new one that subscribes to the other camera.
+               With no subscriber, ffmpeg_image_transport on the Jetson stops
+               encoding that camera, so only one stream uses CPU and bandwidth. */}
+-          {LEGACY_WEBRTC ? (
+-            <WebcamPanel key={activeCamera.signalingPort} signalingPort={activeCamera.signalingPort}
+-              index={activeCamera.index} isActive />
+-          ) : (
+-            <H264CameraPanel key={activeCamera.topic} ros={ros} isConnected={isConnected}
+-              topic={activeCamera.topic} label={activeCamera.label} index={activeCamera.index} isActive />
++          <div className="camera-slot">
++            {LEGACY_WEBRTC ? (
++              <WebcamPanel key={activeCamera.signalingPort} signalingPort={activeCamera.signalingPort}
++                index={activeCamera.index} isActive />
++            ) : (
++              <H264CameraPanel key={activeCamera.topic} ros={ros} isConnected={isConnected}
++                topic={activeCamera.topic} label={activeCamera.label} index={activeCamera.index} isActive />
++            )}
++            {panelEspWorking || espNotPresent ? null : <div className="esp-not-working">ESP Not Receiving Packets</div>}
++          </div>
++          {/* Lidar views, always shown under the camera: the 3D chase view of
++              the live scan and the bird's-eye minimap. */}
++          {USE_ROSBRIDGE && (
++            <div className="map-row">
++              <section className="map-card">
++                <div className="map-card-title">3D view</div>
++                <div className="map-card-body">
++                  <PointCloudPanel ros={ros} isConnected={isConnected} topic="/unilidar/cloud" label="Lidar"
++                    directionSwitched={directionSwitched} />
++                </div>
++              </section>
++              <section className="map-card">
++                <div className="map-card-title">Minimap</div>
++                <div className="map-card-body">
++                  <MiniMapPanel ros={ros} isConnected={isConnected} directionSwitched={directionSwitched} />
++                </div>
++              </section>
++            </div>
+           )}
+-          {panelEspWorking || espNotPresent ? null : <div className="esp-not-working">ESP Not Receiving Packets</div>}
+         </div>
+ 
+         <div className="right-panel">
+           <LiveDataPanel lastDataPoint={lastDataPoint} timestamp={timestamp} chartData={chartData} />
+           {/* <TiltingRods/> hiding since they're incomplete*/}
+         </div>
+-        <ThemeChanger />
+-        {/* Floating 3D view, closed by default: the live lidar scan around
+-            the robot, with a chase camera. */}
+-        {USE_ROSBRIDGE && (
+-          <PointCloudWindow ros={ros} isConnected={isConnected} topic="/unilidar/cloud" />
+-        )}
+-        {/* Floating bird's-eye minimap built from the lidar, open by default. */}
+-        {USE_ROSBRIDGE && <MiniMapWindow ros={ros} isConnected={isConnected} />}
+       </div>
+     </div>
+   );
+diff --git a/react-app/src/Components/H264CameraPanel.js b/react-app/src/Components/H264CameraPanel.js
+index a2e508d..20c406d 100644
+--- a/react-app/src/Components/H264CameraPanel.js
++++ b/react-app/src/Components/H264CameraPanel.js
+@@ -24,11 +24,12 @@ const STATUS_INTERVAL_MS = 250;
+ const PROBE_CODEC = 'avc1.42E01E'; // constrained baseline, level 3.0
+ 
+ const styles = {
++  // The largest 3:2 box that fits the .camera-slot it sits in (a CSS size
++  // container, so cqw/cqh are the slot's width and height).
+   container: {
+     position: 'relative',
+-    aspectRatio: '3 / 2',
+-    height: '50%',
+-    maxWidth: '100%',
++    width: 'min(100cqw, 150cqh)',
++    height: 'min(100cqh, 66.667cqw)',
+     margin: '0 auto',
+   },
+   cameraContainer: {
+diff --git a/react-app/src/Components/LiveDataPanel.js b/react-app/src/Components/LiveDataPanel.js
+index bc22e57..d89813a 100644
+--- a/react-app/src/Components/LiveDataPanel.js
++++ b/react-app/src/Components/LiveDataPanel.js
+@@ -12,17 +12,19 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
+ 
+   const actuatorToDrum = num => ((12.0625 * Math.sin(degToRad(142.920267719) - Math.acos((Math.pow((23.6224274544 + (12 * (num))), 2) - 737.506048128) / (-643.804738952)))) - (2.015 * Math.cos(degToRad(142.920267719) - Math.acos((Math.pow((23.6224274544 + (12 * (num))), 2) - 737.506048128) / (-643.804738952)))) - 1.75);
+ 
++  // Card text and spacing scale with the screen height (clamp + vh), so the
++  // whole panel fits one screen and the current charts keep usable space.
+   const cardTitleStyle = {
+-    padding: "4px",
++    padding: "clamp(1px, 0.4vh, 4px)",
+     borderRadius: "4px",
+     fontWeight: 500,
+-    fontSize: "0.95rem",
++    fontSize: "clamp(0.75rem, 1.6vh, 0.95rem)",
+     opacity: 0.9,
+   };
+ 
+   const cardValueStyle = {
+-    margin: "6px 0 2px",
+-    fontSize: "20px",
++    margin: "clamp(1px, 0.5vh, 6px) 0 2px",
++    fontSize: "clamp(14px, 2.4vh, 20px)",
+     fontWeight: 800,
+     lineHeight: 1.2,
+   };
+@@ -89,7 +91,7 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
+         <CartesianGrid strokeDasharray="3 3" />
+         <YAxis label={/*dataKey === "actuatorCapacity" ? "%" :*/ dataKey === "globalDataRate" ? "Mbps" : "Value"} />
+         <Tooltip />
+-        <Legend wrapperStyle={{ paddingTop: '5px', fontSize: '15px' }} height={26} />
++        <Legend wrapperStyle={{ paddingTop: '2px', fontSize: '12px' }} height={20} />
+         <Line type="monotone" dataKey={dataKey} stroke="#8884d8" dot={false} isAnimationActive={false} name={dataKey === "globalDataRate" ? "Data Rate (Mbps)" : dataKey} />
+       </LineChart>
+     </ResponsiveContainer>
+@@ -104,13 +106,13 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
+   };
+ 
+   const renderMultiChart = (dataKey) => (
+-    <ResponsiveContainer width="100%" height={200}>
++    <ResponsiveContainer width="100%" height="100%">
+       <LineChart data={chartData} margin={{ right: 20, top: 5, bottom: 5 }} isAnimationActive={false}>
+         <CartesianGrid strokeDasharray="3 3" />
+         <XAxis dataKey="time" height={20} tick={false} />
+         <YAxis width={40} label={{ value: dataKeyToLabel[dataKey], angle: -90, position: "insideLeft" }} domain={["wheel-current", "drum-current"].includes(dataKey) ? [0, 20] : [0, 'dataMax']} />
+         <Tooltip />
+-        <Legend wrapperStyle={{ paddingTop: '5px', fontSize: '15px' }} height={26} />
++        <Legend wrapperStyle={{ paddingTop: '2px', fontSize: '12px' }} height={20} />
+         {dataKey === "battery-voltage" && (
+           <>
+             <Line type="monotone" dataKey="main_battery_voltage" stroke="#ff6b6b" dot={false} isAnimationActive={false} name="Main Batt" strokeWidth={2} />
+@@ -207,7 +209,7 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
+           <div className="chart-space">
+ 
+             <h3 style={{ fontSize: "1rem", fontWeight: 500, opacity: 0.85 }}>Battery Voltage</h3>
+-            <div style={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", margin: "10px 0", gap: "10px" }}>
++            <div style={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", margin: "clamp(2px, 1vh, 10px) 0", gap: "10px" }}>
+               {
+                 [
+                   {
+@@ -220,7 +222,7 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
+                     voltage: lastDataPoint.aux_battery_voltage,
+                   }
+                 ].map((item, index) => (
+-                  <div key={index} style={{ ...voltageToColors(item.voltage, item.voltageRanges[30], item.voltageRanges[15]), width: "100%", marginBottom: "4px", padding: "0.5rem", borderRadius: "8px" }}>
++                  <div key={index} style={{ ...voltageToColors(item.voltage, item.voltageRanges[30], item.voltageRanges[15]), width: "100%", marginBottom: "4px", padding: "clamp(0.2rem, 0.6vh, 0.5rem)", borderRadius: "8px" }}>
+                     <div style={cardTitleStyle}>
+                       {item.key}
+                     </div>
+@@ -235,7 +237,7 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
+           </div>
+           <div className="chart-space">
+             <h3 style={{ fontSize: "1rem", fontWeight: 500, opacity: 0.85 }}>Temperatures (°C)</h3>
+-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px", marginBottom: "10px" }}>
++            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "clamp(4px, 1vh, 10px)", marginBottom: "clamp(2px, 1vh, 10px)" }}>
+               {
+                 [
+                   {
+@@ -266,7 +268,7 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
+                 ].map((temp, index) => {
+                   const { backgroundColor, color } = temperatureToColors(temp.temperature, temp.key.startsWith("B"));
+                   return (
+-                    <div key={index} style={{ marginBottom: "4px", padding: "0.5rem", borderRadius: "8px", backgroundColor, color }}>
++                    <div key={index} style={{ marginBottom: "4px", padding: "clamp(0.2rem, 0.6vh, 0.5rem)", borderRadius: "8px", backgroundColor, color }}>
+                       <div style={cardTitleStyle}>
+                         {temp.key}
+                       </div>
+@@ -284,10 +286,10 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
+             <h3>Actuator Positions</h3>
+             {renderMultiChart("position")}
+           </div> */}
+-          <div className="chart-space">
++          <div className="chart-space chart-column">
+ 
+             <h3 style={{ fontSize: "1rem", fontWeight: 500, opacity: 0.85 }}>Actuator Positions</h3>
+-            <div style={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", margin: "10px 0", gap: "10px" }}>
++            <div style={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", margin: "clamp(2px, 1vh, 10px) 0", gap: "10px" }}>
+               {
+                 [
+                   {
+@@ -299,7 +301,7 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
+                   }
+                 ].map((item, index) => (
+                   item.position < GROUNDLEVEL ? (
+-                    <div key={index} style={{ backgroundColor: "#8acfce", color: "#ffffff", width: "100%", marginBottom: "4px", padding: "0.5rem", borderRadius: "8px" }}>
++                    <div key={index} style={{ backgroundColor: "#8acfce", color: "#ffffff", width: "100%", marginBottom: "4px", padding: "clamp(0.2rem, 0.6vh, 0.5rem)", borderRadius: "8px" }}>
+                     <div style={cardTitleStyle}>
+                       {item.key}
+                     </div>
+@@ -307,7 +309,7 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
+                       {round(actuatorToDrum(item.position))} in (Raw: {round(item.position)})
+                     </div>
+                   </div>) :
+-                  (<div key={index} style={{ backgroundColor: "#cdc0a7", color: "#ffffff", width: "100%", marginBottom: "4px", padding: "0.5rem", borderRadius: "8px" }}>
++                  (<div key={index} style={{ backgroundColor: "#cdc0a7", color: "#ffffff", width: "100%", marginBottom: "4px", padding: "clamp(0.2rem, 0.6vh, 0.5rem)", borderRadius: "8px" }}>
+                     <div style={cardTitleStyle}>
+                       {item.key}
+                     </div>
+@@ -320,13 +322,13 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
+                 ))
+               }
+             </div>
+-            <div className="chart-space">
++            <div className="chart-space chart-fill">
+               <h3>Wheel Currents (A)</h3>
+-              {renderMultiChart("wheel-current")}
++              <div className="chart-fill-body">{renderMultiChart("wheel-current")}</div>
+             </div>
+-            <div className="chart-space">
++            <div className="chart-space chart-fill">
+               <h3>Drum Currents (A)</h3>
+-              {renderMultiChart("drum-current")}
++              <div className="chart-fill-body">{renderMultiChart("drum-current")}</div>
+             </div>
+             {/* Current: {lastDataPoint["globalDataRate"]} Mbps */}
+           </div>
+diff --git a/react-app/src/Components/MiniMapPanel.js b/react-app/src/Components/MiniMapPanel.js
+index e76a864..0a9ff59 100644
+--- a/react-app/src/Components/MiniMapPanel.js
++++ b/react-app/src/Components/MiniMapPanel.js
+@@ -20,6 +20,9 @@ import { ARENA, ROBOT_START_IN_ARENA } from '../arena';
+  * cell or to a neighbour, are drawn red as obstacles (rocks, walls, crater
+  * edges). Unseen cells stay dark.
+  *
++ * The yellow arrow marks the driving end: the front normally, the rear when
++ * the operator switches direction (directionSwitched).
++ *
+  * View: centred on the robot, heading-up by default (the robot always points
+  * up) or map-up. Drag to pan away from the robot, scroll to zoom, double-click
+  * or Recenter to go back.
+@@ -48,7 +51,12 @@ const ELEVATION_RANGE = 0.3;      // +- metres mapped onto the terrain colours
+ const MAX_POINT_HEIGHT = 2.0;     // ignore returns this far above the ground (overhangs)
+ const BODY_MARGIN = 0.15;         // ignore returns this close to the robot's outline
+ 
+-const DEFAULT_SCALE = 40;         // CSS pixels per metre: from the start pose, the far end of the arena (5.9 m) just fits the default window
++// Default zoom: fit FIT_RADIUS metres around the robot into the panel's
++// shorter side, so from the start pose the far end of the arena (5.9 m away)
++// is in view whatever size the panel is. Scrolling overrides it until a
++// double-click resets it.
++const FIT_RADIUS = 6.2;
++const DEFAULT_SCALE = 40;         // CSS pixels per metre, used until the panel is measured
+ const MIN_SCALE = 4;
+ const MAX_SCALE = 150;
+ 
+@@ -288,7 +296,10 @@ function paintGrid(grid, groundZ) {
+   }
+ }
+ 
+-export default function MiniMapPanel({ ros, isConnected }) {
++export default function MiniMapPanel({ ros, isConnected, directionSwitched = false }) {
++  // Read by the render loop every frame.
++  const directionRef = useRef(directionSwitched);
++  directionRef.current = directionSwitched;
+   const canvasRef = useRef(null);
+   const gridRef = useRef(null);
+   if (!gridRef.current) gridRef.current = createGrid();
+@@ -296,7 +307,7 @@ export default function MiniMapPanel({ ros, isConnected }) {
+ 
+   // View state lives in a ref so the render loop and pointer handlers share it
+   // without re-rendering; React state only mirrors what the buttons show.
+-  const viewRef = useRef({ scale: DEFAULT_SCALE, headingUp: true, pan: null, showArena: true });
++  const viewRef = useRef({ scale: DEFAULT_SCALE, userZoomed: false, headingUp: true, pan: null, showArena: true });
+   const [headingUp, setHeadingUp] = useState(true);
+   const [showArena, setShowArena] = useState(true);
+   const [panned, setPanned] = useState(false);
+@@ -356,10 +367,13 @@ export default function MiniMapPanel({ ros, isConnected }) {
+     let robotYaw = 0;
+     let viewYaw = Math.PI / 2;
+ 
++    const fitScale = () => Math.min(MAX_SCALE, Math.max(MIN_SCALE,
++      Math.min(canvas.clientWidth, canvas.clientHeight) / 2 / FIT_RADIUS));
+     const resize = () => {
+       const dpr = window.devicePixelRatio || 1;
+       canvas.width = Math.max(1, Math.round(canvas.clientWidth * dpr));
+       canvas.height = Math.max(1, Math.round(canvas.clientHeight * dpr));
++      if (!view.userZoomed) view.scale = fitScale();
+     };
+     const observer = new ResizeObserver(resize);
+     observer.observe(canvas);
+@@ -417,11 +431,13 @@ export default function MiniMapPanel({ ros, isConnected }) {
+       ctx.lineWidth = 2 / k;
+       ctx.strokeStyle = COLORS.robotEdge;
+       ctx.strokeRect(-ROBOT_LENGTH / 2, -ROBOT_WIDTH / 2, ROBOT_LENGTH, ROBOT_WIDTH);
++      // Arrow on the driving end: mirrored to the rear when switched.
++      const end = directionRef.current ? -1 : 1;
+       ctx.fillStyle = COLORS.nose;
+       ctx.beginPath();
+-      ctx.moveTo(ROBOT_LENGTH / 2 + 0.35, 0);
+-      ctx.lineTo(ROBOT_LENGTH / 2, ROBOT_WIDTH * 0.3);
+-      ctx.lineTo(ROBOT_LENGTH / 2, -ROBOT_WIDTH * 0.3);
++      ctx.moveTo(end * (ROBOT_LENGTH / 2 + 0.35), 0);
++      ctx.lineTo(end * ROBOT_LENGTH / 2, ROBOT_WIDTH * 0.3);
++      ctx.lineTo(end * ROBOT_LENGTH / 2, -ROBOT_WIDTH * 0.3);
+       ctx.closePath();
+       ctx.fill();
+       ctx.restore();
+@@ -472,10 +488,12 @@ export default function MiniMapPanel({ ros, isConnected }) {
+     const onWheel = (event) => {
+       event.preventDefault();
+       view.scale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, view.scale * Math.exp(-event.deltaY * 0.001)));
++      view.userZoomed = true;
+     };
+     const onDoubleClick = () => {
+       view.pan = null;
+-      view.scale = DEFAULT_SCALE;
++      view.userZoomed = false;
++      view.scale = fitScale();
+       setPanned(false);
+     };
+     canvas.addEventListener('pointerdown', onPointerDown);
+diff --git a/react-app/src/Components/MiniMapWindow.js b/react-app/src/Components/MiniMapWindow.js
+deleted file mode 100644
+index 36ee064..0000000
+--- a/react-app/src/Components/MiniMapWindow.js
++++ /dev/null
+@@ -1,37 +0,0 @@
+-import React, { useRef, useState } from 'react';
+-import Draggable from 'react-draggable';
+-import MiniMapPanel from './MiniMapPanel';
+-
+-/**
+- * Floating minimap window. Open by default; drag it by the title bar, resize
+- * it from the bottom-right corner. Closing it unmounts MiniMapPanel, which
+- * drops its lidar and TF subscriptions (and clears the map it built).
+- */
+-export default function MiniMapWindow({ ros, isConnected }) {
+-  const [open, setOpen] = useState(true);
+-  const nodeRef = useRef(null); // react-draggable needs this under StrictMode
+-
+-  if (!open) {
+-    return (
+-      <button type="button" className="point-cloud-toggle minimap-toggle" onClick={() => setOpen(true)}>
+-        Show minimap
+-      </button>
+-    );
+-  }
+-
+-  return (
+-    <Draggable nodeRef={nodeRef} handle=".point-cloud-window-bar" bounds="body">
+-      <div ref={nodeRef} className="point-cloud-window minimap-window">
+-        <div className="point-cloud-window-bar">
+-          <span>Minimap</span>
+-          <button type="button" onClick={() => setOpen(false)} aria-label="Close minimap">
+-            Close
+-          </button>
+-        </div>
+-        <div className="point-cloud-window-body">
+-          <MiniMapPanel ros={ros} isConnected={isConnected} />
+-        </div>
+-      </div>
+-    </Draggable>
+-  );
+-}
+diff --git a/react-app/src/Components/PointCloudPanel.js b/react-app/src/Components/PointCloudPanel.js
+index 01dee2b..17dca3a 100644
+--- a/react-app/src/Components/PointCloudPanel.js
++++ b/react-app/src/Components/PointCloudPanel.js
+@@ -16,7 +16,10 @@ import { ROBOT_GROUND_Z, ROBOT_HEIGHT, ROBOT_LENGTH, ROBOT_WIDTH } from '../ros/
+  * robot moves until the next one replaces it.
+  *
+  * The view is a chase camera: behind and above the robot, looking along its
+- * heading, with the robot kept in the middle. Scroll to change the follow
++ * driving direction, with the robot kept in the middle. When the operator
++ * switches direction (directionSwitched), the camera swings round to the other
++ * end of the robot and the marker's nose moves to the rear, matching the rear
++ * camera and the reversed drive. Scroll to change the follow
+  * distance, double-click to reset it.
+  *
+  * Poses come from TF. The robot is base_link in map (base_link -> odom -> map;
+@@ -27,7 +30,7 @@ import { ROBOT_GROUND_Z, ROBOT_HEIGHT, ROBOT_LENGTH, ROBOT_WIDTH } from '../ros/
+  *
+  * Points without colour are coloured by height in the world.
+  *
+- * Rendered inside PointCloudWindow, a floating panel next to the cameras.
++ * Shown in the dashboard's middle column, under the camera, next to the minimap.
+  * Debug stats per topic are on window.__pointCloudStats in the browser console.
+  * Subscriptions are recreated whenever rosbridge reconnects.
+  */
+@@ -49,6 +52,7 @@ const HEIGHT_MAX = 1.5;
+ const STATUS_INTERVAL_MS = 500;
+ 
+ const POSE_SMOOTHING_S = 0.12; // eases the 10-20 Hz TF updates into 60 fps motion
++const VIEW_SWING_S = 0.15;     // time constant of the 180 degree swing on a direction switch
+ 
+ // Chase camera.
+ const FOLLOW_DISTANCE = 5;      // metres from the robot, along the view line
+@@ -57,7 +61,7 @@ const MIN_FOLLOW_DISTANCE = 1.5;
+ const MAX_FOLLOW_DISTANCE = 25;
+ 
+ const styles = {
+-  // Fills its parent; PointCloudWindow sets the size.
++  // Fills its parent; the map card in App.js sets the size.
+   container: {
+     position: 'relative',
+     width: '100%',
+@@ -169,10 +173,20 @@ function makeRobotMarker() {
+   nose.position.set(ROBOT_LENGTH / 2 + 0.2, 0, bodyZ);
+ 
+   robot.add(body, nose);
++  robot.userData.nose = nose; // flipped to the rear by setNoseDirection
+   robot.visible = false; // shown once the first pose arrives
+   return robot;
+ }
+ 
++// Puts the nose cone on the driving end: the front (+x) normally, the rear
++// when the direction is switched.
++function setNoseDirection(robot, reversed) {
++  const nose = robot.userData.nose;
++  const sign = reversed ? -1 : 1;
++  nose.position.x = sign * (ROBOT_LENGTH / 2 + 0.2);
++  nose.rotation.z = -sign * Math.PI / 2;
++}
++
+ function disposeObject(root) {
+   root.traverse((obj) => {
+     if (obj.geometry) obj.geometry.dispose();
+@@ -180,7 +194,12 @@ function disposeObject(root) {
+   });
+ }
+ 
+-export default function PointCloudPanel({ ros, isConnected, topic = '/unilidar/cloud', label = 'Lidar' }) {
++export default function PointCloudPanel({
++  ros, isConnected, topic = '/unilidar/cloud', label = 'Lidar', directionSwitched = false,
++}) {
++  // Read by the render loop every frame, so it must not restart the scene.
++  const directionRef = useRef(directionSwitched);
++  directionRef.current = directionSwitched;
+   const mountRef = useRef(null);
+   const sceneRef = useRef(null);
+   const tfTreeRef = useTfTree(ros, isConnected);
+@@ -250,6 +269,7 @@ export default function PointCloudPanel({ ros, isConnected, topic = '/unilidar/c
+     const unitScale = new THREE.Vector3();
+     const heading = new THREE.Vector3();
+     let lastTime = performance.now();
++    let viewOffset = 0; // eased 0 (forward) <-> PI (direction switched)
+ 
+     let frame;
+     const loop = () => {
+@@ -275,8 +295,16 @@ export default function PointCloudPanel({ ros, isConnected, topic = '/unilidar/c
+       // Chase camera: behind the robot along its heading (yaw only, so the
+       // view does not rock with pitch and roll), looking at the robot so it
+       // stays centred.
++      // Direction switch: swing the camera round to the other end over about
++      // half a second rather than jumping, and move the nose with it.
++      const reversed = Boolean(directionRef.current);
++      setNoseDirection(robot, reversed);
++      const targetOffset = reversed ? Math.PI : 0;
++      viewOffset += (targetOffset - viewOffset) * (1 - Math.exp(-dt / VIEW_SWING_S));
++      if (Math.abs(targetOffset - viewOffset) < 1e-3) viewOffset = targetOffset;
++
+       heading.set(1, 0, 0).applyQuaternion(robot.quaternion);
+-      const yaw = Math.atan2(heading.y, heading.x);
++      const yaw = Math.atan2(heading.y, heading.x) + viewOffset;
+       const back = followDistance * Math.cos(FOLLOW_PITCH);
+       camera.position.set(
+         robot.position.x - back * Math.cos(yaw),
+diff --git a/react-app/src/Components/PointCloudWindow.js b/react-app/src/Components/PointCloudWindow.js
+deleted file mode 100644
+index e69c771..0000000
+--- a/react-app/src/Components/PointCloudWindow.js
++++ /dev/null
+@@ -1,39 +0,0 @@
+-import React, { useRef, useState } from 'react';
+-import Draggable from 'react-draggable';
+-import PointCloudPanel from './PointCloudPanel';
+-
+-/**
+- * Floating 3D map panel over the dashboard, so the camera layout stays as it is.
+- *
+- * Closed by default. While closed, PointCloudPanel is unmounted, which drops
+- * the rosbridge subscription and stops the cloud being sent to the browser at
+- * all. Drag it by the title bar; resize it from the bottom-right corner.
+- */
+-export default function PointCloudWindow({ ros, isConnected, topic }) {
+-  const [open, setOpen] = useState(false);
+-  const nodeRef = useRef(null); // react-draggable needs this under StrictMode
+-
+-  if (!open) {
+-    return (
+-      <button type="button" className="point-cloud-toggle" onClick={() => setOpen(true)}>
+-        Show 3D map
+-      </button>
+-    );
+-  }
+-
+-  return (
+-    <Draggable nodeRef={nodeRef} handle=".point-cloud-window-bar" bounds="body">
+-      <div ref={nodeRef} className="point-cloud-window">
+-        <div className="point-cloud-window-bar">
+-          <span>3D map</span>
+-          <button type="button" onClick={() => setOpen(false)} aria-label="Close 3D map">
+-            Close
+-          </button>
+-        </div>
+-        <div className="point-cloud-window-body">
+-          <PointCloudPanel ros={ros} isConnected={isConnected} topic={topic} label="Lidar" />
+-        </div>
+-      </div>
+-    </Draggable>
+-  );
+-}
+diff --git a/react-app/src/Components/RightButtonPanel.js b/react-app/src/Components/RightButtonPanel.js
+index 97b4c4b..73d5685 100644
+--- a/react-app/src/Components/RightButtonPanel.js
++++ b/react-app/src/Components/RightButtonPanel.js
+@@ -54,7 +54,7 @@ useEffect(() => {
+ 
+ // Render the component UI
+   return (
+-    <div>
++    <div className="control-panel">
+       <h2 className="panel-title">Control Panel</h2>
+       <div className="drive-panel-grid">
+         <div className='drive-panel-stop-col'>
+diff --git a/react-app/src/Components/SimDrivePad.js b/react-app/src/Components/SimDrivePad.js
+index 2a0ac5e..6df2fef 100644
+--- a/react-app/src/Components/SimDrivePad.js
++++ b/react-app/src/Components/SimDrivePad.js
+@@ -26,21 +26,24 @@ const NON_TEXT_INPUTS = new Set(['checkbox', 'radio', 'button', 'range', 'submit
+ const NONE = { forward: false, back: false, left: false, right: false };
+ 
+ const styles = {
++  // Compact row: arrows on the left, title and keyboard toggle on the right.
+   panel: {
+     display: 'flex',
+-    flexDirection: 'column',
++    flexDirection: 'row',
+     alignItems: 'center',
+-    gap: 8,
+-    padding: 10,
++    justifyContent: 'center',
++    gap: 14,
++    padding: 8,
+     border: '1px solid var(--border-color, #cccccc)',
+     borderRadius: 6,
+   },
++  side: { display: 'flex', flexDirection: 'column', gap: 6 },
+   title: { fontSize: 13, fontWeight: 600 },
+   grid: {
+     display: 'grid',
+-    gridTemplateColumns: 'repeat(3, 48px)',
+-    gridTemplateRows: 'repeat(2, 48px)',
+-    gap: 6,
++    gridTemplateColumns: 'repeat(3, 38px)',
++    gridTemplateRows: 'repeat(2, 38px)',
++    gap: 4,
+   },
+   button: {
+     display: 'flex',
+@@ -125,7 +128,6 @@ export default function SimDrivePad({ setVirtualStick }) {
+ 
+   return (
+     <div style={styles.panel}>
+-      <div style={styles.title}>Sim drive</div>
+       <div style={styles.grid}>
+         {BUTTONS.map(({ dir, key, Icon, area }) => {
+           const active = keys[dir] || pointer[dir];
+@@ -154,14 +156,17 @@ export default function SimDrivePad({ setVirtualStick }) {
+           );
+         })}
+       </div>
+-      <label style={styles.toggle}>
+-        <input
+-          type="checkbox"
+-          checked={keyboardEnabled}
+-          onChange={(event) => setKeyboardEnabled(event.target.checked)}
+-        />
+-        Keyboard drive (WASD)
+-      </label>
++      <div style={styles.side}>
++        <div style={styles.title}>Sim drive</div>
++        <label style={styles.toggle}>
++          <input
++            type="checkbox"
++            checked={keyboardEnabled}
++            onChange={(event) => setKeyboardEnabled(event.target.checked)}
++          />
++          Keyboard (WASD)
++        </label>
++      </div>
+     </div>
+   );
+ }
+diff --git a/react-app/src/Components/WebcamPanel.js b/react-app/src/Components/WebcamPanel.js
+index 0d9ad53..c5605a3 100644
+--- a/react-app/src/Components/WebcamPanel.js
++++ b/react-app/src/Components/WebcamPanel.js
+@@ -5,17 +5,13 @@ import Guidelines from "../gamepad/Guidelines";
+ import pauseImage from '../assets/touchedNpaused.png';
+ 
+ const styles = {
++  // The largest 3:2 box that fits the .camera-slot it sits in (a CSS size
++  // container, so cqw/cqh are the slot's width and height).
+   container: {
+     position: 'relative',
+-    // width: '750px',
+-    // height: '475px',
+-    // maxWidth: '100%',
+-    aspectRatio: '3 / 2',
+-    // width: "auto",
+-    // maxHeight: "40%",
+-    height: "50%",
+-    maxWidth: "100%",
+-    margin: "0 auto"
++    width: 'min(100cqw, 150cqh)',
++    height: 'min(100cqh, 66.667cqw)',
++    margin: '0 auto',
+   },
+   cameraContainer: {
+     position: "relative",
+

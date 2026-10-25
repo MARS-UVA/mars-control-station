@@ -12,17 +12,19 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
 
   const actuatorToDrum = num => ((12.0625 * Math.sin(degToRad(142.920267719) - Math.acos((Math.pow((23.6224274544 + (12 * (num))), 2) - 737.506048128) / (-643.804738952)))) - (2.015 * Math.cos(degToRad(142.920267719) - Math.acos((Math.pow((23.6224274544 + (12 * (num))), 2) - 737.506048128) / (-643.804738952)))) - 1.75);
 
+  // Card text and spacing scale with the screen height (clamp + vh), so the
+  // whole panel fits one screen and the current charts keep usable space.
   const cardTitleStyle = {
-    padding: "4px",
+    padding: "clamp(1px, 0.4vh, 4px)",
     borderRadius: "4px",
     fontWeight: 500,
-    fontSize: "0.95rem",
+    fontSize: "clamp(0.75rem, 1.6vh, 0.95rem)",
     opacity: 0.9,
   };
 
   const cardValueStyle = {
-    margin: "6px 0 2px",
-    fontSize: "20px",
+    margin: "clamp(1px, 0.5vh, 6px) 0 2px",
+    fontSize: "clamp(14px, 2.4vh, 20px)",
     fontWeight: 800,
     lineHeight: 1.2,
   };
@@ -89,7 +91,7 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
         <CartesianGrid strokeDasharray="3 3" />
         <YAxis label={/*dataKey === "actuatorCapacity" ? "%" :*/ dataKey === "globalDataRate" ? "Mbps" : "Value"} />
         <Tooltip />
-        <Legend wrapperStyle={{ paddingTop: '5px', fontSize: '15px' }} height={26} />
+        <Legend wrapperStyle={{ paddingTop: '2px', fontSize: '12px' }} height={20} />
         <Line type="monotone" dataKey={dataKey} stroke="#8884d8" dot={false} isAnimationActive={false} name={dataKey === "globalDataRate" ? "Data Rate (Mbps)" : dataKey} />
       </LineChart>
     </ResponsiveContainer>
@@ -104,13 +106,13 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
   };
 
   const renderMultiChart = (dataKey) => (
-    <ResponsiveContainer width="100%" height={200}>
+    <ResponsiveContainer width="100%" height="100%">
       <LineChart data={chartData} margin={{ right: 20, top: 5, bottom: 5 }} isAnimationActive={false}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="time" height={20} tick={false} />
         <YAxis width={40} label={{ value: dataKeyToLabel[dataKey], angle: -90, position: "insideLeft" }} domain={["wheel-current", "drum-current"].includes(dataKey) ? [0, 20] : [0, 'dataMax']} />
         <Tooltip />
-        <Legend wrapperStyle={{ paddingTop: '5px', fontSize: '15px' }} height={26} />
+        <Legend wrapperStyle={{ paddingTop: '2px', fontSize: '12px' }} height={20} />
         {dataKey === "battery-voltage" && (
           <>
             <Line type="monotone" dataKey="main_battery_voltage" stroke="#ff6b6b" dot={false} isAnimationActive={false} name="Main Batt" strokeWidth={2} />
@@ -207,7 +209,7 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
           <div className="chart-space">
 
             <h3 style={{ fontSize: "1rem", fontWeight: 500, opacity: 0.85 }}>Battery Voltage</h3>
-            <div style={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", margin: "10px 0", gap: "10px" }}>
+            <div style={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", margin: "clamp(2px, 1vh, 10px) 0", gap: "10px" }}>
               {
                 [
                   {
@@ -220,7 +222,7 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
                     voltage: lastDataPoint.aux_battery_voltage,
                   }
                 ].map((item, index) => (
-                  <div key={index} style={{ ...voltageToColors(item.voltage, item.voltageRanges[30], item.voltageRanges[15]), width: "100%", marginBottom: "4px", padding: "0.5rem", borderRadius: "8px" }}>
+                  <div key={index} style={{ ...voltageToColors(item.voltage, item.voltageRanges[30], item.voltageRanges[15]), width: "100%", marginBottom: "4px", padding: "clamp(0.2rem, 0.6vh, 0.5rem)", borderRadius: "8px" }}>
                     <div style={cardTitleStyle}>
                       {item.key}
                     </div>
@@ -235,7 +237,7 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
           </div>
           <div className="chart-space">
             <h3 style={{ fontSize: "1rem", fontWeight: 500, opacity: 0.85 }}>Temperatures (°C)</h3>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px", marginBottom: "10px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "clamp(4px, 1vh, 10px)", marginBottom: "clamp(2px, 1vh, 10px)" }}>
               {
                 [
                   {
@@ -266,7 +268,7 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
                 ].map((temp, index) => {
                   const { backgroundColor, color } = temperatureToColors(temp.temperature, temp.key.startsWith("B"));
                   return (
-                    <div key={index} style={{ marginBottom: "4px", padding: "0.5rem", borderRadius: "8px", backgroundColor, color }}>
+                    <div key={index} style={{ marginBottom: "4px", padding: "clamp(0.2rem, 0.6vh, 0.5rem)", borderRadius: "8px", backgroundColor, color }}>
                       <div style={cardTitleStyle}>
                         {temp.key}
                       </div>
@@ -284,10 +286,10 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
             <h3>Actuator Positions</h3>
             {renderMultiChart("position")}
           </div> */}
-          <div className="chart-space">
+          <div className="chart-space chart-column">
 
             <h3 style={{ fontSize: "1rem", fontWeight: 500, opacity: 0.85 }}>Actuator Positions</h3>
-            <div style={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", margin: "10px 0", gap: "10px" }}>
+            <div style={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", margin: "clamp(2px, 1vh, 10px) 0", gap: "10px" }}>
               {
                 [
                   {
@@ -299,7 +301,7 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
                   }
                 ].map((item, index) => (
                   item.position < GROUNDLEVEL ? (
-                    <div key={index} style={{ backgroundColor: "#8acfce", color: "#ffffff", width: "100%", marginBottom: "4px", padding: "0.5rem", borderRadius: "8px" }}>
+                    <div key={index} style={{ backgroundColor: "#8acfce", color: "#ffffff", width: "100%", marginBottom: "4px", padding: "clamp(0.2rem, 0.6vh, 0.5rem)", borderRadius: "8px" }}>
                     <div style={cardTitleStyle}>
                       {item.key}
                     </div>
@@ -307,7 +309,7 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
                       {round(actuatorToDrum(item.position))} in (Raw: {round(item.position)})
                     </div>
                   </div>) :
-                  (<div key={index} style={{ backgroundColor: "#cdc0a7", color: "#ffffff", width: "100%", marginBottom: "4px", padding: "0.5rem", borderRadius: "8px" }}>
+                  (<div key={index} style={{ backgroundColor: "#cdc0a7", color: "#ffffff", width: "100%", marginBottom: "4px", padding: "clamp(0.2rem, 0.6vh, 0.5rem)", borderRadius: "8px" }}>
                     <div style={cardTitleStyle}>
                       {item.key}
                     </div>
@@ -320,13 +322,13 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
                 ))
               }
             </div>
-            <div className="chart-space">
+            <div className="chart-space chart-fill">
               <h3>Wheel Currents (A)</h3>
-              {renderMultiChart("wheel-current")}
+              <div className="chart-fill-body">{renderMultiChart("wheel-current")}</div>
             </div>
-            <div className="chart-space">
+            <div className="chart-space chart-fill">
               <h3>Drum Currents (A)</h3>
-              {renderMultiChart("drum-current")}
+              <div className="chart-fill-body">{renderMultiChart("drum-current")}</div>
             </div>
             {/* Current: {lastDataPoint["globalDataRate"]} Mbps */}
           </div>

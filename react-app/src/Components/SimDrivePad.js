@@ -26,21 +26,24 @@ const NON_TEXT_INPUTS = new Set(['checkbox', 'radio', 'button', 'range', 'submit
 const NONE = { forward: false, back: false, left: false, right: false };
 
 const styles = {
+  // Compact row: arrows on the left, title and keyboard toggle on the right.
   panel: {
     display: 'flex',
-    flexDirection: 'column',
+    flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    padding: 10,
+    justifyContent: 'center',
+    gap: 14,
+    padding: 8,
     border: '1px solid var(--border-color, #cccccc)',
     borderRadius: 6,
   },
+  side: { display: 'flex', flexDirection: 'column', gap: 6 },
   title: { fontSize: 13, fontWeight: 600 },
   grid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(3, 48px)',
-    gridTemplateRows: 'repeat(2, 48px)',
-    gap: 6,
+    gridTemplateColumns: 'repeat(3, 38px)',
+    gridTemplateRows: 'repeat(2, 38px)',
+    gap: 4,
   },
   button: {
     display: 'flex',
@@ -125,7 +128,6 @@ export default function SimDrivePad({ setVirtualStick }) {
 
   return (
     <div style={styles.panel}>
-      <div style={styles.title}>Sim drive</div>
       <div style={styles.grid}>
         {BUTTONS.map(({ dir, key, Icon, area }) => {
           const active = keys[dir] || pointer[dir];
@@ -154,14 +156,17 @@ export default function SimDrivePad({ setVirtualStick }) {
           );
         })}
       </div>
-      <label style={styles.toggle}>
-        <input
-          type="checkbox"
-          checked={keyboardEnabled}
-          onChange={(event) => setKeyboardEnabled(event.target.checked)}
-        />
-        Keyboard drive (WASD)
-      </label>
+      <div style={styles.side}>
+        <div style={styles.title}>Sim drive</div>
+        <label style={styles.toggle}>
+          <input
+            type="checkbox"
+            checked={keyboardEnabled}
+            onChange={(event) => setKeyboardEnabled(event.target.checked)}
+          />
+          Keyboard (WASD)
+        </label>
+      </div>
     </div>
   );
 }

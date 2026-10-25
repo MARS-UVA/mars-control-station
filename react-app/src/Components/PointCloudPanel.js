@@ -1,6 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Topic } from 'roslib';
 import * as THREE from 'three';
+import useTfTree, { MAP_FRAME, ROBOT_FRAME, cleanFrame, lookupInRobotWorld, lookupRobotPose } from '../ros/tf';
+import { forEachPoint, POINT_CLOUD2_TYPE } from '../ros/pointCloud2';
+import { ROBOT_GROUND_Z, ROBOT_HEIGHT, ROBOT_LENGTH, ROBOT_WIDTH } from '../ros/robot';
 
 /**
  * Third-person 3D view of what the robot's lidar sees right now.
@@ -13,7 +16,10 @@ import * as THREE from 'three';
  * robot moves until the next one replaces it.
  *
  * The view is a chase camera: behind and above the robot, looking along its
- * heading, with the robot kept in the middle. Scroll to change the follow
+ * driving direction, with the robot kept in the middle. When the operator
+ * switches direction (directionSwitched), the camera swings round to the other
+ * end of the robot and the marker's nose moves to the rear, matching the rear
+ * camera and the reversed drive. Scroll to change the follow
  * distance, double-click to reset it.
  *
  * Poses come from TF. The robot is base_link in map (base_link -> odom -> map;
@@ -24,12 +30,11 @@ import * as THREE from 'three';
  *
  * Points without colour are coloured by height in the world.
  *
- * Rendered inside PointCloudWindow, a floating panel next to the cameras.
+ * Shown in the dashboard's middle column, under the camera, next to the minimap.
  * Debug stats per topic are on window.__pointCloudStats in the browser console.
  * Subscriptions are recreated whenever rosbridge reconnects.
  */
 
-const MESSAGE_TYPE = 'sensor_msgs/msg/PointCloud2';
 // Point budget. VOXEL_SIZE is the main knob: doubling it cuts the drawn points
 // on surfaces about 4x. Thinning here saves browser decoding and drawing; it
 // cannot shrink what rosbridge sends, which is the full cloud.
@@ -46,20 +51,8 @@ const HEIGHT_MIN = -0.2;
 const HEIGHT_MAX = 1.5;
 const STATUS_INTERVAL_MS = 500;
 
-// Robot pose (TF).
-const TF_TOPIC = '/tf';
-const TF_STATIC_TOPIC = '/tf_static';
-const MAP_FRAME = 'map';
-const ROBOT_FRAME = 'base_link';
-const MAX_TF_DEPTH = 10;       // guards against a cycle in a malformed tree
 const POSE_SMOOTHING_S = 0.12; // eases the 10-20 Hz TF updates into 60 fps motion
-
-// Robot marker: the unpadded envelope from the RTAB-Map footprint settings on
-// the Jetson (Grid/Footprint*), in base_link axes (x forward, the blue side).
-const ROBOT_LENGTH = 1.8;
-const ROBOT_WIDTH = 0.76;
-const ROBOT_HEIGHT = 0.5;
-const ROBOT_GROUND_Z = -0.133; // floor height in base_link (wheel radius - axle height)
+const VIEW_SWING_S = 0.15;     // time constant of the 180 degree swing on a direction switch
 
 // Chase camera.
 const FOLLOW_DISTANCE = 5;      // metres from the robot, along the view line
@@ -68,7 +61,7 @@ const MIN_FOLLOW_DISTANCE = 1.5;
 const MAX_FOLLOW_DISTANCE = 25;
 
 const styles = {
-  // Fills its parent; PointCloudWindow sets the size.
+  // Fills its parent; the map card in App.js sets the size.
   container: {
     position: 'relative',
     width: '100%',
@@ -110,52 +103,25 @@ const styles = {
 
 const STATUS_COLORS = { live: '#3ccf6e', stalled: '#ffcc00' };
 
-// Same decoding fallbacks as H264CameraPanel.
-function toBytes(data) {
-  if (data instanceof Uint8Array) return data;
-  if (typeof data === 'string') return Uint8Array.from(atob(data), (c) => c.charCodeAt(0));
-  if (Array.isArray(data)) return Uint8Array.from(data);
-  if (data && data.buffer instanceof ArrayBuffer) {
-    return new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
-  }
-  return null;
-}
-
 // Copies a PointCloud2 into the preallocated geometry, in the cloud's own
-// frame. worldMatrix (world_T_cloud) is only used for height colouring.
-// Returns the point count.
+// frame, keeping one point per VOXEL_SIZE cube. worldMatrix (world_T_cloud) is
+// only used for height colouring. Returns the point count.
 function fillGeometry(msg, geometry, worldMatrix) {
   const m = worldMatrix.elements; // column-major: world z = m2 x + m6 y + m10 z + m14
-  const field = (name) => msg.fields.find((f) => f.name === name);
-  const fx = field('x');
-  const fy = field('y');
-  const fz = field('z');
-  const fc = field('rgb') || field('rgba');
-  const bytes = toBytes(msg.data);
-  if (!fx || !fy || !fz || !bytes) return 0;
-
-  const view = new DataView(bytes.buffer, bytes.byteOffset, bytes.byteLength);
+  const fc = msg.fields.find((f) => f.name === 'rgb' || f.name === 'rgba');
   const little = !msg.is_bigendian;
-  const step = msg.point_step;
-  const total = Math.min(msg.width * msg.height, Math.floor(bytes.byteLength / step));
-  const stride = Math.max(1, Math.ceil(total / MAX_INPUT_POINTS));
   const pos = geometry.attributes.position.array;
   const col = geometry.attributes.color.array;
   const occupied = new Set(); // voxel keys already holding a point
 
   let n = 0;
-  for (let i = 0; i < total && n < MAX_POINTS; i += stride) {
-    const base = i * step;
-    const x = view.getFloat32(base + fx.offset, little);
-    const y = view.getFloat32(base + fy.offset, little);
-    const z = view.getFloat32(base + fz.offset, little);
-    if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(z)) continue;
+  forEachPoint(msg, MAX_INPUT_POINTS, (x, y, z, view, base) => {
     // Integer voxel coordinates, offset to be non-negative and packed into one
-    // number (exact up to about +-3 km per axis at 0.1 m).
+    // number (exact up to about +-1.6 km per axis at 0.05 m).
     const key = ((Math.floor(x / VOXEL_SIZE) + 32768) * 65536
       + (Math.floor(y / VOXEL_SIZE) + 32768)) * 65536
       + (Math.floor(z / VOXEL_SIZE) + 32768);
-    if (occupied.has(key)) continue;
+    if (occupied.has(key)) return false;
     occupied.add(key);
     const j = 3 * n;
     pos[j] = x; pos[j + 1] = y; pos[j + 2] = z;
@@ -171,7 +137,8 @@ function fillGeometry(msg, geometry, worldMatrix) {
       col[j] = heightColor.r; col[j + 1] = heightColor.g; col[j + 2] = heightColor.b;
     }
     n++;
-  }
+    return n >= MAX_POINTS;
+  });
   geometry.setDrawRange(0, n);
   geometry.attributes.position.needsUpdate = true;
   geometry.attributes.color.needsUpdate = true;
@@ -180,30 +147,6 @@ function fillGeometry(msg, geometry, worldMatrix) {
 }
 
 const heightColor = new THREE.Color();
-
-function cleanFrame(id) {
-  return (id || '').replace(/^\/+/, '');
-}
-
-// Pose of `start` in MAP_FRAME from the latest transforms, walking up the tree.
-// Stops early at whatever root it reaches (normally odom when RTAB-Map is not
-// running). Returns { matrix, root }; root === start means nothing was known.
-function lookupTransform(tree, start) {
-  const matrix = new THREE.Matrix4();
-  let frame = start;
-  for (let i = 0; i < MAX_TF_DEPTH && frame !== MAP_FRAME; i++) {
-    const link = tree.get(frame);
-    if (!link) break;
-    matrix.premultiply(link.matrix); // parent_T_start = parent_T_frame * frame_T_start
-    frame = link.parent;
-  }
-  return { matrix, root: frame };
-}
-
-function lookupRobotPose(tree) {
-  const pose = lookupTransform(tree, ROBOT_FRAME);
-  return pose.root === ROBOT_FRAME ? null : pose;
-}
 
 // Placeholder robot: a box with a cone on the front so heading is obvious.
 // Everything is a child of the returned group, which is what gets moved, so
@@ -230,8 +173,18 @@ function makeRobotMarker() {
   nose.position.set(ROBOT_LENGTH / 2 + 0.2, 0, bodyZ);
 
   robot.add(body, nose);
+  robot.userData.nose = nose; // flipped to the rear by setNoseDirection
   robot.visible = false; // shown once the first pose arrives
   return robot;
+}
+
+// Puts the nose cone on the driving end: the front (+x) normally, the rear
+// when the direction is switched.
+function setNoseDirection(robot, reversed) {
+  const nose = robot.userData.nose;
+  const sign = reversed ? -1 : 1;
+  nose.position.x = sign * (ROBOT_LENGTH / 2 + 0.2);
+  nose.rotation.z = -sign * Math.PI / 2;
 }
 
 function disposeObject(root) {
@@ -241,11 +194,15 @@ function disposeObject(root) {
   });
 }
 
-export default function PointCloudPanel({ ros, isConnected, topic = '/unilidar/cloud', label = 'Lidar' }) {
+export default function PointCloudPanel({
+  ros, isConnected, topic = '/unilidar/cloud', label = 'Lidar', directionSwitched = false,
+}) {
+  // Read by the render loop every frame, so it must not restart the scene.
+  const directionRef = useRef(directionSwitched);
+  directionRef.current = directionSwitched;
   const mountRef = useRef(null);
   const sceneRef = useRef(null);
-  // Latest transform per child frame: child -> { parent, matrix }.
-  const tfTreeRef = useRef(new Map());
+  const tfTreeRef = useTfTree(ros, isConnected);
   const [status, setStatus] = useState('disconnected');
   const [count, setCount] = useState(0);
   const [poseSource, setPoseSource] = useState(null); // null, 'map' or another root frame
@@ -312,6 +269,7 @@ export default function PointCloudPanel({ ros, isConnected, topic = '/unilidar/c
     const unitScale = new THREE.Vector3();
     const heading = new THREE.Vector3();
     let lastTime = performance.now();
+    let viewOffset = 0; // eased 0 (forward) <-> PI (direction switched)
 
     let frame;
     const loop = () => {
@@ -337,8 +295,16 @@ export default function PointCloudPanel({ ros, isConnected, topic = '/unilidar/c
       // Chase camera: behind the robot along its heading (yaw only, so the
       // view does not rock with pitch and roll), looking at the robot so it
       // stays centred.
+      // Direction switch: swing the camera round to the other end over about
+      // half a second rather than jumping, and move the nose with it.
+      const reversed = Boolean(directionRef.current);
+      setNoseDirection(robot, reversed);
+      const targetOffset = reversed ? Math.PI : 0;
+      viewOffset += (targetOffset - viewOffset) * (1 - Math.exp(-dt / VIEW_SWING_S));
+      if (Math.abs(targetOffset - viewOffset) < 1e-3) viewOffset = targetOffset;
+
       heading.set(1, 0, 0).applyQuaternion(robot.quaternion);
-      const yaw = Math.atan2(heading.y, heading.x);
+      const yaw = Math.atan2(heading.y, heading.x) + viewOffset;
       const back = followDistance * Math.cos(FOLLOW_PITCH);
       camera.position.set(
         robot.position.x - back * Math.cos(yaw),
@@ -390,12 +356,8 @@ export default function PointCloudPanel({ ros, isConnected, topic = '/unilidar/c
       // Place the scan with the latest known pose of its frame. It must share
       // the robot's root frame, or it would be drawn in the wrong place.
       const cloudFrame = cleanFrame(msg.header && msg.header.frame_id);
-      const placement = lookupTransform(tfTreeRef.current, cloudFrame);
-      const robotPose = lookupRobotPose(tfTreeRef.current);
-      const placed = cloudFrame === placement.root
-        ? placement.root === MAP_FRAME || !robotPose // a cloud already in the world frame
-        : robotPose && placement.root === robotPose.root;
-      if (!placed) {
+      const placement = lookupInRobotWorld(tfTreeRef.current, cloudFrame);
+      if (!placement) {
         stats.missingTf = cloudFrame;
         missingTfFrame = cloudFrame;
         current.geometry.setDrawRange(0, 0); // never show a scan in the wrong place
@@ -403,16 +365,16 @@ export default function PointCloudPanel({ ros, isConnected, topic = '/unilidar/c
         return;
       }
       missingTfFrame = null;
-      current.points.matrix.copy(placement.matrix);
+      current.points.matrix.copy(placement);
       current.points.matrixWorldNeedsUpdate = true;
-      stats.drawn = fillGeometry(msg, current.geometry, placement.matrix);
+      stats.drawn = fillGeometry(msg, current.geometry, placement);
       setCount(stats.drawn);
     };
 
     const rosTopic = new Topic({
       ros,
       name: topic,
-      messageType: MESSAGE_TYPE,
+      messageType: POINT_CLOUD2_TYPE,
       compression: 'cbor', // binary data, about a third smaller than base64 JSON
       queue_length: 1,
       throttle_rate: THROTTLE_MS,
@@ -434,65 +396,14 @@ export default function PointCloudPanel({ ros, isConnected, topic = '/unilidar/c
     };
   }, [ros, isConnected, topic]);
 
-  // Robot pose: /tf, recreated on every rosbridge (re)connect. Not throttled:
-  // map -> odom and odom -> base_link arrive in separate messages, and a
-  // throttle could keep dropping one of them. Only the latest transform per
-  // frame is kept; the render loop reads it.
+  // Pose status for the status line (the render loop reads TF directly).
   useEffect(() => {
-    const tree = tfTreeRef.current;
-    tree.clear();
-    setPoseSource(null);
-    if (!ros || !isConnected) return undefined;
-
-    const translation = new THREE.Vector3();
-    const rotation = new THREE.Quaternion();
-    const one = new THREE.Vector3(1, 1, 1);
-    const onTf = (msg) => {
-      for (const t of msg.transforms || []) {
-        const child = cleanFrame(t.child_frame_id);
-        const parent = cleanFrame(t.header && t.header.frame_id);
-        if (!child || !parent) continue;
-        const { translation: p, rotation: q } = t.transform;
-        translation.set(p.x, p.y, p.z);
-        rotation.set(q.x, q.y, q.z, q.w);
-        const entry = tree.get(child) || { parent, matrix: new THREE.Matrix4() };
-        entry.parent = parent;
-        entry.matrix.compose(translation, rotation, one);
-        tree.set(child, entry);
-      }
-    };
-
-    const tfTopic = new Topic({
-      ros,
-      name: TF_TOPIC,
-      messageType: 'tf2_msgs/msg/TFMessage',
-      queue_length: 5,
-      reconnect_on_close: false,
-    });
-    tfTopic.subscribe(onTf);
-    // Fixed joints such as base_link -> unilidar_link. Latched (transient
-    // local); rosbridge matches that QoS and delivers the stored message.
-    const tfStaticTopic = new Topic({
-      ros,
-      name: TF_STATIC_TOPIC,
-      messageType: 'tf2_msgs/msg/TFMessage',
-      queue_length: 5,
-      reconnect_on_close: false,
-    });
-    tfStaticTopic.subscribe(onTf);
-
     const timer = setInterval(() => {
-      const pose = lookupRobotPose(tree);
+      const pose = lookupRobotPose(tfTreeRef.current);
       setPoseSource(pose ? pose.root : null);
     }, STATUS_INTERVAL_MS);
-
-    return () => {
-      clearInterval(timer);
-      tfTopic.unsubscribe(onTf);
-      tfStaticTopic.unsubscribe(onTf);
-      tree.clear();
-    };
-  }, [ros, isConnected]);
+    return () => clearInterval(timer);
+  }, [tfTreeRef]);
 
   let statusText;
   let overlayMessage = null;
@@ -522,7 +433,7 @@ export default function PointCloudPanel({ ros, isConnected, topic = '/unilidar/c
   let poseText;
   if (poseSource === MAP_FRAME) poseText = 'robot pose live';
   else if (poseSource) poseText = `robot pose from ${poseSource} only (no ${MAP_FRAME} frame)`;
-  else poseText = `waiting for ${ROBOT_FRAME} on ${TF_TOPIC}`;
+  else poseText = `waiting for ${ROBOT_FRAME} on /tf`;
 
   return (
     <div style={styles.container}>

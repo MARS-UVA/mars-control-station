@@ -93,8 +93,8 @@ about 1 Hz, which makes the gamepad publish rate and topic rates look wrong.
 | `/human_input_state` | `teleop_msgs/HumanInputState`, 30 Hz | UI → robot | `useGamepadPublisher` |
 | `/robot_state/toggle` | `std_msgs/UInt8` | UI → robot | `useRobotStateToggle` |
 | `/digdump` | `autonomy_msgs/action/AutonomousActions` | UI → robot | `useDigDumpAction` |
-| `/unilidar/cloud` | `sensor_msgs/PointCloud2` (live lidar scan, not accumulated; CBOR, throttled to 5 Hz, voxel-thinned to 0.05 m in the browser; subscribed only while the 3D view is open; crosses the wireless link on the real robot) | robot → UI | `PointCloudWindow` |
-| `/tf`, `/tf_static` | `tf2_msgs/TFMessage` (JSON, unthrottled; used for `map → odom → base_link` and the lidar's fixed mount, to place the robot marker, chase camera and scan; subscribed only while the 3D view is open) | robot → UI | `PointCloudWindow` |
+| `/unilidar/cloud` | `sensor_msgs/PointCloud2` (live lidar scan, not accumulated; CBOR, throttled to 5 Hz, voxel-thinned to 0.05 m in the browser; always subscribed: the 3D view and minimap are always on screen; crosses the wireless link on the real robot) | robot → UI | `PointCloudPanel`, `MiniMapPanel` |
+| `/tf`, `/tf_static` | `tf2_msgs/TFMessage` (JSON, unthrottled; used for `map → odom → base_link` and the lidar's fixed mount, to place the robot, camera and scans; always subscribed) | robot → UI | `PointCloudPanel`, `MiniMapPanel` (via `ros/tf.js`) |
 
 Constants live in `react-app/src/hooks/rosTypes.js`. `RobotState` is TELEOP 0,
 DIG 1, DUMP 2, ESTOP 3. `HumanInputState.drive_mode` uses its own enum (TELEOP 0,

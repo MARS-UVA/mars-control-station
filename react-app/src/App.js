@@ -26,7 +26,8 @@ import DirectionChangeButton from "./Components/DirectionChangeButton";
 import SimDrivePad from "./Components/SimDrivePad";
 import ConnectionStatus from "./Components/ConnectionStatus";
 import RosbridgeFeed from "./Components/RosbridgeFeed";
-import PointCloudWindow from "./Components/PointCloudWindow";
+import PointCloudPanel from "./Components/PointCloudPanel";
+import MiniMapPanel from "./Components/MiniMapPanel";
 import { setDirection } from './gamepad/directionStore';
 import useRos from './hooks/useRos';
 import useTelemetry from './hooks/useTelemetry';
@@ -225,6 +226,7 @@ const App = () => {
           {/* Gamepad-free driving, only with the gazebo backend detected. */}
           {espNotPresent && <SimDrivePad setVirtualStick={setVirtualStick} />}
           <Timer />
+          <ThemeChanger />
         </div>
 
         <div className="middle-panel">
@@ -233,26 +235,41 @@ const App = () => {
               topic) and mounts a new one that subscribes to the other camera.
               With no subscriber, ffmpeg_image_transport on the Jetson stops
               encoding that camera, so only one stream uses CPU and bandwidth. */}
-          {LEGACY_WEBRTC ? (
-            <WebcamPanel key={activeCamera.signalingPort} signalingPort={activeCamera.signalingPort}
-              index={activeCamera.index} isActive />
-          ) : (
-            <H264CameraPanel key={activeCamera.topic} ros={ros} isConnected={isConnected}
-              topic={activeCamera.topic} label={activeCamera.label} index={activeCamera.index} isActive />
+          <div className="camera-slot">
+            {LEGACY_WEBRTC ? (
+              <WebcamPanel key={activeCamera.signalingPort} signalingPort={activeCamera.signalingPort}
+                index={activeCamera.index} isActive />
+            ) : (
+              <H264CameraPanel key={activeCamera.topic} ros={ros} isConnected={isConnected}
+                topic={activeCamera.topic} label={activeCamera.label} index={activeCamera.index} isActive />
+            )}
+            {panelEspWorking || espNotPresent ? null : <div className="esp-not-working">ESP Not Receiving Packets</div>}
+          </div>
+          {/* Lidar views, always shown under the camera: the 3D chase view of
+              the live scan and the bird's-eye minimap. */}
+          {USE_ROSBRIDGE && (
+            <div className="map-row">
+              <section className="map-card">
+                <div className="map-card-title">3D view</div>
+                <div className="map-card-body">
+                  <PointCloudPanel ros={ros} isConnected={isConnected} topic="/unilidar/cloud" label="Lidar"
+                    directionSwitched={directionSwitched} />
+                </div>
+              </section>
+              <section className="map-card">
+                <div className="map-card-title">Minimap</div>
+                <div className="map-card-body">
+                  <MiniMapPanel ros={ros} isConnected={isConnected} directionSwitched={directionSwitched} />
+                </div>
+              </section>
+            </div>
           )}
-          {panelEspWorking || espNotPresent ? null : <div className="esp-not-working">ESP Not Receiving Packets</div>}
         </div>
 
         <div className="right-panel">
           <LiveDataPanel lastDataPoint={lastDataPoint} timestamp={timestamp} chartData={chartData} />
           {/* <TiltingRods/> hiding since they're incomplete*/}
         </div>
-        <ThemeChanger />
-        {/* Floating 3D view, closed by default: the live lidar scan around
-            the robot, with a chase camera. */}
-        {USE_ROSBRIDGE && (
-          <PointCloudWindow ros={ros} isConnected={isConnected} topic="/unilidar/cloud" />
-        )}
       </div>
     </div>
   );
