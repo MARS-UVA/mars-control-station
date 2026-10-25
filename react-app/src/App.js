@@ -23,6 +23,7 @@ import DisplayMeter from "./Components/DisplayMeter";
 import RightButtonPanel from "./Components/RightButtonPanel";
 import ArmIndicator from "./gamepad/ArmIndicator";
 import DirectionChangeButton from "./Components/DirectionChangeButton";
+import SimDrivePad from "./Components/SimDrivePad";
 import ConnectionStatus from "./Components/ConnectionStatus";
 import RosbridgeFeed from "./Components/RosbridgeFeed";
 import PointCloudWindow from "./Components/PointCloudWindow";
@@ -50,6 +51,15 @@ const LEGACY_WEBRTC = process.env.REACT_APP_LEGACY_WEBRTC === 'true';
 // moment it is evaluated, so the legacy modules are only loaded on the legacy
 // path. A static import would run that loop on the rosbridge path too.
 const legacy = USE_ROSBRIDGE ? null : require('./legacyNetworking');
+
+// One camera per driving direction. index picks the panel's accent colour
+// (0 = orange, 4 = blue), matching the colours the direction button uses.
+// The topics are deliberately crossed: the camera published as rear_camera
+// is the one that faces the robot's forward driving direction, and vice versa.
+const CAMERAS = {
+  front: { topic: '/rear_camera/image_raw/ffmpeg', label: 'Front', index: '4', signalingPort: '6969' },
+  rear: { topic: '/front_camera/image_raw/ffmpeg', label: 'Rear', index: '0', signalingPort: '6767' },
+};
 
 const App = () => {
 
@@ -105,7 +115,7 @@ const App = () => {
   const telemetry = useTelemetry(ros);
   const robot = useRobotState(ros, isConnected);
   const espStatus = useEspStatus(ros, isConnected, telemetry.lastReceived);
-  const { gamepadStatus: publisherStatus, setLiveEnabled, publishCustomFrame } =
+  const { gamepadStatus: publisherStatus, setLiveEnabled, publishCustomFrame, setVirtualStick } =
     useGamepadPublisher(ros, { directionSwitched });
   const { estop } = useRobotStateToggle(ros);
   const digDump = useDigDumpAction(ros);
@@ -170,6 +180,10 @@ const App = () => {
   const panelEspWorking = USE_ROSBRIDGE ? espStatus === ESP_STATUS.ONLINE : ESPWorking;
   const espNotPresent = USE_ROSBRIDGE && espStatus === ESP_STATUS.NOT_PRESENT;
 
+  // Forward (directionSwitched false) shows the front camera; after the
+  // direction button is pressed, the rear camera.
+  const activeCamera = directionSwitched ? CAMERAS.rear : CAMERAS.front;
+
   return (
     <div className="app-container">
       {/* <h1 className="title">MARS Web UI</h1> */}
@@ -208,22 +222,23 @@ const App = () => {
 
           <RightButtonPanel currentActionState={panelRobotState} backArmActive={panelBackArmActive} onDig={commands.dig} onDump={commands.dump} onStop={commands.stop} ></RightButtonPanel>
           <DirectionChangeButton directionSwitched={directionSwitched} setDirectionSwitched={setDirectionSwitched} gamepadData={gamepadData} />
+          {/* Gamepad-free driving, only with the gazebo backend detected. */}
+          {espNotPresent && <SimDrivePad setVirtualStick={setVirtualStick} />}
           <Timer />
         </div>
 
         <div className="middle-panel">
+          {/* Only the camera facing the driving direction is shown. Switching
+              direction unmounts the old panel (its cleanup unsubscribes the
+              topic) and mounts a new one that subscribes to the other camera.
+              With no subscriber, ffmpeg_image_transport on the Jetson stops
+              encoding that camera, so only one stream uses CPU and bandwidth. */}
           {LEGACY_WEBRTC ? (
-            <>
-              <WebcamPanel signalingPort="6969" index="4" isActive={!directionSwitched} />
-              <WebcamPanel signalingPort="6767" index="0" isActive={directionSwitched} />
-            </>
+            <WebcamPanel key={activeCamera.signalingPort} signalingPort={activeCamera.signalingPort}
+              index={activeCamera.index} isActive />
           ) : (
-            <>
-              <H264CameraPanel ros={ros} isConnected={isConnected} topic="/rear_camera/image_raw/ffmpeg"
-                label="Rear" index="4" isActive={!directionSwitched} />
-              <H264CameraPanel ros={ros} isConnected={isConnected} topic="/front_camera/image_raw/ffmpeg"
-                label="Front" index="0" isActive={directionSwitched} />
-            </>
+            <H264CameraPanel key={activeCamera.topic} ros={ros} isConnected={isConnected}
+              topic={activeCamera.topic} label={activeCamera.label} index={activeCamera.index} isActive />
           )}
           {panelEspWorking || espNotPresent ? null : <div className="esp-not-working">ESP Not Receiving Packets</div>}
         </div>
@@ -233,10 +248,10 @@ const App = () => {
           {/* <TiltingRods/> hiding since they're incomplete*/}
         </div>
         <ThemeChanger />
-        {/* Floating 3D map, closed by default. Shows the control station's
-            Draco republisher output (Point Cloud Compression task). */}
+        {/* Floating 3D view, closed by default: the live lidar scan around
+            the robot, with a chase camera. */}
         {USE_ROSBRIDGE && (
-          <PointCloudWindow ros={ros} isConnected={isConnected} topic="/rtabmap/cloud_map" />
+          <PointCloudWindow ros={ros} isConnected={isConnected} topic="/unilidar/cloud" />
         )}
       </div>
     </div>

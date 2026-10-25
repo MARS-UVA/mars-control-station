@@ -31,7 +31,7 @@ export default function PointCloudWindow({ ros, isConnected, topic }) {
           </button>
         </div>
         <div className="point-cloud-window-body">
-          <PointCloudPanel ros={ros} isConnected={isConnected} topic={topic} label="Map" />
+          <PointCloudPanel ros={ros} isConnected={isConnected} topic={topic} label="Lidar" />
         </div>
       </div>
     </Draggable>

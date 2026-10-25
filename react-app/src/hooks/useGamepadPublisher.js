@@ -111,10 +111,19 @@ function readGamepadState(directionSwitched) {
  *  - publishCustomFrame(gamepadState) publishes one caller-supplied frame
  *    through the same disconnect guard. Returns whether it was sent.
  *
+ * On-screen / keyboard driving (SimDrivePad):
+ *  - setVirtualStick({ x, y }) replaces the left stick of every live frame
+ *    until setVirtualStick(null). y is "forward" in the current driving
+ *    direction (positive drives toward the camera being shown), so
+ *    directionSwitched is applied to it the same way as to a real stick; x is
+ *    the raw stick x (positive turns right). A blurred or hidden window still
+ *    publishes neutral, so a held key cannot keep the robot moving.
+ *
  * @returns {{ driveMode: number, setDriveMode: (mode: number) => void,
  *             gamepadStatus: 'none'|'unsupported-mapping'|'connected'|'suspended',
  *             setLiveEnabled: (enabled: boolean) => void,
- *             publishCustomFrame: (gamepadState: object) => boolean }}
+ *             publishCustomFrame: (gamepadState: object) => boolean,
+ *             setVirtualStick: (stick: {x: number, y: number} | null) => void }}
  */
 export default function useGamepadPublisher(ros, { directionSwitched = false } = {}) {
   const [driveMode, setDriveModeState] = useState(DRIVE_MODE.TELEOP);
@@ -124,6 +133,7 @@ export default function useGamepadPublisher(ros, { directionSwitched = false } =
   const driveModeRef = useRef(DRIVE_MODE.TELEOP);
   const suspendedRef = useRef(false);
   const liveEnabledRef = useRef(true);
+  const virtualStickRef = useRef(null);
   // Read by the 30 ms tick, so it must be current without restarting the timer.
   const directionSwitchedRef = useRef(directionSwitched);
   directionSwitchedRef.current = Boolean(directionSwitched);
@@ -159,6 +169,10 @@ export default function useGamepadPublisher(ros, { directionSwitched = false } =
 
   const publishCustomFrame = useCallback((gamepadState) => publishFrame(gamepadState), [publishFrame]);
 
+  const setVirtualStick = useCallback((stick) => {
+    virtualStickRef.current = stick ? { x: Number(stick.x) || 0, y: Number(stick.y) || 0 } : null;
+  }, []);
+
   const tick = useCallback(() => {
     if (suspendedRef.current) {
       publishNeutral();
@@ -166,6 +180,13 @@ export default function useGamepadPublisher(ros, { directionSwitched = false } =
       return;
     }
     const { frame, gamepadStatus: next } = readGamepadState(directionSwitchedRef.current);
+    const virtualStick = virtualStickRef.current;
+    if (virtualStick) {
+      frame.left_stick = {
+        x: virtualStick.x,
+        y: directionSwitchedRef.current ? -virtualStick.y : virtualStick.y,
+      };
+    }
     if (liveEnabledRef.current) publishFrame(frame);
     setGamepadStatus(next);
   }, [publishFrame, publishNeutral]);
@@ -206,5 +227,5 @@ export default function useGamepadPublisher(ros, { directionSwitched = false } =
     };
   }, [ros, tick, publishNeutral]);
 
-  return { driveMode, setDriveMode, gamepadStatus, setLiveEnabled, publishCustomFrame };
+  return { driveMode, setDriveMode, gamepadStatus, setLiveEnabled, publishCustomFrame, setVirtualStick };
 }
