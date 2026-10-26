@@ -34,6 +34,7 @@ import useGamepadPublisher, { padToGamepadState } from './hooks/useGamepadPublis
 import useRobotStateToggle from './hooks/useRobotStateToggle';
 import useDigDumpAction from './hooks/useDigDumpAction';
 import H264CameraPanel from "./Components/H264CameraPanel";
+import { ROBOT_PROFILES, DEFAULT_ROBOT } from './robotProfiles';
 import { toLegacyGamepadData, toRosGamepadState } from './rosbridgeAdapters';
 
 // Data-path switch. CRA inlines REACT_APP_* at build/start time, so this is a
@@ -65,6 +66,8 @@ const App = () => {
   const [robotState, setRobotState] = useState(0);
   const [directionSwitched, setDirectionSwitched] = useState(false);
   const [ESPWorking, setESPWorking] = useState(false);
+  const [selectedRobot, setSelectedRobot] = useState(DEFAULT_ROBOT);
+  const robotProfile = ROBOT_PROFILES[selectedRobot];
 
   useEffect(() => {
     // Legacy path: gamepad.js reads this module-level flag on every transmit.
@@ -130,10 +133,10 @@ const App = () => {
   // Routine selection is independent of the DIG/DUMP robot state values.
   const rosCommands = useMemo(() => ({
     dig: () => {
-      setCommandNotice(sendGoal('dig', 0) ? null : 'Dig not sent: rosbridge disconnected');
+      setCommandNotice(sendGoal('dig', robotProfile.digIndex) ? null : 'Dig not sent: rosbridge disconnected');
     },
     dump: () => {
-      setCommandNotice(sendGoal('dump', 0) ? null : 'Dump not sent: rosbridge disconnected');
+      setCommandNotice(sendGoal('dump', robotProfile.dumpIndex) ? null : 'Dump not sent: rosbridge disconnected');
     },
     stop: () => {
       // ESTOP first, unconditionally. It is the highest-priority signal and
@@ -144,7 +147,7 @@ const App = () => {
       // Retire any running or queued routine after publishing ESTOP.
       cancelGoal();
     },
-  }), [sendGoal, cancelGoal, estop]);
+  }), [sendGoal, cancelGoal, estop, robotProfile]);
 
   // ---------------------------------------------------------------------------
   // Panel props: one source or the other, never both.
@@ -225,7 +228,17 @@ const App = () => {
           <LiveDataPanel lastDataPoint={lastDataPoint} timestamp={timestamp} chartData={chartData} />
           {/* <TiltingRods/> hiding since they're incomplete*/}
         </div>
-        <ThemeChanger />
+        <div className="dashboard-settings">
+          <label htmlFor="robot-selection">Robot </label>
+          <select id="robot-selection" value={selectedRobot}
+            disabled={!USE_ROSBRIDGE || ['active', 'canceling', 'unknown'].includes(digDump.status)}
+            onChange={event => setSelectedRobot(event.target.value)}>
+            {Object.entries(ROBOT_PROFILES).map(([id, profile]) => (
+              <option key={id} value={id}>{profile.label}</option>
+            ))}
+          </select>
+          <ThemeChanger />
+        </div>
       </div>
     </div>
   );
