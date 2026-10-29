@@ -49,7 +49,8 @@ const getButtonObjectFromGamepad = (index) => {
 const getLeftStickFromGamepad = (index, directionOverride = null) => {
     const gamepad = navigator.getGamepads()[index];
     const directionSwitched = directionOverride !== null ? directionOverride : getDirection();
-    let linearValue = directionSwitched ? gamepad.axes[1] : -gamepad.axes[1];
+    const directionMultiplier = directionSwitched ? -1 : 1;
+    let linearValue = -gamepad.axes[1] * directionMultiplier;
 
     // Only the primary controller uses triggers to override drive velocity.
     if (index === 0) {
@@ -61,19 +62,22 @@ const getLeftStickFromGamepad = (index, directionOverride = null) => {
             // Both triggers cancel the override; keep the joystick value.
             triggerOverride = 'both triggers (joystick control)';
         } else if (leftTriggerHeld) {
-            linearValue = -getTriggerMagnitude(gamepad.buttons[6].value);
+            linearValue = -getTriggerMagnitude(gamepad.buttons[6].value) * directionMultiplier;
             triggerOverride = 'left trigger';
         } else if (rightTriggerHeld) {
-            linearValue = getTriggerMagnitude(gamepad.buttons[7].value);
+            linearValue = getTriggerMagnitude(gamepad.buttons[7].value) * directionMultiplier;
             triggerOverride = 'right trigger';
         }
 
         const triggerValueChanged = leftTriggerHeld !== rightTriggerHeld &&
             Math.abs(linearValue - lastTriggerLinearValue) >= 0.001;
-        if (triggerOverride !== lastTriggerOverride || triggerValueChanged) {
+        // Display/recording can request a fixed direction; only log the live direction.
+        if (directionOverride === null &&
+            (triggerOverride !== lastTriggerOverride || triggerValueChanged)) {
             console.log(`[Drive] ${triggerOverride}: leftStick.y=${linearValue.toFixed(3)}`, {
                 lt: gamepad.buttons[6].value,
                 rt: gamepad.buttons[7].value,
+                directionSwitched,
             });
             lastTriggerOverride = triggerOverride;
             lastTriggerLinearValue = linearValue;
