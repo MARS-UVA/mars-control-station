@@ -1,6 +1,7 @@
 import React, { useMemo, memo, useEffect } from "react";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, ReferenceLine, CartesianGrid, Legend, Tooltip } from "recharts";
 import TiltMeter from "./TiltMeter";
+import { calculateDrumKinematics } from "./drumKinematics";
 
 // This component renders a panel with charts and live values
 function LiveDataPanel({ lastDataPoint, chartData }) {
@@ -8,9 +9,7 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
 
   const round = num => (Math.round((num + Number.EPSILON) * 100) / 100).toFixed(2);
 
-  const degToRad = deg => deg * (Math.PI / 180);
-
-  const actuatorToDrum = num => ((12.0625 * Math.sin(degToRad(142.920267719) - Math.acos((Math.pow((23.6224274544 + (12 * (num))), 2) - 737.506048128) / (-643.804738952)))) - (2.015 * Math.cos(degToRad(142.920267719) - Math.acos((Math.pow((23.6224274544 + (12 * (num))), 2) - 737.506048128) / (-643.804738952)))) - 1.75);
+  const actuatorToDrum = (position) => calculateDrumKinematics(position)?.verticalOffsetInches;
 
   // Card text and spacing scale with the screen height (clamp + vh), so the
   // whole panel fits one screen and the current charts keep usable space.
@@ -306,7 +305,7 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
                       {item.key}
                     </div>
                     <div style={cardValueStyle}>
-                      {round(actuatorToDrum(item.position))} in (Raw: {round(item.position)})
+                      {Number.isFinite(actuatorToDrum(item.position)) ? round(actuatorToDrum(item.position)) : "--"} in (Raw: {round(item.position)})
                     </div>
                   </div>) :
                   (<div key={index} style={{ backgroundColor: "#cdc0a7", color: "#ffffff", width: "100%", marginBottom: "4px", padding: "clamp(0.2rem, 0.6vh, 0.5rem)", borderRadius: "8px" }}>
@@ -314,7 +313,7 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
                       {item.key}
                     </div>
                     <div style={cardValueStyle}>
-                      {round(actuatorToDrum(item.position))} in (Raw: {round(item.position)})
+                      {Number.isFinite(actuatorToDrum(item.position)) ? round(actuatorToDrum(item.position)) : "--"} in (Raw: {round(item.position)})
                     </div>
                   </div>
                   )

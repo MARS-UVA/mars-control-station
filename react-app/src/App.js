@@ -18,7 +18,7 @@ import SingleLiveDataStream from "./Components/SingleLiveDataStream";
 import ActuatorDataDisplay from "./Components/ActuatorDataDisplay";
 import Timer from "./Components/Timer";
 import ThemeChanger from "./Components/ThemeChanger";
-import TiltingRods from "./Components/TiltingRods";
+import DrumVisualizer from "./Components/DrumVisualizer";
 import DisplayMeter from "./Components/DisplayMeter";
 import RightButtonPanel from "./Components/RightButtonPanel";
 import ArmIndicator from "./gamepad/ArmIndicator";
@@ -267,8 +267,11 @@ const App = () => {
         </div>
 
         <div className="right-panel">
+          <DrumVisualizer
+            frontActuatorPosition={lastDataPoint.front_actuator_position}
+            rearActuatorPosition={lastDataPoint.back_actuator_position}
+          />
           <LiveDataPanel lastDataPoint={lastDataPoint} timestamp={timestamp} chartData={chartData} />
-          {/* <TiltingRods/> hiding since they're incomplete*/}
         </div>
       </div>
     </div>

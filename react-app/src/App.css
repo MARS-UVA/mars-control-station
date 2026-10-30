@@ -728,6 +728,9 @@ body {
 .right-panel {
   width: 28%;
   overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 /* Middle column: camera on top, lidar views below. */
@@ -833,6 +836,7 @@ body {
 
 /* Right column: the current charts take whatever height is left. */
 .right-panel > .panel {
+  flex: 1 1 0;
   height: 100%;
   min-height: 0;
   display: flex;
@@ -906,4 +910,3 @@ body {
   .control-panel .panel-title { font-size: 1rem; margin-bottom: 4px; }
   .lap-display { margin-bottom: 4px; }
 }
-
