@@ -72,8 +72,11 @@ that topic; `start-rosbridge.sh` warns about missing packages up front.
 JETSON_IP=<robot ip> ROS_DOMAIN_ID=0 ./start.sh   # real robot
 ```
 
-`start.sh` waits for rosbridge to accept connections before starting the UI,
-refuses to start on a busy port, and stops all three processes on Ctrl+C or a
+`start.sh` starts the relay and UI immediately, waits for the Jetson's Zenoh
+port (7447) without an overall timeout, then starts rosbridge and checks that
+it accepts connections within 20 seconds. The UI retries its connection while
+waiting. The script refuses to start on a busy port
+and stops all three processes on Ctrl+C or a
 closed terminal. `start-rosbridge.sh` also disables Zenoh scouting so a bench
 run cannot attach to a real robot on the LAN.
 

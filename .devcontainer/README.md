@@ -26,9 +26,10 @@ Inside the container, run:
 ./start.sh
 ```
 
-This starts rosbridge (`ros/rosbridge.launch.py`), waits for it to listen on
-9090, then starts the camera signaling relay and the React dev server with
-`REACT_APP_USE_ROSBRIDGE=true`. `JETSON_IP` is preset to `mars-jetson`
+This starts the camera signaling relay and React dev server immediately with
+`REACT_APP_USE_ROSBRIDGE=true`, waits for the Jetson's Zenoh port (7447), then
+starts rosbridge (`ros/rosbridge.launch.py`) on port 9090. Ctrl+C cancels the
+wait and stops the services. `JETSON_IP` is preset to `mars-jetson`
 in every profile, so there is no prompt; override it for a real robot. To check
 the UI against rosbridge with no Jetson running, use `./start-rosbridge.sh`
 instead, and to confirm a live Jetson link, run `./ros/verify-jetson-link.sh`
