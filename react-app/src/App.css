@@ -614,10 +614,14 @@ body {
   letter-spacing: 0.02em;
 }
 
-.theme-changer {
+.dashboard-settings {
   position: fixed;
   bottom: 8px;
   left: 35px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 10;
   background-color: var(--panel-bg-color);
   color: var(--primary-color);
   padding: 0px 0px;

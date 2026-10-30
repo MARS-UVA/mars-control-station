@@ -14,9 +14,11 @@ Inside the container:
 ./start.sh
 ```
 
-This starts rosbridge, waits for it to listen on 9090, then starts the camera
-signaling relay (ports 6767 and 6969) and the React dev server on port 3000
-with `REACT_APP_USE_ROSBRIDGE=true`. Ctrl+C stops all three.
+This starts the camera signaling relay (ports 6767 and 6969) and the React dev
+server (port 3000) immediately, with `REACT_APP_USE_ROSBRIDGE=true`. It waits
+for the Jetson's Zenoh port (7447) to become reachable before starting
+rosbridge (port 9090). The UI retries its connection in the meantime.
+The Zenoh wait has no overall timeout; Ctrl+C stops all three services.
 
 `start.sh` connects to the Jetson at `$JETSON_IP`. The devcontainer presets it to
 `mars-jetson` for a Jetson container on the same Docker host and shared

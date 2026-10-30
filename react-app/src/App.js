@@ -37,7 +37,7 @@ import useGamepadPublisher, { padToGamepadState } from './hooks/useGamepadPublis
 import useRobotStateToggle from './hooks/useRobotStateToggle';
 import useDigDumpAction from './hooks/useDigDumpAction';
 import H264CameraPanel from "./Components/H264CameraPanel";
-import { DIGDUMP_INDEX } from './hooks/rosTypes';
+import { ROBOT_PROFILES, DEFAULT_ROBOT } from './robotProfiles';
 import { toLegacyGamepadData, toRosGamepadState } from './rosbridgeAdapters';
 
 // Data-path switch. CRA inlines REACT_APP_* at build/start time, so this is a
@@ -78,6 +78,8 @@ const App = () => {
   const [robotState, setRobotState] = useState(0);
   const [directionSwitched, setDirectionSwitched] = useState(false);
   const [ESPWorking, setESPWorking] = useState(false);
+  const [selectedRobot, setSelectedRobot] = useState(DEFAULT_ROBOT);
+  const robotProfile = ROBOT_PROFILES[selectedRobot];
 
   useEffect(() => {
     // Legacy path: gamepad.js reads this module-level flag on every transmit.
@@ -140,16 +142,13 @@ const App = () => {
     sendCustomGamepadState: (frame) => publishCustomFrame(toRosGamepadState(frame)),
   }), [setLiveEnabled, publishCustomFrame]);
 
-  // RightButtonPanel's command senders on the rosbridge path. Same mapping as
-  // network_communication's ActionTypes handler on the Jetson: Dig/Dump are
-  // /digdump goals 1/2; Stop publishes ESTOP (3) to /robot_state/toggle, never
-  // a digdump goal, and retires any in-flight goal.
+  // Routine selection is independent of the DIG/DUMP robot state values.
   const rosCommands = useMemo(() => ({
     dig: () => {
-      setCommandNotice(sendGoal(DIGDUMP_INDEX.DIG) ? null : 'Dig not sent: rosbridge disconnected');
+      setCommandNotice(sendGoal('dig', robotProfile.digIndex) ? null : 'Dig not sent: rosbridge disconnected');
     },
     dump: () => {
-      setCommandNotice(sendGoal(DIGDUMP_INDEX.DUMP) ? null : 'Dump not sent: rosbridge disconnected');
+      setCommandNotice(sendGoal('dump', robotProfile.dumpIndex) ? null : 'Dump not sent: rosbridge disconnected');
     },
     stop: () => {
       // ESTOP first, unconditionally. It is the highest-priority signal and
@@ -157,12 +156,10 @@ const App = () => {
       // calls are synchronous and return whether anything was sent.
       const estopSent = estop();
       setCommandNotice(estopSent ? null : 'STOP not sent: rosbridge disconnected');
-      // Then retire the digdump goal so it cannot release ESTOP later by
-      // finishing on its own. On the current Jetson code the cancel itself
-      // still ends in TELEOP: see "Known gaps" in docs/rosbridge.md.
+      // Retire any running or queued routine after publishing ESTOP.
       cancelGoal();
     },
-  }), [sendGoal, cancelGoal, estop]);
+  }), [sendGoal, cancelGoal, estop, robotProfile]);
 
   // ---------------------------------------------------------------------------
   // Panel props: one source or the other, never both.
@@ -203,7 +200,7 @@ const App = () => {
               <div className="rosbridge-status-line">Gamepad publisher: {publisherStatus}</div>
               <div className="rosbridge-status-line">
                 Robot state: {robot.robotStateName} · digdump: {digDump.status}
-                {digDump.feedback?.status ? ` (${digDump.feedback.status})` : ''}
+                {digDump.feedback?.phase ? ` (${digDump.feedback.phase})` : ''}
               </div>
               {espNotPresent && (
                 <div className="rosbridge-status-line">ESP: not present (simulation backend)</div>
@@ -272,6 +269,17 @@ const App = () => {
             rearActuatorPosition={lastDataPoint.back_actuator_position}
           />
           <LiveDataPanel lastDataPoint={lastDataPoint} timestamp={timestamp} chartData={chartData} />
+        </div>
+        <div className="dashboard-settings">
+          <label htmlFor="robot-selection">Robot </label>
+          <select id="robot-selection" value={selectedRobot}
+            disabled={!USE_ROSBRIDGE || ['active', 'canceling', 'unknown'].includes(digDump.status)}
+            onChange={event => setSelectedRobot(event.target.value)}>
+            {Object.entries(ROBOT_PROFILES).map(([id, profile]) => (
+              <option key={id} value={id}>{profile.label}</option>
+            ))}
+          </select>
+          <ThemeChanger />
         </div>
       </div>
     </div>

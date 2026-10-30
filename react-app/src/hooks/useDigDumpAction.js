@@ -1,9 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Action } from 'roslib';
-import { DIGDUMP_INDEX } from './rosTypes';
 
-// How long a superseding goal waits for the old goal's terminal result before
-// being sent anyway (and most likely rejected -- see below).
+// Bound the wait for cancellation without starting overlapping robot routines.
 const SUPERSEDE_TIMEOUT_MS = 3000;
 
 function clearPending(pendingRef) {
@@ -12,38 +10,12 @@ function clearPending(pendingRef) {
 }
 
 /**
- * Client for the /digdump action (autonomy_msgs/action/AutonomousActions:
- * goal { int32 index }, result { bool success }, feedback { string status }).
- *
- * Two fixes over the plain roslib Action pattern:
- *  a) cancelGoal() records the goal id as operator-canceled, so the server's
- *     resulting CANCELED result (delivered through roslib's failed callback)
- *     settles as 'canceled' and is never reported as 'aborted'.
- *  b) sendGoal() cancels a repeated command without restarting it. A different
- *     command replaces the in-flight goal, and callbacks for any goal
- *     id other than the current one are ignored, so a late result from the old
- *     goal can't overwrite the new goal's status.
- *
- * For (b), the new goal is held until the old goal reaches a terminal result:
- * digdump's handle_goal REJECTS any goal while one is still active, so sending
- * immediately after the cancel is always rejected. If the old goal hasn't
- * settled within SUPERSEDE_TIMEOUT_MS the new goal is sent regardless.
- *
- * roslib registers a ros listener per goal id and never removes it; this hook
- * removes it once that goal reaches a terminal result.
- *
- * Unmounting does NOT cancel a running goal: a remount must not silently stop
- * an autonomy run. Cancel explicitly (or estop) when that is intended.
- *
- * Nothing is sent while disconnected (roslib would queue it and start the goal
- * whenever the link came back); sendGoal/cancelGoal return whether they sent.
- * If the link drops with a goal in flight its result can never arrive (it
- * belonged to the old rosbridge session), so the goal is dropped and status
- * becomes 'unknown': the robot may still be running it.
- *
- * @returns {{ status: 'idle'|'active'|'canceling'|'succeeded'|'canceled'|'aborted'|'rejected'|'unknown',
- *             feedback: { status: string }|null, result: { success: boolean }|null,
- *             error: string|null, sendGoal: (index: number) => boolean, cancelGoal: () => boolean }}
+ * Coordinates /dig (autonomy_msgs/action/Dig) and /dump
+ * (autonomy_msgs/action/Dump). Both take { index }, return { success }, and
+ * report { phase }. Index selects a robot routine, not a RobotState value.
+ * Repeating a command cancels it; replacing one waits for cancellation.
+ * Disconnects discard pending commands and mark running outcomes unknown.
+ * Unmount removes listeners without silently canceling robot autonomy.
  */
 export default function useDigDumpAction(ros) {
   const [status, setStatus] = useState('idle');
@@ -60,11 +32,11 @@ export default function useDigDumpAction(ros) {
 
   useEffect(() => {
     if (!ros) return undefined;
-    actionRef.current = new Action({
+    actionRef.current = Object.fromEntries(['dig', 'dump'].map(name => [name, new Action({
       ros,
-      name: '/digdump',
-      actionType: 'autonomy_msgs/action/AutonomousActions',
-    });
+      name: `/${name}`,
+      actionType: `autonomy_msgs/action/${name === 'dig' ? 'Dig' : 'Dump'}`,
+    })]));
 
     const onClose = () => {
       const lostId = goalIdRef.current;
@@ -96,7 +68,7 @@ export default function useDigDumpAction(ros) {
   // terminal callbacks of a superseded goal can dispatch the pending goal.
   const dispatchRef = useRef(null);
   dispatchRef.current = (index) => {
-    const action = actionRef.current;
+    const action = actionRef.current?.[index.split(':')[0]];
     if (!action || !action.ros.isConnected) {
       setError('Goal not sent: rosbridge is disconnected');
       setStatus('idle');
@@ -154,7 +126,7 @@ export default function useDigDumpAction(ros) {
     setResult(null);
     setError(null);
     setStatus('active');
-    id = action.sendGoal({ index }, onResult, onFeedback, onFailed) ?? null;
+    id = action.sendGoal({ index: Number(index.split(':')[1]) }, onResult, onFeedback, onFailed) ?? null;
     goalIdRef.current = id;
     goalIndexRef.current = id === null ? null : index;
     return true;
@@ -163,7 +135,7 @@ export default function useDigDumpAction(ros) {
   const cancelGoal = useCallback(() => {
     // Also drops a goal still waiting on a supersede.
     clearPending(pendingRef);
-    const action = actionRef.current;
+    const action = actionRef.current?.[goalIndexRef.current?.split(':')[0]];
     const id = goalIdRef.current;
     if (!id || !action || !action.ros.isConnected) return false;
     operatorCanceledRef.current.add(id);
@@ -172,11 +144,12 @@ export default function useDigDumpAction(ros) {
     return true;
   }, []);
 
-  const sendGoal = useCallback((index) => {
-    if (!Object.values(DIGDUMP_INDEX).includes(index)) {
-      throw new Error(`Invalid digdump index ${index}; use DIGDUMP_INDEX from hooks/rosTypes`);
+  const sendGoal = useCallback((name, routineIndex) => {
+    if (!['dig', 'dump'].includes(name) || !Number.isInteger(routineIndex) || routineIndex < 0) {
+      throw new Error('Expected dig or dump and a nonnegative robot routine index');
     }
-    const action = actionRef.current;
+    const index = `${name}:${routineIndex}`;
+    const action = actionRef.current?.[name];
     if (!action || !action.ros.isConnected) return false;
 
     const previousId = goalIdRef.current;
@@ -190,18 +163,14 @@ export default function useDigDumpAction(ros) {
     // Fix (b): retire the in-flight goal, then send once it has settled.
     clearPending(pendingRef);
     operatorCanceledRef.current.add(previousId);
-    action.cancelGoal(previousId);
+    actionRef.current[goalIndexRef.current.split(':')[0]].cancelGoal(previousId);
     setStatus('canceling');
     pendingRef.current = {
       index,
       timer: setTimeout(() => {
         if (!pendingRef.current) return;
-        const next = pendingRef.current.index;
         pendingRef.current = null;
-        // Stop tracking the old goal so its late result is ignored.
-        goalIdRef.current = null;
-        goalIndexRef.current = null;
-        dispatchRef.current(next);
+        setError('Replacement not sent: previous routine has not confirmed cancellation');
       }, SUPERSEDE_TIMEOUT_MS),
     };
     return true;
