@@ -19,10 +19,3 @@ export const DRIVE_MODE = Object.freeze({
   AUTONOMOUS: 1,
   ADVANCED_TELEOP: 2,
 });
-
-// autonomy_msgs/action/AutonomousActions goal.index, per network_communication's
-// ActionTypes enum (server.hpp).
-export const DIGDUMP_INDEX = Object.freeze({
-  DIG: 1,
-  DUMP: 2,
-});

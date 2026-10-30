@@ -95,11 +95,17 @@ about 1 Hz, which makes the gamepad publish rate and topic rates look wrong.
 | `/esp_working` | `std_msgs/UInt8` (nothing publishes it) | robot → UI | `useRobotState` |
 | `/human_input_state` | `teleop_msgs/HumanInputState`, 30 Hz | UI → robot | `useGamepadPublisher` |
 | `/robot_state/toggle` | `std_msgs/UInt8` | UI → robot | `useRobotStateToggle` |
-| `/digdump` | `autonomy_msgs/action/AutonomousActions` | UI → robot | `useDigDumpAction` |
+| `/dig` | `autonomy_msgs/action/Dig` | UI → robot | `useDigDumpAction` |
+| `/dump` | `autonomy_msgs/action/Dump` | UI → robot | `useDigDumpAction` |
 
 Constants live in `react-app/src/hooks/rosTypes.js`. `RobotState` is TELEOP 0,
 DIG 1, DUMP 2, ESTOP 3. `HumanInputState.drive_mode` uses its own enum (TELEOP 0,
-AUTONOMOUS 1, ADVANCED_TELEOP 2). Digdump goal index is DIG 1, DUMP 2.
+AUTONOMOUS 1, ADVANCED_TELEOP 2). Both goals take `{ index }`, return `{ success }`, and report `{ phase }`.
+The bottom Robot selector uses `react-app/src/robotProfiles.js`; Bruno is the
+only currently implemented profile, with index 0 for both routines. Add profiles
+as Jetson variants become available. Selection is locked during active,
+canceling, or unknown goals and on the legacy transport. This selects routines
+on the connected Jetson; it does not change the rosbridge host.
 
 ## UI behaviour
 
@@ -114,7 +120,9 @@ as stop it. The status block shows "not sent: rosbridge disconnected" instead.
 Clicking Dig or Dump again while that command is running attempts to cancel
 its goal without restarting it. Clicking the other command cancels the old
 goal and waits for it to settle before sending the replacement. Repeating a
-queued command cancels the replacement too. Keyboard shortcuts behave the same.
+queued command cancels the replacement too. If cancellation is not confirmed
+within 3 seconds, the replacement is dropped and an error is shown; the previous
+goal remains tracked. Keyboard shortcuts behave the same.
 
 STOP publishes ESTOP to `/robot_state/toggle` first, unconditionally, then
 cancels any digdump goal.
@@ -129,13 +137,11 @@ sent while rosbridge is connected.
 
 ## Known gaps
 
-- `robot_state_controller` has no ESTOP latch: any non-ESTOP toggle received
-  while in ESTOP becomes the new state. `digdump` publishes TELEOP to
-  `/robot_state/toggle` on cancel and on completion. So STOP during an autonomy
-  run ends in TELEOP with the goal dead, not in a held ESTOP. Press STOP again
-  for a held ESTOP. The legacy gateway behaved the same way. The fix belongs on
-  the Jetson: ignore non-ESTOP toggles while in ESTOP, and have `digdump` abort
-  on ESTOP instead of publishing TELEOP.
+- ESTOP is a toggle, not a latch: pressing STOP while already in ESTOP releases
+  it to TELEOP, and a non-ESTOP state request can also leave ESTOP. The separate
+  Dig/Dump servers abort when displaced and avoid restoring TELEOP after they
+  observe another state, but this does not provide a latched emergency stop.
+
 - With `server/ws_server.js` no longer serving port 3001, the
   `REACT_APP_USE_ROSBRIDGE=false` path connects to nothing.
 - `udp_client` and `udp_server` still launch on the Jetson and talk to nothing.
