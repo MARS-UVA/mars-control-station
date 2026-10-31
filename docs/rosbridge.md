@@ -100,7 +100,8 @@ about 1 Hz, which makes the gamepad publish rate and topic rates look wrong.
 
 Constants live in `react-app/src/hooks/rosTypes.js`: TELEOP 0, DIG 1, DUMP 2,
 ESTOP 3, NAVIGATION 4, FULL_AUTO 5, IDLE 6. `HumanInputState.drive_mode` is a
-separate enum. Manager operations are NAVIGATE 0, DIG 1, DUMP 2, FULL_AUTO 3;
+separate enum. Manager operations are NAVIGATE 0, DIG 1, DUMP 2, FULL_AUTO 3,
+RUN_START 4;
 these are not robot-mode numbers. Goals include `operation`, `routine_index`,
 `target_pose`, and a positive `time_limit_sec`. Feedback reports `state`,
 `latest_outcome`, `completed_cycles`, and `elapsed_sec`; results report `success`,
