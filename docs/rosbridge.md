@@ -59,8 +59,7 @@ Windows mount and build output must not be committed. `postCreateCommand` runs
 all of this.
 
 mars-jetson uses the same interface repository. Both checkouts must contain
-`autonomy_msgs/ManageRobot`, the new `RobotState` constants, and
-`robot_control_msgs/SetControl`. Rebuild the message workspace and restart
+`autonomy_msgs/ManageRobot` and the new `RobotState` constants. Rebuild the message workspace and restart
 rosbridge after updating interfaces. Pin both submodules to the same interface
 commit once those changes are committed.
 
