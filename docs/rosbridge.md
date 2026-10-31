@@ -58,10 +58,11 @@ builds them. The workspace is outside the repo because the repo lives on a
 Windows mount and build output must not be committed. `postCreateCommand` runs
 all of this.
 
-mars-jetson keeps its own copy of these packages in `src/`, not the submodule.
-When the submodule pin moves, check that the two still match. If rosbridge
-cannot import a package it logs "Cannot infer topic type" for every message on
-that topic; `start-rosbridge.sh` warns about missing packages up front.
+mars-jetson uses the same interface repository. Both checkouts must contain
+`autonomy_msgs/ManageRobot`, the new `RobotState` constants, and
+`robot_control_msgs/SetControl`. Rebuild the message workspace and restart
+rosbridge after updating interfaces. Pin both submodules to the same interface
+commit once those changes are committed.
 
 ## Running
 
@@ -94,13 +95,17 @@ about 1 Hz, which makes the gamepad publish rate and topic rates look wrong.
 | `/arm_control_mode` | `robot_control_msgs/ArmControlMode` | robot → UI | `useRobotState` |
 | `/esp_working` | `std_msgs/UInt8` (nothing publishes it) | robot → UI | `useRobotState` |
 | `/human_input_state` | `teleop_msgs/HumanInputState`, 30 Hz | UI → robot | `useGamepadPublisher` |
-| `/robot_state/toggle` | `std_msgs/UInt8` | UI → robot | `useRobotStateToggle` |
-| `/dig` | `autonomy_msgs/action/Dig` | UI → robot | `useDigDumpAction` |
-| `/dump` | `autonomy_msgs/action/Dump` | UI → robot | `useDigDumpAction` |
+| `/manage_robot` | `autonomy_msgs/action/ManageRobot` | UI → manager | `useManagedAction` |
+| `/robot_state/estop` | `std_srvs/srv/SetBool` | UI → manager | `useRobotControl` |
+| `/robot_state/teleop` | `std_srvs/srv/SetBool` | UI → manager | `useRobotControl` |
 
-Constants live in `react-app/src/hooks/rosTypes.js`. `RobotState` is TELEOP 0,
-DIG 1, DUMP 2, ESTOP 3. `HumanInputState.drive_mode` uses its own enum (TELEOP 0,
-AUTONOMOUS 1, ADVANCED_TELEOP 2). Both goals take `{ index }`, return `{ success }`, and report `{ phase }`.
+Constants live in `react-app/src/hooks/rosTypes.js`: TELEOP 0, DIG 1, DUMP 2,
+ESTOP 3, NAVIGATION 4, FULL_AUTO 5, IDLE 6. `HumanInputState.drive_mode` is a
+separate enum. Manager operations are NAVIGATE 0, DIG 1, DUMP 2, FULL_AUTO 3;
+these are not robot-mode numbers. Goals include `operation`, `routine_index`,
+`target_pose`, and a positive `time_limit_sec`. Feedback reports `state`,
+`latest_outcome`, `completed_cycles`, and `elapsed_sec`; results report `success`,
+`outcome`, and `completed_cycles`.
 The bottom Robot selector uses `react-app/src/robotProfiles.js`; Bruno is the
 only currently implemented profile, with index 0 for both routines. Add profiles
 as Jetson variants become available. Selection is locked during active,
@@ -113,19 +118,24 @@ on the connected Jetson; it does not change the rosbridge host.
 `App.js` passes either the rosbridge hooks or the old `packets.js` functions to
 the same panels; only one path is ever loaded.
 
-No hook sends while rosbridge is disconnected. roslib would queue the message and
-flush it on reconnect, and a late ESTOP toggle can release the robot as easily
-as stop it. The status block shows "not sent: rosbridge disconnected" instead.
+No command is queued while disconnected. An interrupted action is shown as
+unknown; reconnecting does not resend it. Use STOP, wait for the manager to finish
+canceling, then explicitly clear E-stop to acknowledge idle before new work.
 
-Clicking Dig or Dump again while that command is running attempts to cancel
-its goal without restarting it. Clicking the other command cancels the old
-goal and waits for it to settle before sending the replacement. Repeating a
-queued command cancels the replacement too. If cancellation is not confirmed
-within 3 seconds, the replacement is dropped and an error is shown; the previous
-goal remains tracked. Keyboard shortcuts behave the same.
+The existing STOP button toggles E-stop through `/robot_state/estop`: `true`
+engages it and `false` clears it. After an acknowledged clear, the button requests
+teleop through `/robot_state/teleop`. A rejected clear never enables teleop.
+Unknown robot state or another pending service
+request always chooses the stop side. The manager acknowledges each request;
+a rejected clear is shown in the existing status area.
 
-STOP publishes ESTOP to `/robot_state/toggle` first, unconditionally, then
-cancels any digdump goal.
+Operations return to teleop when finished, unless E-stop was explicitly engaged.
+The existing Dig/Dump buttons use `/manage_robot` with the selected routine index
+and a 600-second deadline. Repeating the active command requests cancellation;
+a different operation is refused until the current one finishes. The UI never
+queues replacements or automatically clears E-stop for an autonomous goal.
+Manager feedback is shown in the existing routine status line. The dashboard
+layout and controls are unchanged; full-auto and navigation have no new UI here.
 
 The ESP banner uses `useEspStatus`: the ESP is "online"
 if any of the three serial topics arrived in the last 2 s, the same rule the old
@@ -136,11 +146,6 @@ keyboard shortcuts remain available regardless of ESP status; goals are only
 sent while rosbridge is connected.
 
 ## Known gaps
-
-- ESTOP is a toggle, not a latch: pressing STOP while already in ESTOP releases
-  it to TELEOP, and a non-ESTOP state request can also leave ESTOP. The separate
-  Dig/Dump servers abort when displaced and avoid restoring TELEOP after they
-  observe another state, but this does not provide a latched emergency stop.
 
 - With `server/ws_server.js` no longer serving port 3001, the
   `REACT_APP_USE_ROSBRIDGE=false` path connects to nothing.

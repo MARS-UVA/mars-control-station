@@ -36,7 +36,7 @@ check "Zenoh router reachable at $jetson:7447" \
 check "ros2 node list shows the Jetson's nodes" bash -c '
     nodes=$(ros2 node list --no-daemon)
     echo "$nodes"
-    for n in /teleop /robot_state_controller /controller_manager; do
+    for n in /teleop /robot_super_intelligence /command_mux /controller_manager; do
         grep -qx "$n" <<<"$nodes" || { echo "missing $n"; exit 1; }
     done'
 check "/robot_state returns a value" \

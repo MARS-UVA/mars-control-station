@@ -31,8 +31,9 @@ import useTelemetry from './hooks/useTelemetry';
 import useRobotState from './hooks/useRobotState';
 import useEspStatus, { ESP_STATUS } from './hooks/useEspStatus';
 import useGamepadPublisher, { padToGamepadState } from './hooks/useGamepadPublisher';
-import useRobotStateToggle from './hooks/useRobotStateToggle';
-import useDigDumpAction from './hooks/useDigDumpAction';
+import useRobotControl from './hooks/useRobotControl';
+import useManagedAction from './hooks/useManagedAction';
+import { ROBOT_STATE } from './hooks/rosTypes';
 import H264CameraPanel from "./Components/H264CameraPanel";
 import { ROBOT_PROFILES, DEFAULT_ROBOT } from './robotProfiles';
 import { toLegacyGamepadData, toRosGamepadState } from './rosbridgeAdapters';
@@ -108,9 +109,9 @@ const App = () => {
   const espStatus = useEspStatus(ros, isConnected, telemetry.lastReceived);
   const { gamepadStatus: publisherStatus, setLiveEnabled, publishCustomFrame } =
     useGamepadPublisher(ros, { directionSwitched });
-  const { estop } = useRobotStateToggle(ros);
-  const digDump = useDigDumpAction(ros);
-  const { sendGoal, cancelGoal } = digDump;
+  const robotControl = useRobotControl(ros);
+  const digDump = useManagedAction(ros);
+  const { sendGoal } = digDump;
   // Operator-visible reason the last button press did nothing (hooks return
   // false instead of queueing while disconnected).
   const [commandNotice, setCommandNotice] = useState(null);
@@ -133,21 +134,27 @@ const App = () => {
   // Routine selection is independent of the DIG/DUMP robot state values.
   const rosCommands = useMemo(() => ({
     dig: () => {
-      setCommandNotice(sendGoal('dig', robotProfile.digIndex) ? null : 'Dig not sent: rosbridge disconnected');
+      setCommandNotice(null);
+      sendGoal('dig', { routineIndex: robotProfile.digIndex });
     },
     dump: () => {
-      setCommandNotice(sendGoal('dump', robotProfile.dumpIndex) ? null : 'Dump not sent: rosbridge disconnected');
+      setCommandNotice(null);
+      sendGoal('dump', { routineIndex: robotProfile.dumpIndex });
     },
     stop: () => {
-      // ESTOP first, unconditionally. It is the highest-priority signal and
-      // must never wait on, or be skipped because of, the cancel below. Both
-      // calls are synchronous and return whether anything was sent.
-      const estopSent = estop();
-      setCommandNotice(estopSent ? null : 'STOP not sent: rosbridge disconnected');
-      // Retire any running or queued routine after publishing ESTOP.
-      cancelGoal();
+      setCommandNotice(null);
+      // Unknown state or another pending request always chooses the stop side.
+      const clearing = robot.robotState === ROBOT_STATE.ESTOP && !robotControl.pending;
+      const request = clearing ? robotControl.clearEstop() : robotControl.estop();
+      request.then(async success => {
+        if (success && clearing) {
+          digDump.acknowledgeIdle();
+          await robotControl.setTeleop(true);
+        }
+      });
     },
-  }), [sendGoal, cancelGoal, estop, robotProfile]);
+  }), [sendGoal, robotControl.estop, robotControl.clearEstop, robotControl.setTeleop, robotControl.pending,
+    robot.robotState, digDump.acknowledgeIdle, robotProfile]);
 
   // ---------------------------------------------------------------------------
   // Panel props: one source or the other, never both.
@@ -184,13 +191,13 @@ const App = () => {
               <div className="rosbridge-status-line">Gamepad publisher: {publisherStatus}</div>
               <div className="rosbridge-status-line">
                 Robot state: {robot.robotStateName} · digdump: {digDump.status}
-                {digDump.feedback?.phase ? ` (${digDump.feedback.phase})` : ''}
+                {digDump.feedback?.state ? ` (${digDump.feedback.state})` : ''}
               </div>
               {espNotPresent && (
                 <div className="rosbridge-status-line">ESP: not present (simulation backend)</div>
               )}
-              {(commandNotice || digDump.error) && (
-                <div className="rosbridge-status-error">{commandNotice || digDump.error}</div>
+              {(commandNotice || robotControl.error || digDump.error) && (
+                <div className="rosbridge-status-error">{commandNotice || robotControl.error || digDump.error}</div>
               )}
             </div>
           )}

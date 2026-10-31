@@ -10,6 +10,9 @@ export const ROBOT_STATE = Object.freeze({
   DIG: 1,
   DUMP: 2,
   ESTOP: 3,
+  NAVIGATION: 4,
+  FULL_AUTO: 5,
+  IDLE: 6,
 });
 
 // teleop_msgs/msg/HumanInputState. drive_mode uses these, NOT RobotState's
