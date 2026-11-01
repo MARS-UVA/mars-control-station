@@ -15,6 +15,7 @@
     "recharts": "^2.13.0",
     "roslib": "^2.1.0",
     "three": "^0.176.0",
+    "urdf-loader": "^0.13.1",
     "web-vitals": "^2.1.4"
   },
   "scripts": {

@@ -1,15 +1,11 @@
 import React, { useMemo, memo, useEffect } from "react";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, ReferenceLine, CartesianGrid, Legend, Tooltip } from "recharts";
 import TiltMeter from "./TiltMeter";
-import { calculateDrumKinematics } from "./drumKinematics";
+import DrumVisualizer from "./DrumVisualizer";
 
 // This component renders a panel with charts and live values
 function LiveDataPanel({ lastDataPoint, chartData }) {
-  const GROUNDLEVEL = 0.69; // Example threshold for actuator position to determine if it's on the ground
-
   const round = num => (Math.round((num + Number.EPSILON) * 100) / 100).toFixed(2);
-
-  const actuatorToDrum = (position) => calculateDrumKinematics(position)?.verticalOffsetInches;
 
   // Card text and spacing scale with the screen height (clamp + vh), so the
   // whole panel fits one screen and the current charts keep usable space.
@@ -281,46 +277,11 @@ function LiveDataPanel({ lastDataPoint, chartData }) {
             </div>
             {/* {renderMultiChart("temperature")} */}
           </div>
-          {/* <div className="chart-space">
-            <h3>Actuator Positions</h3>
-            {renderMultiChart("position")}
-          </div> */}
           <div className="chart-space chart-column">
-
-            <h3 style={{ fontSize: "1rem", fontWeight: 500, opacity: 0.85 }}>Actuator Positions</h3>
-            <div style={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "center", margin: "clamp(2px, 1vh, 10px) 0", gap: "10px" }}>
-              {
-                [
-                  {
-                    key: "Blue Actuator",
-                    position: lastDataPoint.front_actuator_position,
-                  }, {
-                    key: "Orange Actuator",
-                    position: lastDataPoint.back_actuator_position,
-                  }
-                ].map((item, index) => (
-                  item.position < GROUNDLEVEL ? (
-                    <div key={index} style={{ backgroundColor: "#8acfce", color: "#ffffff", width: "100%", marginBottom: "4px", padding: "clamp(0.2rem, 0.6vh, 0.5rem)", borderRadius: "8px" }}>
-                    <div style={cardTitleStyle}>
-                      {item.key}
-                    </div>
-                    <div style={cardValueStyle}>
-                      {Number.isFinite(actuatorToDrum(item.position)) ? round(actuatorToDrum(item.position)) : "--"} in (Raw: {round(item.position)})
-                    </div>
-                  </div>) :
-                  (<div key={index} style={{ backgroundColor: "#cdc0a7", color: "#ffffff", width: "100%", marginBottom: "4px", padding: "clamp(0.2rem, 0.6vh, 0.5rem)", borderRadius: "8px" }}>
-                    <div style={cardTitleStyle}>
-                      {item.key}
-                    </div>
-                    <div style={cardValueStyle}>
-                      {Number.isFinite(actuatorToDrum(item.position)) ? round(actuatorToDrum(item.position)) : "--"} in (Raw: {round(item.position)})
-                    </div>
-                  </div>
-                  )
-                  
-                ))
-              }
-            </div>
+            <DrumVisualizer
+              frontActuatorPosition={lastDataPoint.front_actuator_position}
+              rearActuatorPosition={lastDataPoint.back_actuator_position}
+            />
             <div className="chart-space chart-fill">
               <h3>Wheel Currents (A)</h3>
               <div className="chart-fill-body">{renderMultiChart("wheel-current")}</div>

@@ -1,6 +1,8 @@
 .drum-visualizer {
+  display: flex;
   flex: 0 0 auto;
   min-width: 0;
+  flex-direction: column;
   padding: 8px 10px 6px;
   border: 1px solid var(--border-color);
   border-radius: 8px;
@@ -28,78 +30,16 @@
   text-align: right;
 }
 
-.drum-visualizer-diagram {
+.drum-model-view {
+  width: 100%;
+  height: clamp(125px, 20vh, 210px);
+  min-height: 125px;
+}
+
+.drum-model-view canvas {
   display: block;
   width: 100%;
-  height: clamp(105px, 16vh, 145px);
-  overflow: visible;
-}
-
-.drum-ground {
-  stroke: var(--border-color);
-  stroke-dasharray: 4 4;
-  stroke-width: 1.5;
-}
-
-.drum-robot-body rect {
-  fill: var(--border-color);
-  stroke: var(--secondary-color);
-  stroke-width: 1.5;
-}
-
-.drum-chassis-rail {
-  stroke: var(--secondary-color);
-  stroke-width: 2;
-}
-
-.drum-pivot {
-  fill: var(--primary-color);
-  stroke: var(--panel-bg-color);
-  stroke-width: 2;
-}
-
-.drum-robot-wheels circle:first-child,
-.drum-robot-wheels circle:nth-child(2) {
-  fill: var(--bg-color);
-  stroke: var(--secondary-color);
-  stroke-width: 3;
-}
-
-.drum-robot-wheels circle:nth-child(3),
-.drum-robot-wheels circle:nth-child(4) {
-  fill: var(--secondary-color);
-}
-
-.drum-arm {
-  stroke-width: 5;
-  stroke-linecap: round;
-}
-
-.drum-angle-arc {
-  fill: none;
-  stroke-dasharray: 3 3;
-  stroke-width: 1.5;
-}
-
-.drum-wheel {
-  fill: var(--bg-color);
-  stroke-width: 3;
-}
-
-.drum-inner-ring {
-  fill: none;
-  stroke-width: 1.5;
-  opacity: 0.75;
-}
-
-.drum-spoke {
-  stroke: var(--secondary-color);
-  stroke-width: 1.5;
-}
-
-.drum-axle {
-  stroke: var(--panel-bg-color);
-  stroke-width: 1;
+  height: 100%;
 }
 
 .drum-visualizer-readings {
@@ -142,4 +82,8 @@
   color: var(--secondary-color);
   font-size: 0.65rem;
   text-align: center;
+}
+
+.drum-visualizer-status.error {
+  color: #c53030;
 }
