@@ -47,6 +47,12 @@ const USE_ROSBRIDGE = process.env.REACT_APP_USE_ROSBRIDGE === 'true';
 // Old WebRTC cameras stay available until step 4: REACT_APP_LEGACY_WEBRTC=true
 const LEGACY_WEBRTC = process.env.REACT_APP_LEGACY_WEBRTC === 'true';
 
+const selectedRobot = process.env.REACT_APP_ROBOT || DEFAULT_ROBOT;
+const robotProfile = ROBOT_PROFILES[selectedRobot];
+if (!robotProfile) {
+  throw new Error(`Unknown robot profile "${selectedRobot}" in REACT_APP_ROBOT.`);
+}
+
 // packets.js opens ws://localhost:3001 and starts its 30 ms transmit loop the
 // moment it is evaluated, so the legacy modules are only loaded on the legacy
 // path. A static import would run that loop on the rosbridge path too.
@@ -77,8 +83,7 @@ const App = () => {
   const [robotState, setRobotState] = useState(0);
   const [directionSwitched, setDirectionSwitched] = useState(false);
   const [ESPWorking, setESPWorking] = useState(false);
-  const [selectedRobot, setSelectedRobot] = useState(DEFAULT_ROBOT);
-  const robotProfile = ROBOT_PROFILES[selectedRobot];
+  const isFullDashboard = robotProfile.layout === 'full';
 
   useEffect(() => {
     // Legacy path: gamepad.js reads this module-level flag on every transmit.
@@ -192,37 +197,37 @@ const App = () => {
 
 
       <div className="content">
-        <div className="left-panel">
-          {USE_ROSBRIDGE && (
-            <div className="rosbridge-status">
-              <ConnectionStatus status={rosStatus} />
-              <div className="rosbridge-status-line">Gamepad publisher: {publisherStatus}</div>
-              <div className="rosbridge-status-line">
-                Robot state: {robot.robotStateName} · digdump: {digDump.status}
-                {digDump.feedback?.phase ? ` (${digDump.feedback.phase})` : ''}
-              </div>
-              {espNotPresent && (
-                <div className="rosbridge-status-line">ESP: not present (simulation backend)</div>
+        <div className={`left-panel${isFullDashboard ? '' : ' left-panel--minimal'}`}>
+          {isFullDashboard && (
+            <>
+              {USE_ROSBRIDGE && (
+                <div className="rosbridge-status">
+                  <ConnectionStatus status={rosStatus} />
+                  <div className="rosbridge-status-line">Gamepad publisher: {publisherStatus}</div>
+                  <div className="rosbridge-status-line">
+                    Robot state: {robot.robotStateName} · digdump: {digDump.status}
+                    {digDump.feedback?.phase ? ` (${digDump.feedback.phase})` : ''}
+                  </div>
+                  {espNotPresent && (
+                    <div className="rosbridge-status-line">ESP: not present (simulation backend)</div>
+                  )}
+                  {(commandNotice || digDump.error) && (
+                    <div className="rosbridge-status-error">{commandNotice || digDump.error}</div>
+                  )}
+                </div>
               )}
-              {(commandNotice || digDump.error) && (
-                <div className="rosbridge-status-error">{commandNotice || digDump.error}</div>
-              )}
-            </div>
+              <GamepadPanel gamepadStatus={gamepadStatus} setGamepadStatus={setGamepadStatus} gamepadData={gamepadData} setGamepadData={setGamepadData} gamepadIndex={0} camera0Active={camera0Active} camera4Active={camera4Active} getGamepadState={gamepadFns.getGamepadState} setTransmissionActive={gamepadFns.setTransmissionActive} sendCustomGamepadState={gamepadFns.sendCustomGamepadState} />
+              <ArmIndicator frontArmActive={panelFrontArmActive} backArmActive={panelBackArmActive} label="Arm Control" directionSwitched={directionSwitched} />
+              <RightButtonPanel currentActionState={panelRobotState} backArmActive={panelBackArmActive} onDig={commands.dig} onDump={commands.dump} onStop={commands.stop} />
+              <DirectionChangeButton directionSwitched={directionSwitched} setDirectionSwitched={setDirectionSwitched} gamepadData={gamepadData} />
+              {espNotPresent && <SimDrivePad setVirtualStick={setVirtualStick} />}
+            </>
           )}
-          <GamepadPanel gamepadStatus={gamepadStatus} setGamepadStatus={setGamepadStatus} gamepadData={gamepadData} setGamepadData={setGamepadData} gamepadIndex={0} camera0Active={camera0Active} camera4Active={camera4Active} getGamepadState={gamepadFns.getGamepadState} setTransmissionActive={gamepadFns.setTransmissionActive} sendCustomGamepadState={gamepadFns.sendCustomGamepadState} />
-          <ArmIndicator frontArmActive={panelFrontArmActive} backArmActive={panelBackArmActive} label="Arm Control" directionSwitched={directionSwitched} />
-          {/* <GamepadPanel gamepadStatus={gamepad2Status} setGamepadStatus={setGamepad2Status} gamepadData={gamepad2Data} setGamepadData={setGamepad2Data} gamepadIndex={1} camera0Active={camera0Active} camera4Active={camera4Active} /> */}
-          {/* Hiding the displays that don't do anything currently */}
-          {/* <DisplayMeter current={80} total={100} left = {155} top = {580} height = {40} width = {180} label="Current" />  */} {/*ADD THE METHODS OF GETTING THESE VALUES!!*/}
-          {/* <DisplayMeter current={80} total={100} left = {155} top = {655} height = {40} width = {180} label="Capacity" /> */}
-          {/* <ActuatorDataDisplay lastDataPoint={lastDataPoint}/> */}
-
-          <RightButtonPanel currentActionState={panelRobotState} backArmActive={panelBackArmActive} onDig={commands.dig} onDump={commands.dump} onStop={commands.stop} ></RightButtonPanel>
-          <DirectionChangeButton directionSwitched={directionSwitched} setDirectionSwitched={setDirectionSwitched} gamepadData={gamepadData} />
-          {/* Gamepad-free driving, only with the gazebo backend detected. */}
-          {espNotPresent && <SimDrivePad setVirtualStick={setVirtualStick} />}
-          <Timer />
-          <ThemeChanger />
+          <div className="left-panel-footer">
+            <Timer />
+            {isFullDashboard && <ThemeChanger />}
+            <div className="robot-label">Robot: {robotProfile.label}</div>
+          </div>
         </div>
 
         <div className="middle-panel">
@@ -262,20 +267,13 @@ const App = () => {
           )}
         </div>
 
-        <div className="right-panel">
-          <LiveDataPanel lastDataPoint={lastDataPoint} timestamp={timestamp} chartData={chartData} />
-        </div>
-        <div className="dashboard-settings">
-          <label htmlFor="robot-selection">Robot </label>
-          <select id="robot-selection" value={selectedRobot}
-            disabled={!USE_ROSBRIDGE || ['active', 'canceling', 'unknown'].includes(digDump.status)}
-            onChange={event => setSelectedRobot(event.target.value)}>
-            {Object.entries(ROBOT_PROFILES).map(([id, profile]) => (
-              <option key={id} value={id}>{profile.label}</option>
-            ))}
-          </select>
-          <ThemeChanger />
-        </div>
+        {isFullDashboard ? (
+          <div className="right-panel">
+            <LiveDataPanel lastDataPoint={lastDataPoint} timestamp={timestamp} chartData={chartData} />
+          </div>
+        ) : (
+          <div className="right-panel" aria-hidden="true" />
+        )}
       </div>
     </div>
   );

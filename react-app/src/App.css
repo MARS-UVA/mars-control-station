@@ -723,6 +723,25 @@ body {
   overflow-y: auto;
 }
 
+.left-panel--minimal {
+  justify-content: flex-end;
+}
+
+.left-panel-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: auto;
+  flex-shrink: 0;
+}
+
+.robot-label {
+  padding: 0 4px;
+  color: var(--secondary-color);
+  font-size: 0.85rem;
+}
+
 .middle-panel {
   width: 50%;
   justify-content: flex-start;

@@ -1,5 +1,45 @@
 #!/bin/bash
 
+ROBOT_PROFILE=bruno
+usage() {
+    printf 'Usage: %s [--robot bruno|frontloader|groundDrum]\n' "$0"
+}
+
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        --robot)
+            if [ "$#" -lt 2 ] || [ -z "$2" ]; then
+                echo "error: --robot requires a profile name." >&2
+                usage >&2
+                exit 2
+            fi
+            ROBOT_PROFILE=$2
+            shift 2
+            ;;
+        --robot=*)
+            ROBOT_PROFILE=${1#--robot=}
+            shift
+            ;;
+        --help|-h)
+            usage
+            exit 0
+            ;;
+        *)
+            echo "error: unknown argument: $1" >&2
+            usage >&2
+            exit 2
+            ;;
+    esac
+done
+
+case "$ROBOT_PROFILE" in
+    bruno|frontloader|groundDrum) ;;
+    *)
+        echo "error: unknown robot profile: $ROBOT_PROFILE" >&2
+        usage >&2
+        exit 2
+        ;;
+esac
 
 # nmcli dev eth connect $SSID password $PASSWORD
 
@@ -52,7 +92,8 @@ signaling_pid=$!
 
 # The UI retries its connection while we wait for the robot and rosbridge.
 cd react-app
-REACT_APP_USE_ROSBRIDGE=true setsid npm start <&0 &
+echo "Starting UI with robot profile: $ROBOT_PROFILE"
+REACT_APP_USE_ROSBRIDGE=true REACT_APP_ROBOT="$ROBOT_PROFILE" setsid npm start <&0 &
 react_pid=$!
 cd ..
 

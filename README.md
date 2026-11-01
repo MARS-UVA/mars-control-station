@@ -19,6 +19,17 @@ server (port 3000) immediately, with `REACT_APP_USE_ROSBRIDGE=true`. It waits
 for the Jetson's Zenoh port (7447) to become reachable before starting
 rosbridge (port 9090). The UI retries its connection in the meantime.
 The Zenoh wait has no overall timeout; Ctrl+C stops all three services.
+The Bruno dashboard is the default. Choose another robot's UI profile with
+`--robot`:
+
+```bash
+./start.sh --robot frontloader
+./start.sh --robot groundDrum
+```
+
+Frontloader and groundDrum currently show the camera and lidar visualizations
+in the middle column, with blank side columns except for the timer and robot
+name in the lower-left.
 
 `start.sh` connects to the Jetson at `$JETSON_IP`. The devcontainer presets it to
 `mars-jetson` for a Jetson container on the same Docker host and shared

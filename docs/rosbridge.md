@@ -70,6 +70,8 @@ that topic; `start-rosbridge.sh` warns about missing packages up front.
 ./ros/verify-jetson-link.sh                    # second terminal, with the Jetson up
 ./start-rosbridge.sh                           # UI and rosbridge only, no robot
 JETSON_IP=<robot ip> ROS_DOMAIN_ID=0 ./start.sh   # real robot
+./start.sh --robot frontloader                # select the Frontloader UI
+./start.sh --robot groundDrum                 # select the groundDrum UI
 ```
 
 `start.sh` starts the relay and UI immediately, waits for the Jetson's Zenoh
@@ -79,6 +81,10 @@ waiting. The script refuses to start on a busy port
 and stops all three processes on Ctrl+C or a
 closed terminal. `start-rosbridge.sh` also disables Zenoh scouting so a bench
 run cannot attach to a real robot on the LAN.
+The optional `--robot` flag accepts `bruno` (the default), `frontloader`, or
+`groundDrum`. Bruno keeps the existing dashboard. The other profiles currently
+show the camera and lidar visualizations in the middle column, with blank side
+columns except for the timer and selected robot label at the lower-left.
 
 Keep the browser tab in the foreground. Chrome throttles background timers to
 about 1 Hz, which makes the gamepad publish rate and topic rates look wrong.
