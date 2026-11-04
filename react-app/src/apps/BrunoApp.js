@@ -1,0 +1,273 @@
+/*
+Bruno's UI, selected with `./start.sh --robot bruno` (the default). See src/App.js.
+Renders dashboard with gamepad status, drive state, live data, and webcam feed
+Updates through socket connection (legacy path) or rosbridge (REACT_APP_USE_ROSBRIDGE=true)
+See docs/rosbridge.md.
+*/
+
+import React, { useState, useEffect, useMemo, useRef } from "react";
+import Draggable from "react-draggable";
+
+import "../themes.css";
+import "../App.css";
+import LiveDataPanel from "../Components/LiveDataPanel";
+import GamepadPanel from "../gamepad/GamepadPanel";
+import DriveStatePanel from "../Components/DriveStatePanel";
+import WebcamPanel from "../Components/WebcamPanel";
+import Socket from "../Components/Socket";
+import SingleLiveDataStream from "../Components/SingleLiveDataStream";
+import ActuatorDataDisplay from "../Components/ActuatorDataDisplay";
+import Timer from "../Components/Timer";
+import ThemeChanger from "../Components/ThemeChanger";
+import DisplayMeter from "../Components/DisplayMeter";
+import RightButtonPanel from "../Components/RightButtonPanel";
+import ArmIndicator from "../gamepad/ArmIndicator";
+import DirectionChangeButton from "../Components/DirectionChangeButton";
+import SimDrivePad from "../Components/SimDrivePad";
+import ConnectionStatus from "../Components/ConnectionStatus";
+import RosbridgeFeed from "../Components/RosbridgeFeed";
+import PointCloudPanel from "../Components/PointCloudPanel";
+import MiniMapPanel from "../Components/MiniMapPanel";
+import { setDirection } from '../gamepad/directionStore';
+import useRos from '../hooks/useRos';
+import useTelemetry from '../hooks/useTelemetry';
+import useRobotState from '../hooks/useRobotState';
+import useEspStatus, { ESP_STATUS } from '../hooks/useEspStatus';
+import useGamepadPublisher, { padToGamepadState } from '../hooks/useGamepadPublisher';
+import useRobotStateToggle from '../hooks/useRobotStateToggle';
+import useDigDumpAction from '../hooks/useDigDumpAction';
+import H264CameraPanel from "../Components/H264CameraPanel";
+import { toLegacyGamepadData, toRosGamepadState } from '../rosbridgeAdapters';
+
+// Data-path switch. CRA inlines REACT_APP_* at build/start time, so this is a
+// constant for the life of the bundle. Default (unset or anything but 'true')
+// is the legacy Socket.js / packets.js path.
+const USE_ROSBRIDGE = process.env.REACT_APP_USE_ROSBRIDGE === 'true';
+
+// Old WebRTC cameras stay available until step 4: REACT_APP_LEGACY_WEBRTC=true
+const LEGACY_WEBRTC = process.env.REACT_APP_LEGACY_WEBRTC === 'true';
+
+// Routine indices mirror autonomy_msgs/action/Dig and Dump on the Jetson.
+// Add routine indices when the corresponding server variants are implemented.
+const robotProfile = Object.freeze({ label: 'Bruno', digIndex: 0, dumpIndex: 0 });
+
+// packets.js opens ws://localhost:3001 and starts its 30 ms transmit loop the
+// moment it is evaluated, so the legacy modules are only loaded on the legacy
+// path. A static import would run that loop on the rosbridge path too.
+const legacy = USE_ROSBRIDGE ? null : require('../legacyNetworking');
+
+// One camera per driving direction. index picks the panel's accent colour
+// (0 = orange, 4 = blue), matching the colours the direction button uses.
+// The topics are deliberately crossed: the camera published as rear_camera
+// is the one that faces the robot's forward driving direction, and vice versa.
+const CAMERAS = {
+  front: { topic: '/rear_camera/image_raw/ffmpeg', label: 'Front', index: '4', signalingPort: '6969' },
+  rear: { topic: '/front_camera/image_raw/ffmpeg', label: 'Rear', index: '0', signalingPort: '6767' },
+};
+
+const BrunoApp = () => {
+
+
+  const [gamepadStatus, setGamepadStatus] = useState('No gamepad connected!');
+  // const [gamepad2Status, setGamepad2Status] = useState('No gamepad connected!');
+  const [gamepadData, setGamepadData] = useState(null);
+  const [gamepad2Data, setGamepad2Data] = useState(null);
+  const [driveState, setDriveState] = useState('Idle');
+  const [camera0Active, setCamera0Active] = useState(true);
+  const [camera4Active, setCamera4Active] = useState(true);
+  const [frontArmActive, setFrontArmActive] = useState(false);
+  const [backArmActive, setBackArmActive] = useState(false);
+  const [prevGamepadData, setPrevGamepadData] = useState(null);
+  const [robotState, setRobotState] = useState(0);
+  const [directionSwitched, setDirectionSwitched] = useState(false);
+  const [ESPWorking, setESPWorking] = useState(false);
+
+  useEffect(() => {
+    // Legacy path: gamepad.js reads this module-level flag on every transmit.
+    // rosbridge path: the same flag goes to useGamepadPublisher below instead.
+    if (!USE_ROSBRIDGE) setDirection(directionSwitched);
+  }, [directionSwitched]);
+
+
+  const [timestamp, setTimestamp] = useState(0);
+  const [chartData, setChartData] = useState(Array.from({ length: 1 }, (_, i) => ({
+
+    time: i,
+    // goon mode? ACTIVATED
+    leftFrontWheel: Math.random() * 100,
+    rightFrontWheel: Math.random() * 100,
+    leftBackWheel: Math.random() * 100,
+    rightBackWheel: Math.random() * 100,
+    leftBucketDrum: Math.random() * 100,
+    rightBucketDrum: Math.random() * 100,
+    actuatorCapacity: Math.random() * 100,
+    actuatorHeight: Math.random() * 100,
+    xGyro: 0.0,
+    yGyro: 0.0,
+    zGyro: 0.0,
+  })));
+  const [lastDataPoint, setLastDataPoint] = useState(chartData[chartData.length - 1]);
+  const [valueData, setData] = useState("data");
+
+  // ---------------------------------------------------------------------------
+  // rosbridge path. All six hooks are called unconditionally (hook rules); with
+  // the flag off useRos never connects, ros stays null, and every other hook is
+  // a no-op on a null ros. Nothing below publishes or subscribes on the legacy
+  // path.
+  // ---------------------------------------------------------------------------
+  const { ros, status: rosStatus, isConnected } = useRos({ enabled: USE_ROSBRIDGE });
+  const telemetry = useTelemetry(ros);
+  const robot = useRobotState(ros, isConnected);
+  const espStatus = useEspStatus(ros, isConnected, telemetry.lastReceived);
+  const { gamepadStatus: publisherStatus, setLiveEnabled, publishCustomFrame, setVirtualStick } =
+    useGamepadPublisher(ros, { directionSwitched });
+  const { estop } = useRobotStateToggle(ros);
+  const digDump = useDigDumpAction(ros);
+  const { sendGoal, cancelGoal } = digDump;
+  // Operator-visible reason the last button press did nothing (hooks return
+  // false instead of queueing while disconnected).
+  const [commandNotice, setCommandNotice] = useState(null);
+
+  // GamepadPanel's networking functions on the rosbridge path, in the exact
+  // shapes it used from gamepad.js / packets.js.
+  const directionSwitchedRef = useRef(directionSwitched);
+  directionSwitchedRef.current = directionSwitched;
+  const rosGamepad = useMemo(() => ({
+    getGamepadState: (index = 0, directionOverride = null) => {
+      const pad = navigator.getGamepads?.()[index];
+      if (!pad) return null;
+      const switched = directionOverride !== null ? directionOverride : directionSwitchedRef.current;
+      return toLegacyGamepadData(padToGamepadState(pad, switched));
+    },
+    setTransmissionActive: (active) => setLiveEnabled(active),
+    sendCustomGamepadState: (frame) => publishCustomFrame(toRosGamepadState(frame)),
+  }), [setLiveEnabled, publishCustomFrame]);
+
+  // Routine selection is independent of the DIG/DUMP robot state values.
+  const rosCommands = useMemo(() => ({
+    dig: () => {
+      setCommandNotice(sendGoal('dig', robotProfile.digIndex) ? null : 'Dig not sent: rosbridge disconnected');
+    },
+    dump: () => {
+      setCommandNotice(sendGoal('dump', robotProfile.dumpIndex) ? null : 'Dump not sent: rosbridge disconnected');
+    },
+    stop: () => {
+      // ESTOP first, unconditionally. It is the highest-priority signal and
+      // must never wait on, or be skipped because of, the cancel below. Both
+      // calls are synchronous and return whether anything was sent.
+      const estopSent = estop();
+      setCommandNotice(estopSent ? null : 'STOP not sent: rosbridge disconnected');
+      // Retire any running or queued routine after publishing ESTOP.
+      cancelGoal();
+    },
+  }), [sendGoal, cancelGoal, estop, robotProfile]);
+
+  // ---------------------------------------------------------------------------
+  // Panel props: one source or the other, never both.
+  // ---------------------------------------------------------------------------
+  const gamepadFns = USE_ROSBRIDGE ? rosGamepad : legacy.legacyGamepad;
+  const commands = USE_ROSBRIDGE ? rosCommands : legacy.legacyCommands;
+  // /robot_state value; the legacy feedback blob carried the same 0..3 number.
+  // null (unknown / disconnected) -> 0 so no button is highlighted.
+  const panelRobotState = USE_ROSBRIDGE ? (robot.robotState ?? 0) : robotState;
+  // /arm_control_mode fields are what the legacy blob memcpy'd, so `=== 1` is
+  // the same test Socket.js applied.
+  const panelFrontArmActive = USE_ROSBRIDGE ? robot.armControlMode?.front_arm_control === 1 : frontArmActive;
+  const panelBackArmActive = USE_ROSBRIDGE ? robot.armControlMode?.back_arm_control === 1 : backArmActive;
+  // ESP feedback controls the status banner only; commands remain available
+  // regardless of whether an ESP is online, offline, or absent.
+  const panelEspWorking = USE_ROSBRIDGE ? espStatus === ESP_STATUS.ONLINE : ESPWorking;
+  const espNotPresent = USE_ROSBRIDGE && espStatus === ESP_STATUS.NOT_PRESENT;
+
+  // Forward (directionSwitched false) shows the front camera; after the
+  // direction button is pressed, the rear camera.
+  const activeCamera = directionSwitched ? CAMERAS.rear : CAMERAS.front;
+
+  return (
+    <div className="app-container">
+      {/* <h1 className="title">MARS Web UI</h1> */}
+      {USE_ROSBRIDGE ? (
+        <RosbridgeFeed telemetry={telemetry} setChartData={setChartData} setLastDataPoint={setLastDataPoint} setTimestamp={setTimestamp} />
+      ) : (
+        <Socket setGamePadStatus={setGamepadStatus} setRobotState={setRobotState} setFrontArmActive={setFrontArmActive} setBackArmActive={setBackArmActive} setESPWorking={setESPWorking} setChartData={setChartData} setLastDataPoint={setLastDataPoint} timestamp={timestamp} setTimestamp={setTimestamp} setData={setData} />
+      )}
+
+
+      <div className="content">
+        <div className="left-panel">
+            <>
+              {USE_ROSBRIDGE && (
+                <div className="rosbridge-status">
+                  <ConnectionStatus status={rosStatus} />
+                  <div className="rosbridge-status-line">Gamepad publisher: {publisherStatus}</div>
+                  <div className="rosbridge-status-line">
+                    Robot state: {robot.robotStateName} · digdump: {digDump.status}
+                    {digDump.feedback?.phase ? ` (${digDump.feedback.phase})` : ''}
+                  </div>
+                  {espNotPresent && (
+                    <div className="rosbridge-status-line">ESP: not present (simulation backend)</div>
+                  )}
+                  {(commandNotice || digDump.error) && (
+                    <div className="rosbridge-status-error">{commandNotice || digDump.error}</div>
+                  )}
+                </div>
+              )}
+              <GamepadPanel gamepadStatus={gamepadStatus} setGamepadStatus={setGamepadStatus} gamepadData={gamepadData} setGamepadData={setGamepadData} gamepadIndex={0} camera0Active={camera0Active} camera4Active={camera4Active} getGamepadState={gamepadFns.getGamepadState} setTransmissionActive={gamepadFns.setTransmissionActive} sendCustomGamepadState={gamepadFns.sendCustomGamepadState} />
+              <ArmIndicator frontArmActive={panelFrontArmActive} backArmActive={panelBackArmActive} label="Arm Control" directionSwitched={directionSwitched} />
+              <RightButtonPanel currentActionState={panelRobotState} backArmActive={panelBackArmActive} onDig={commands.dig} onDump={commands.dump} onStop={commands.stop} />
+              <DirectionChangeButton directionSwitched={directionSwitched} setDirectionSwitched={setDirectionSwitched} gamepadData={gamepadData} />
+              {espNotPresent && <SimDrivePad setVirtualStick={setVirtualStick} />}
+            </>
+          <div className="left-panel-footer">
+            <Timer />
+            <ThemeChanger />
+            <div className="robot-label">Robot: {robotProfile.label}</div>
+          </div>
+        </div>
+
+        <div className="middle-panel">
+          {/* Only the camera facing the driving direction is shown. Switching
+              direction unmounts the old panel (its cleanup unsubscribes the
+              topic) and mounts a new one that subscribes to the other camera.
+              With no subscriber, ffmpeg_image_transport on the Jetson stops
+              encoding that camera, so only one stream uses CPU and bandwidth. */}
+          <div className="camera-slot">
+            {LEGACY_WEBRTC ? (
+              <WebcamPanel key={activeCamera.signalingPort} signalingPort={activeCamera.signalingPort}
+                index={activeCamera.index} isActive />
+            ) : (
+              <H264CameraPanel key={activeCamera.topic} ros={ros} isConnected={isConnected}
+                topic={activeCamera.topic} label={activeCamera.label} index={activeCamera.index} isActive />
+            )}
+            {panelEspWorking || espNotPresent ? null : <div className="esp-not-working">ESP Not Receiving Packets</div>}
+          </div>
+          {/* Lidar views, always shown under the camera: the 3D chase view of
+              the live scan and the bird's-eye minimap. */}
+          {USE_ROSBRIDGE && (
+            <div className="map-row">
+              <section className="map-card">
+                <div className="map-card-title">3D view</div>
+                <div className="map-card-body">
+                  <PointCloudPanel ros={ros} isConnected={isConnected} topic="/unilidar/cloud" label="Lidar"
+                    directionSwitched={directionSwitched} />
+                </div>
+              </section>
+              <section className="map-card">
+                <div className="map-card-title">Minimap</div>
+                <div className="map-card-body">
+                  <MiniMapPanel ros={ros} isConnected={isConnected} directionSwitched={directionSwitched} />
+                </div>
+              </section>
+            </div>
+          )}
+        </div>
+
+        <div className="right-panel">
+          <LiveDataPanel lastDataPoint={lastDataPoint} timestamp={timestamp} chartData={chartData} />
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default BrunoApp;

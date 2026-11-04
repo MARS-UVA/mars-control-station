@@ -108,8 +108,8 @@ about 1 Hz, which makes the gamepad publish rate and topic rates look wrong.
 Constants live in `react-app/src/hooks/rosTypes.js`. `RobotState` is TELEOP 0,
 DIG 1, DUMP 2, ESTOP 3. `HumanInputState.drive_mode` uses its own enum (TELEOP 0,
 AUTONOMOUS 1, ADVANCED_TELEOP 2). Both goals take `{ index }`, return `{ success }`, and report `{ phase }`.
-The bottom Robot selector uses `react-app/src/robotProfiles.js`; Bruno is the
-only currently implemented profile, with index 0 for both routines. Add profiles
+Bruno's routine indices are in `robotProfile` at the top of
+`react-app/src/apps/BrunoApp.js`, with index 0 for both routines. Change them
 as Jetson variants become available. Selection is locked during active,
 canceling, or unknown goals and on the legacy transport. This selects routines
 on the connected Jetson; it does not change the rosbridge host.
@@ -117,7 +117,7 @@ on the connected Jetson; it does not change the rosbridge host.
 ## UI behaviour
 
 `REACT_APP_USE_ROSBRIDGE` is read at build time. `start.sh` sets it to `true`.
-`App.js` passes either the rosbridge hooks or the old `packets.js` functions to
+Each robot app in `src/apps/` passes either the rosbridge hooks or the old `packets.js` functions to
 the same panels; only one path is ever loaded.
 
 No hook sends while rosbridge is disconnected. roslib would queue the message and

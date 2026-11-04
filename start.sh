@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# Each profile maps to its own UI in react-app/src/apps/ (see react-app/src/App.js).
 ROBOT_PROFILE=bruno
 usage() {
     printf 'Usage: %s [--robot bruno|frontloader|groundDrum]\n' "$0"

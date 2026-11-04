@@ -27,7 +27,10 @@ The Bruno dashboard is the default. Choose another robot's UI profile with
 ./start.sh --robot groundDrum
 ```
 
-Frontloader and groundDrum currently show the camera and lidar visualizations
+Each robot has its own UI file in `react-app/src/apps/` (`BrunoApp.js`,
+`FrontloaderApp.js`, `GroundDrumApp.js`), built from the components in
+`react-app/src/Components/`; `react-app/src/App.js` picks one from the
+`--robot` flag. Frontloader and groundDrum currently show the camera and lidar visualizations
 in the middle column, with blank side columns except for the timer and robot
 name in the lower-left.
 
