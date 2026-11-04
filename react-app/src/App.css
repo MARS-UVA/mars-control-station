@@ -847,6 +847,69 @@ body {
   min-height: 0;
 }
 
+.unbeach-control {
+  flex-shrink: 0;
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.unbeach-row {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+}
+
+.command-button-unbeach {
+  flex: 1;
+  position: relative;
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 1.1rem;
+  box-shadow: 0 4px 6px var(--box-shadow-color);
+  border: 1px solid var(--border-color);
+  background-color: var(--accent-color1, #E1A365);
+  color: var(--primary-color);
+  cursor: pointer;
+}
+
+.command-button-unbeach h4 {
+  margin: 0;
+}
+
+.command-button-unbeach:hover:not(:disabled) {
+  transform: scale(1.03);
+  background-color: var(--accent-color1-hover, #dd9043);
+}
+
+.command-button-unbeach-running {
+  background-color: var(--active-color);
+}
+
+.command-button-unbeach-running:hover:not(:disabled) {
+  background-color: var(--active-color-hover, var(--active-color));
+}
+
+.command-button-unbeach:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.unbeach-direction {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  font-size: 0.75rem;
+  color: var(--secondary-color);
+}
+
+.unbeach-status {
+  font-size: 0.75rem;
+  color: var(--secondary-color);
+}
+
 .theme-changer {
   position: static;
   align-self: flex-start;

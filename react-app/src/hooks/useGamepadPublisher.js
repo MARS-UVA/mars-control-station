@@ -122,13 +122,17 @@ function readGamepadState(directionSwitched) {
  *    setVirtualRightStick(null). Teleop raises the selected drum arms with
  *    right stick y > 0 and lowers them with y < 0 (0.2 deadzone). Raw values:
  *    the direction switch never applies to the right stick.
+ *  - setVirtualButtons({ y_pressed: true, ... }) forces those GamepadState
+ *    button fields in every live frame until setVirtualButtons(null). Used by
+ *    the unbeach routine (useUnbeachRoutine) to press teleop's buttons.
  *
  * @returns {{ driveMode: number, setDriveMode: (mode: number) => void,
  *             gamepadStatus: 'none'|'unsupported-mapping'|'connected'|'suspended',
  *             setLiveEnabled: (enabled: boolean) => void,
  *             publishCustomFrame: (gamepadState: object) => boolean,
  *             setVirtualStick: (stick: {x: number, y: number} | null) => void,
- *             setVirtualRightStick: (stick: {x: number, y: number} | null) => void }}
+ *             setVirtualRightStick: (stick: {x: number, y: number} | null) => void,
+ *             setVirtualButtons: (buttons: object | null) => void }}
  */
 export default function useGamepadPublisher(ros, { directionSwitched = false } = {}) {
   const [driveMode, setDriveModeState] = useState(DRIVE_MODE.TELEOP);
@@ -140,6 +144,7 @@ export default function useGamepadPublisher(ros, { directionSwitched = false } =
   const liveEnabledRef = useRef(true);
   const virtualStickRef = useRef(null);
   const virtualRightStickRef = useRef(null);
+  const virtualButtonsRef = useRef(null);
   // Read by the 30 ms tick, so it must be current without restarting the timer.
   const directionSwitchedRef = useRef(directionSwitched);
   directionSwitchedRef.current = Boolean(directionSwitched);
@@ -183,6 +188,17 @@ export default function useGamepadPublisher(ros, { directionSwitched = false } =
     virtualRightStickRef.current = stick ? { x: Number(stick.x) || 0, y: Number(stick.y) || 0 } : null;
   }, []);
 
+  // Only boolean *_pressed fields can be forced; anything else is ignored.
+  const setVirtualButtons = useCallback((buttons) => {
+    if (!buttons) {
+      virtualButtonsRef.current = null;
+      return;
+    }
+    virtualButtonsRef.current = Object.fromEntries(
+      Object.entries(buttons).filter(([name, value]) => name.endsWith('_pressed') && typeof value === 'boolean'),
+    );
+  }, []);
+
   const tick = useCallback(() => {
     if (suspendedRef.current) {
       publishNeutral();
@@ -201,6 +217,7 @@ export default function useGamepadPublisher(ros, { directionSwitched = false } =
     if (virtualRightStick) {
       frame.right_stick = { x: virtualRightStick.x, y: virtualRightStick.y };
     }
+    if (virtualButtonsRef.current) Object.assign(frame, virtualButtonsRef.current);
     if (liveEnabledRef.current) publishFrame(frame);
     setGamepadStatus(next);
   }, [publishFrame, publishNeutral]);
@@ -241,5 +258,5 @@ export default function useGamepadPublisher(ros, { directionSwitched = false } =
     };
   }, [ros, tick, publishNeutral]);
 
-  return { driveMode, setDriveMode, gamepadStatus, setLiveEnabled, publishCustomFrame, setVirtualStick, setVirtualRightStick };
+  return { driveMode, setDriveMode, gamepadStatus, setLiveEnabled, publishCustomFrame, setVirtualStick, setVirtualRightStick, setVirtualButtons };
 }

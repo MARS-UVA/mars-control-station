@@ -37,6 +37,8 @@ import useGamepadPublisher, { padToGamepadState } from '../hooks/useGamepadPubli
 import useRobotStateToggle from '../hooks/useRobotStateToggle';
 import useDigDumpAction from '../hooks/useDigDumpAction';
 import H264CameraPanel from "../Components/H264CameraPanel";
+import UnbeachButton from "../Components/UnbeachButton";
+import useUnbeachRoutine from '../hooks/useUnbeachRoutine';
 import { toLegacyGamepadData } from '../rosbridgeAdapters';
 
 // Data-path switch. CRA inlines REACT_APP_* at build/start time, so this is a
@@ -119,11 +121,22 @@ const BrunoApp = () => {
   const telemetry = useTelemetry(ros);
   const robot = useRobotState(ros, isConnected);
   const espStatus = useEspStatus(ros, isConnected, telemetry.lastReceived);
-  const { gamepadStatus: publisherStatus, setVirtualStick, setVirtualRightStick } =
+  const { gamepadStatus: publisherStatus, setVirtualStick, setVirtualRightStick, setVirtualButtons } =
     useGamepadPublisher(ros, { directionSwitched });
   const { estop } = useRobotStateToggle(ros);
   const digDump = useDigDumpAction(ros);
   const { sendGoal, cancelGoal } = digDump;
+  // Unbeach is rosbridge-only: it drives teleop through the gamepad publisher.
+  const unbeach = useUnbeachRoutine({
+    setVirtualRightStick,
+    setVirtualButtons,
+    actuatorPositions: {
+      front: telemetry.position?.front_actuator_position,
+      back: telemetry.position?.back_actuator_position,
+    },
+    enabled: USE_ROSBRIDGE && isConnected,
+  });
+  const { cancel: cancelUnbeach } = unbeach;
   // Operator-visible reason the last button press did nothing (hooks return
   // false instead of queueing while disconnected).
   const [commandNotice, setCommandNotice] = useState(null);
@@ -144,9 +157,11 @@ const BrunoApp = () => {
   // Routine selection is independent of the DIG/DUMP robot state values.
   const rosCommands = useMemo(() => ({
     dig: () => {
+      cancelUnbeach();
       setCommandNotice(sendGoal('dig', robotProfile.digIndex) ? null : 'Dig not sent: rosbridge disconnected');
     },
     dump: () => {
+      cancelUnbeach();
       setCommandNotice(sendGoal('dump', robotProfile.dumpIndex) ? null : 'Dump not sent: rosbridge disconnected');
     },
     stop: () => {
@@ -157,8 +172,9 @@ const BrunoApp = () => {
       setCommandNotice(estopSent ? null : 'STOP not sent: rosbridge disconnected');
       // Retire any running or queued routine after publishing ESTOP.
       cancelGoal();
+      cancelUnbeach();
     },
-  }), [sendGoal, cancelGoal, estop, robotProfile]);
+  }), [sendGoal, cancelGoal, estop, cancelUnbeach, robotProfile]);
 
   // ---------------------------------------------------------------------------
   // Panel props: one source or the other, never both.
@@ -212,7 +228,10 @@ const BrunoApp = () => {
               )}
               <GamepadPanel gamepadStatus={gamepadStatus} setGamepadStatus={setGamepadStatus} gamepadData={gamepadData} setGamepadData={setGamepadData} gamepadIndex={0} camera0Active={camera0Active} camera4Active={camera4Active} getGamepadState={gamepadFns.getGamepadState} />
               <ArmIndicator frontArmActive={panelFrontArmActive} backArmActive={panelBackArmActive} label="Arm Control" directionSwitched={directionSwitched} />
-              <RightButtonPanel currentActionState={panelRobotState} backArmActive={panelBackArmActive} onDig={commands.dig} onDump={commands.dump} onStop={commands.stop} />
+              <RightButtonPanel currentActionState={panelRobotState} backArmActive={panelBackArmActive} onDig={commands.dig} onDump={commands.dump} onStop={commands.stop}>
+                <UnbeachButton unbeach={unbeach} drivingToward={directionSwitched ? 'rear' : 'front'}
+                  disabled={!(USE_ROSBRIDGE && isConnected)} />
+              </RightButtonPanel>
               <DirectionChangeButton directionSwitched={directionSwitched} setDirectionSwitched={setDirectionSwitched} gamepadData={gamepadData} />
               {espNotPresent && <SimDrivePad setVirtualStick={setVirtualStick} setVirtualRightStick={setVirtualRightStick} />}
             </>

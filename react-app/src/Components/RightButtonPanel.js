@@ -25,8 +25,10 @@ const CommandButton = React.memo(({ label, className, onClick, style }) => (
  *  - onDump(): start Dump autonomy (legacy actionType 2)
  *  - onStop(): e-stop              (legacy actionType 3)
  * Commands are always available; the senders handle disconnected transports.
+ *
+ * children (e.g. the Unbeach button) are shown below the STOP / Dig / Dump grid.
  */
-function RightButtonPanel({ currentActionState, backArmActive, onDig, onDump, onStop }) {
+function RightButtonPanel({ currentActionState, backArmActive, onDig, onDump, onStop, children }) {
 
 const doFunction = useCallback(label => {
   if (label.toLowerCase() === 'dig auto') onDig();
@@ -82,6 +84,7 @@ useEffect(() => {
           )}
         </div>
         </div>
+        {children}
       </div>
   );
 }
