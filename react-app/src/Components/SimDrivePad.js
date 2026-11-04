@@ -1,29 +1,39 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp } from 'lucide-react';
+import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, ChevronsDown, ChevronsUp } from 'lucide-react';
 
 /**
  * Drive the simulated robot without a gamepad: hold the on-screen arrows, or
- * turn on keyboard drive and hold W/A/S/D.
+ * turn on keyboard drive and hold W/A/S/D. Hold the Drums buttons (or the
+ * up/down arrow keys with keyboard drive on) to raise or lower the drum arms.
  *
  * Works by overriding the left stick of the frames useGamepadPublisher already
  * sends (setVirtualStick), so it goes through teleop exactly like a gamepad:
  * left stick y is speed, x is turning, the direction switch applies, and the
- * robot must be in TELEOP. Only rendered on the rosbridge path with the gazebo
+ * robot must be in TELEOP. The drum controls override the right stick
+ * (setVirtualRightStick) the same way: teleop raises the selected arms with
+ * right stick y > 0 and lowers them with y < 0, so they move whichever arms
+ * X/Y/B selected (both by default). Only rendered on the rosbridge path with the gazebo
  * backend detected (App.js).
  *
- * W and D are also the dashboard's macro-playback and "Dig auto" shortcuts.
- * While keyboard drive is on, this panel catches W/A/S/D in the capture phase
- * and stops them there, so they drive instead of triggering those. With it
- * off, the keys keep their old meaning.
+ * D is also the dashboard's "Dig auto" shortcut. While keyboard drive is on,
+ * this panel catches its keys in the capture phase and stops them there, so D
+ * drives instead of starting a dig. With it off, D keeps its old meaning.
  */
 
 // Fraction of full stick. Teleop scales this to the robot's max speed.
 const DRIVE_SPEED = 0.6;
-const KEY_TO_DIRECTION = { KeyW: 'forward', KeyS: 'back', KeyA: 'left', KeyD: 'right' };
+// Fraction of full right stick for the drum arms. Teleop ignores |y| <= 0.2
+// and scales the rest to the arm actuator speed.
+const DRUM_SPEED = 0.6;
+const KEY_TO_DIRECTION = {
+  KeyW: 'forward', KeyS: 'back', KeyA: 'left', KeyD: 'right',
+  ArrowUp: 'drumsUp', ArrowDown: 'drumsDown',
+};
 // Inputs that take no typed text, so W/A/S/D on them should still drive
 // (the keyboard-drive checkbox itself is focused right after it is ticked).
 const NON_TEXT_INPUTS = new Set(['checkbox', 'radio', 'button', 'range', 'submit', 'reset']);
-const NONE = { forward: false, back: false, left: false, right: false };
+const NONE = { forward: false, back: false, left: false, right: false, drumsUp: false, drumsDown: false };
+const noop = () => {};
 
 const styles = {
   // Compact row: arrows on the left, title and keyboard toggle on the right.
@@ -45,6 +55,13 @@ const styles = {
     gridTemplateRows: 'repeat(2, 38px)',
     gap: 4,
   },
+  drumGrid: {
+    display: 'grid',
+    gridTemplateColumns: '38px',
+    gridTemplateRows: 'repeat(2, 38px)',
+    gap: 4,
+  },
+  drumLabel: { fontSize: 11, fontWeight: 600, textAlign: 'center' },
   button: {
     display: 'flex',
     alignItems: 'center',
@@ -70,6 +87,11 @@ const BUTTONS = [
   { dir: 'right', key: 'D', Icon: ArrowRight, area: '2 / 3' },
 ];
 
+const DRUM_BUTTONS = [
+  { dir: 'drumsUp', key: '↑', Icon: ChevronsUp, label: 'Raise drums' },
+  { dir: 'drumsDown', key: '↓', Icon: ChevronsDown, label: 'Lower drums' },
+];
+
 function isTypingTarget(target) {
   if (!target) return false;
   const tag = target.tagName;
@@ -77,12 +99,14 @@ function isTypingTarget(target) {
   return tag === 'TEXTAREA' || tag === 'SELECT' || target.isContentEditable;
 }
 
-export default function SimDrivePad({ setVirtualStick }) {
+export default function SimDrivePad({ setVirtualStick, setVirtualRightStick = noop }) {
   const [keyboardEnabled, setKeyboardEnabled] = useState(false);
   const [keys, setKeys] = useState(NONE);       // held keyboard directions
   const [pointer, setPointer] = useState(NONE); // held on-screen directions
   const setStickRef = useRef(setVirtualStick);
   setStickRef.current = setVirtualStick;
+  const setRightStickRef = useRef(setVirtualRightStick);
+  setRightStickRef.current = setVirtualRightStick;
 
   // Held directions -> stick. Opposite directions cancel out.
   useEffect(() => {
@@ -90,14 +114,18 @@ export default function SimDrivePad({ setVirtualStick }) {
     const y = (held('forward') ? 1 : 0) - (held('back') ? 1 : 0);
     const x = (held('right') ? 1 : 0) - (held('left') ? 1 : 0);
     setStickRef.current(x || y ? { x: x * DRIVE_SPEED, y: y * DRIVE_SPEED } : null);
+    const drums = (held('drumsUp') ? 1 : 0) - (held('drumsDown') ? 1 : 0);
+    setRightStickRef.current(drums ? { x: 0, y: drums * DRUM_SPEED } : null);
   }, [keys, pointer]);
 
-  // Leave the stick to the real gamepad when this panel goes away.
-  useEffect(() => () => setStickRef.current(null), []);
+  // Leave both sticks to the real gamepad when this panel goes away.
+  useEffect(() => () => {
+    setStickRef.current(null);
+    setRightStickRef.current(null);
+  }, []);
 
   // Keyboard: capture phase on window runs before every other key handler on
-  // the page, so stopping the event here keeps W/D from also triggering
-  // macro playback and Dig.
+  // the page, so stopping the event here keeps D from also triggering Dig.
   useEffect(() => {
     if (!keyboardEnabled) {
       setKeys(NONE);
@@ -157,6 +185,37 @@ export default function SimDrivePad({ setVirtualStick }) {
         })}
       </div>
       <div style={styles.side}>
+        <div style={styles.drumLabel}>Drums</div>
+        <div style={styles.drumGrid}>
+          {DRUM_BUTTONS.map(({ dir, key, Icon, label }) => {
+            const active = keys[dir] || pointer[dir];
+            return (
+              <button
+                key={dir}
+                type="button"
+                aria-label={label}
+                title={label}
+                style={{
+                  ...styles.button,
+                  backgroundColor: active ? '#0088ff' : '#6eb9ff',
+                }}
+                onPointerDown={(event) => {
+                  // Capture, so releasing outside the button still stops the arms.
+                  event.currentTarget.setPointerCapture(event.pointerId);
+                  press(dir, true);
+                }}
+                onPointerUp={() => press(dir, false)}
+                onPointerCancel={() => press(dir, false)}
+                onLostPointerCapture={() => press(dir, false)}
+              >
+                <Icon size={18} />
+                {keyboardEnabled && key}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+      <div style={styles.side}>
         <div style={styles.title}>Sim drive</div>
         <label style={styles.toggle}>
           <input
@@ -164,7 +223,7 @@ export default function SimDrivePad({ setVirtualStick }) {
             checked={keyboardEnabled}
             onChange={(event) => setKeyboardEnabled(event.target.checked)}
           />
-          Keyboard (WASD)
+          Keyboard (WASD, ↑/↓ drums)
         </label>
       </div>
     </div>

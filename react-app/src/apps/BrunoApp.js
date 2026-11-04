@@ -37,7 +37,7 @@ import useGamepadPublisher, { padToGamepadState } from '../hooks/useGamepadPubli
 import useRobotStateToggle from '../hooks/useRobotStateToggle';
 import useDigDumpAction from '../hooks/useDigDumpAction';
 import H264CameraPanel from "../Components/H264CameraPanel";
-import { toLegacyGamepadData, toRosGamepadState } from '../rosbridgeAdapters';
+import { toLegacyGamepadData } from '../rosbridgeAdapters';
 
 // Data-path switch. CRA inlines REACT_APP_* at build/start time, so this is a
 // constant for the life of the bundle. Default (unset or anything but 'true')
@@ -119,7 +119,7 @@ const BrunoApp = () => {
   const telemetry = useTelemetry(ros);
   const robot = useRobotState(ros, isConnected);
   const espStatus = useEspStatus(ros, isConnected, telemetry.lastReceived);
-  const { gamepadStatus: publisherStatus, setLiveEnabled, publishCustomFrame, setVirtualStick } =
+  const { gamepadStatus: publisherStatus, setVirtualStick, setVirtualRightStick } =
     useGamepadPublisher(ros, { directionSwitched });
   const { estop } = useRobotStateToggle(ros);
   const digDump = useDigDumpAction(ros);
@@ -128,8 +128,8 @@ const BrunoApp = () => {
   // false instead of queueing while disconnected).
   const [commandNotice, setCommandNotice] = useState(null);
 
-  // GamepadPanel's networking functions on the rosbridge path, in the exact
-  // shapes it used from gamepad.js / packets.js.
+  // GamepadPanel's gamepad reader on the rosbridge path, in the exact shape
+  // it used from gamepad.js.
   const directionSwitchedRef = useRef(directionSwitched);
   directionSwitchedRef.current = directionSwitched;
   const rosGamepad = useMemo(() => ({
@@ -139,9 +139,7 @@ const BrunoApp = () => {
       const switched = directionOverride !== null ? directionOverride : directionSwitchedRef.current;
       return toLegacyGamepadData(padToGamepadState(pad, switched));
     },
-    setTransmissionActive: (active) => setLiveEnabled(active),
-    sendCustomGamepadState: (frame) => publishCustomFrame(toRosGamepadState(frame)),
-  }), [setLiveEnabled, publishCustomFrame]);
+  }), []);
 
   // Routine selection is independent of the DIG/DUMP robot state values.
   const rosCommands = useMemo(() => ({
@@ -212,11 +210,11 @@ const BrunoApp = () => {
                   )}
                 </div>
               )}
-              <GamepadPanel gamepadStatus={gamepadStatus} setGamepadStatus={setGamepadStatus} gamepadData={gamepadData} setGamepadData={setGamepadData} gamepadIndex={0} camera0Active={camera0Active} camera4Active={camera4Active} getGamepadState={gamepadFns.getGamepadState} setTransmissionActive={gamepadFns.setTransmissionActive} sendCustomGamepadState={gamepadFns.sendCustomGamepadState} />
+              <GamepadPanel gamepadStatus={gamepadStatus} setGamepadStatus={setGamepadStatus} gamepadData={gamepadData} setGamepadData={setGamepadData} gamepadIndex={0} camera0Active={camera0Active} camera4Active={camera4Active} getGamepadState={gamepadFns.getGamepadState} />
               <ArmIndicator frontArmActive={panelFrontArmActive} backArmActive={panelBackArmActive} label="Arm Control" directionSwitched={directionSwitched} />
               <RightButtonPanel currentActionState={panelRobotState} backArmActive={panelBackArmActive} onDig={commands.dig} onDump={commands.dump} onStop={commands.stop} />
               <DirectionChangeButton directionSwitched={directionSwitched} setDirectionSwitched={setDirectionSwitched} gamepadData={gamepadData} />
-              {espNotPresent && <SimDrivePad setVirtualStick={setVirtualStick} />}
+              {espNotPresent && <SimDrivePad setVirtualStick={setVirtualStick} setVirtualRightStick={setVirtualRightStick} />}
             </>
           <div className="left-panel-footer">
             <Timer />

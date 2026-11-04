@@ -14,7 +14,11 @@ import {
   WebGLRenderer,
 } from "three";
 import URDFLoader from "urdf-loader";
-import { calculateDrumKinematics } from "./drumKinematics";
+import {
+  calculateDrumKinematics,
+  DRUM_OFFSET_ANGLE_DEG,
+  MAX_ACTUATOR_POSITION,
+} from "./drumKinematics";
 import "./DrumVisualizer.css";
 
 const publicPath = (process.env.PUBLIC_URL || "").replace(/\/$/, "");
@@ -34,23 +38,22 @@ const FRAME_LINKS = new Set(["frame_assembly", "front_arm", "rear_arm"]);
 const DRUM_LINKS = ["drum", "rear_left_drum"];
 const ACTUATOR_SAMPLES = 100;
 
-function findMaximumValidActuatorPosition() {
-  let minimum = 0;
-  let maximum = 2;
+// In robot.urdf, front_arm_joint / rear_arm_joint at 0 rad already puts the
+// pivot-to-drum-center line 52.4° above horizontal (outward from the robot),
+// and positive joint values raise the drum. Measured from the URDF; change
+// this if the arm joint origins in robot.urdf change.
+const MODEL_DRUM_ANGLE_AT_ZERO_DEG = 52.3954;
 
-  for (let iteration = 0; iteration < 32; iteration += 1) {
-    const midpoint = (minimum + maximum) / 2;
-    if (calculateDrumKinematics(midpoint)) {
-      minimum = midpoint;
-    } else {
-      maximum = midpoint;
-    }
-  }
-
-  return minimum;
+// Joint value that puts the model's drum where the kinematics say it is:
+// match the pivot-to-drum-center direction, not the arm line, because the
+// URDF and the kinematics place the drum slightly differently along the arm.
+function toModelJointAngle(kinematics) {
+  const drumDirectionDeg = kinematics.angleDegrees - DRUM_OFFSET_ANGLE_DEG;
+  return ((drumDirectionDeg - MODEL_DRUM_ANGLE_AT_ZERO_DEG) * Math.PI) / 180;
 }
 
-const MAX_ACTUATOR_POSITION = findMaximumValidActuatorPosition();
+// Drawn when there is no valid reading: drums fully raised.
+const RESTING_JOINT_ANGLE = toModelJointAngle(calculateDrumKinematics(0));
 
 const formatValue = (value) => (
   Number.isFinite(value) ? value.toFixed(1) : "--"
@@ -191,8 +194,8 @@ function DrumVisualizer({ frontActuatorPosition, rearActuatorPosition }) {
         const setArmPositions = (position) => {
           const kinematics = calculateDrumKinematics(position);
           const jointAngle = kinematics
-            ? ((kinematics.angleDegrees - 90) * Math.PI) / 180
-            : 0;
+            ? toModelJointAngle(kinematics)
+            : RESTING_JOINT_ANGLE;
           robot.setJointValues({
             front_arm_joint: jointAngle,
             rear_arm_joint: jointAngle,
@@ -304,12 +307,8 @@ function DrumVisualizer({ frontActuatorPosition, rearActuatorPosition }) {
     const frontPosition = calculateDrumKinematics(frontActuatorPosition);
     const rearPosition = calculateDrumKinematics(rearActuatorPosition);
     robotRef.current.setJointValues({
-      front_arm_joint: frontPosition
-        ? ((frontPosition.angleDegrees - 90) * Math.PI) / 180
-        : ((calculateDrumKinematics(0).angleDegrees - 90) * Math.PI) / 180,
-      rear_arm_joint: rearPosition
-        ? ((rearPosition.angleDegrees - 90) * Math.PI) / 180
-        : ((calculateDrumKinematics(0).angleDegrees - 90) * Math.PI) / 180,
+      front_arm_joint: frontPosition ? toModelJointAngle(frontPosition) : RESTING_JOINT_ANGLE,
+      rear_arm_joint: rearPosition ? toModelJointAngle(rearPosition) : RESTING_JOINT_ANGLE,
     });
     renderRef.current?.();
   }, [modelReady, frontActuatorPosition, rearActuatorPosition]);
@@ -329,7 +328,7 @@ function DrumVisualizer({ frontActuatorPosition, rearActuatorPosition }) {
               {label}
             </span>
             <span className="drum-reading-values">
-              {formatValue(position?.angleDegrees)}° · {formatValue(position?.verticalOffsetInches)} in
+              {formatValue(position?.angleDegrees)}° · {formatValue(position?.heightAboveGroundInches)} in above ground
             </span>
           </div>
         ))}

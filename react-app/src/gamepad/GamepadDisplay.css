@@ -94,16 +94,6 @@
 #button-x { top: 0px; left: 0px; }
 
 
-.controller-record-buttons {
-  gap: 24px; /* increased gap for better spacing */
-  display: flex;
-  flex-direction: row;
-  max-height: calc(100vh - 32px);
-  justify-content: space-between;
-  align-items: flex-start;
-  margin-top: 16px;
-}
-
 .command-button {
   width: 100%;
   display: flex;

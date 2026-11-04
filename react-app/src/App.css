@@ -847,11 +847,6 @@ body {
   min-height: 0;
 }
 
-.controller-record-buttons {
-  margin-top: 8px;
-  gap: 10px;
-}
-
 .theme-changer {
   position: static;
   align-self: flex-start;
@@ -921,11 +916,6 @@ body {
   .chart-space h3 { margin: 2px; font-size: 0.95rem; }
   .left-panel { gap: 6px; }
   .rosbridge-status { gap: 2px; }
-  .left-panel .controller-record-buttons { margin-top: 6px; }
-  .left-panel .command-button-record,
-  .left-panel .command-button-run,
-  .left-panel .command-button-reset { padding: 4px 6px; line-height: 1.15; font-size: 0.8rem; }
-  .left-panel .controller-record-buttons { align-items: stretch; }
   .left-panel .arm-indicator-box { font-size: 15px; }
   .rosbridge-status-line { font-size: 11px; }
   .left-panel .arm-indicator-container { gap: 4px; }
