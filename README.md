@@ -40,8 +40,14 @@ name in the lower-left.
 the robot's address instead and match its ROS domain:
 
 ```bash
-JETSON_IP=<robot ip> ROS_DOMAIN_ID=0 ./start.sh
+ROS_DOMAIN_ID=0 ./start.sh --ip <robot ip>
+# combine with a robot profile:
+ROS_DOMAIN_ID=0 ./start.sh --robot frontloader --ip <robot ip>
 ```
+
+`--ip` overrides `JETSON_IP` (including the devcontainer's preset), so
+`JETSON_IP=<robot ip> ./start.sh` still works too. With neither, `start.sh`
+asks for the address.
 
 To check the link once both sides are up, from a second terminal in the container:
 

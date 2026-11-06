@@ -3,8 +3,11 @@
 # Each profile maps to its own UI in react-app/src/apps/ (see react-app/src/App.js).
 ROBOT_PROFILE=bruno
 usage() {
-    printf 'Usage: %s [--robot bruno|frontloader|groundDrum]\n' "$0"
+    printf 'Usage: %s [--robot bruno|frontloader|groundDrum] [--ip JETSON_IP]\n' "$0"
+    printf '  --ip  Jetson IP address. Without it, JETSON_IP from the environment is\n'
+    printf '        used, and if that is not set either you are asked for it.\n'
 }
+IP_ARG=
 
 while [ "$#" -gt 0 ]; do
     case "$1" in
@@ -19,6 +22,20 @@ while [ "$#" -gt 0 ]; do
             ;;
         --robot=*)
             ROBOT_PROFILE=${1#--robot=}
+            shift
+            ;;
+        --ip)
+            if [ "$#" -lt 2 ] || [ -z "$2" ]; then
+                echo "error: --ip requires an IP address." >&2
+                usage >&2
+                exit 2
+            fi
+            IP_ARG=$2
+            shift 2
+            ;;
+        --ip=*)
+            IP_ARG=${1#--ip=}
+            [ -n "$IP_ARG" ] || { echo "error: --ip requires an IP address." >&2; usage >&2; exit 2; }
             shift
             ;;
         --help|-h)
@@ -44,8 +61,11 @@ esac
 
 # nmcli dev eth connect $SSID password $PASSWORD
 
-# If JETSON_IP is already set for whatever reason, then it uses that, otherwise it takes input from the console.
-if [ -n "${JETSON_IP:-}" ]; then
+# Jetson IP: --ip wins, then JETSON_IP from the environment, otherwise ask.
+if [ -n "$IP_ARG" ]; then
+    export JETSON_IP="$IP_ARG"
+    echo "Using $JETSON_IP as the Jetson's IP"
+elif [ -n "${JETSON_IP:-}" ]; then
     echo "Using $JETSON_IP as the Jetson's IP"
 else
     echo "Jetson IP address: "
