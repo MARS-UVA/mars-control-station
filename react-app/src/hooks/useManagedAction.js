@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Action } from 'roslib';
 
-export const OPERATIONS = Object.freeze({ navigate: 0, dig: 1, dump: 2, full_auto: 3 });
+export const OPERATIONS = Object.freeze({ navigate: 0, dig: 1, dump: 2, run_machine: 3 });
 
-export function makeManagedGoal(operation, { routineIndex = 0, timeLimit = 600, target } = {}) {
+export function makeManagedGoal(operation, { routineIndex = 0, timeLimit = 600, target, machineName = '' } = {}) {
+  if (operation === 'run_machine' && (typeof machineName !== 'string' || !machineName.trim())) {
+    throw new Error('Select a machine name');
+  }
   if (!(operation in OPERATIONS) || !Number.isFinite(timeLimit) || timeLimit <= 0) {
     throw new Error('Select an operation and a positive, finite time limit');
   }
@@ -21,7 +24,9 @@ export function makeManagedGoal(operation, { routineIndex = 0, timeLimit = 600, 
     pose.pose.position = { x: target.x, y: target.y, z: 0 };
     pose.pose.orientation = { x: 0, y: 0, z: Math.sin(target.yaw / 2), w: Math.cos(target.yaw / 2) };
   }
-  return { operation: OPERATIONS[operation], routine_index: routineIndex,
+  return { operation: OPERATIONS[operation],
+    machine_name: operation === 'run_machine' ? machineName.trim() : '',
+    routine_index: routineIndex,
     time_limit_sec: timeLimit, target_pose: pose };
 }
 
@@ -76,14 +81,16 @@ export default function useManagedAction(ros) {
       setError('Previous outcome unknown. Stop and clear E-stop before starting new work.');
       return false;
     }
-    if (activeRef.current) {
-      if (activeRef.current.operation === operation) return cancelGoal();
-      setError('Another operation is active. Cancel it, wait for completion, then clear E-stop.');
-      return false;
-    }
     let goal;
     try { goal = makeManagedGoal(operation, options); }
     catch (err) { setError(err.message); return false; }
+    const operationKey = goal.operation === OPERATIONS.run_machine
+      ? `run_machine:${goal.machine_name}` : operation;
+    if (activeRef.current) {
+      if (activeRef.current.operation === operationKey) return cancelGoal();
+      setError('Another operation is active. Cancel it, wait for completion, then clear E-stop.');
+      return false;
+    }
     setFeedback(null);
     setResult(null);
     setError(null);
@@ -115,7 +122,7 @@ export default function useManagedAction(ros) {
         setError('Operation was not sent');
         return false;
       }
-      activeRef.current = { id, operation };
+      activeRef.current = { id, operation: operationKey };
       return true;
     } catch (err) {
       unknownRef.current = true;

@@ -19,7 +19,7 @@ test('uses typed manager goals, including navigation quaternion', () => {
   expect(makeManagedGoal('dig', { routineIndex: 0, timeLimit: 20 })).toMatchObject({
     operation: 1, routine_index: 0, time_limit_sec: 20,
   });
-  expect(makeManagedGoal('full_auto')).toMatchObject({ operation: 3 });
+  expect(makeManagedGoal('run_machine', { machineName: 'full_auto' })).toMatchObject({ operation: 3, machine_name: 'full_auto' });
   const goal = makeManagedGoal('navigate', { target: { frame: 'map', x: 1, y: 2, yaw: Math.PI } });
   expect(goal.target_pose.pose.position).toEqual({ x: 1, y: 2, z: 0 });
   expect(goal.target_pose.pose.orientation.z).toBeCloseTo(1);
@@ -82,4 +82,27 @@ test('disconnected calls send nothing and unmount does not silently cancel', () 
   act(() => result.current.sendGoal('dig'));
   unmount();
   expect(action.cancelGoal).not.toHaveBeenCalled();
+});
+
+
+test('machine names use one operation code without a client-side machine registry', () => {
+  expect(makeManagedGoal('run_machine', { machineName: 'dig_traverse_dump' })).toMatchObject({
+    operation: 3, machine_name: 'dig_traverse_dump',
+  });
+  expect(makeManagedGoal('run_machine', { machineName: 'club_test' }).machine_name).toBe('club_test');
+  expect(makeManagedGoal('dig').machine_name).toBe('');
+  expect(() => makeManagedGoal('run_machine')).toThrow('machine name');
+  expect(() => makeManagedGoal('run_machine', { machineName: '  ' })).toThrow('machine name');
+});
+
+test('different machine names do not cancel or replace an active machine', () => {
+  const ros = connectedRos();
+  const { result } = renderHook(() => useManagedAction(ros));
+  const action = Action.mock.results[0].value;
+  act(() => { expect(result.current.sendGoal('run_machine', { machineName: 'full_auto' })).toBe(true); });
+  act(() => { expect(result.current.sendGoal('run_machine', { machineName: 'run_start' })).toBe(false); });
+  expect(action.sendGoal).toHaveBeenCalledTimes(1);
+  expect(action.cancelGoal).not.toHaveBeenCalled();
+  act(() => { expect(result.current.sendGoal('run_machine', { machineName: 'full_auto' })).toBe(true); });
+  expect(action.cancelGoal).toHaveBeenCalledWith('goal-1');
 });
