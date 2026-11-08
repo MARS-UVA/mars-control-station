@@ -3,7 +3,7 @@ import { Topic } from 'roslib';
 import * as THREE from 'three';
 import useTfTree, { MAP_FRAME, ROBOT_FRAME, cleanFrame, lookupInRobotWorld, lookupRobotPose } from '../ros/tf';
 import { forEachPoint, POINT_CLOUD2_TYPE } from '../ros/pointCloud2';
-import { ROBOT_GROUND_Z, ROBOT_HEIGHT, ROBOT_LENGTH, ROBOT_WIDTH } from '../ros/robot';
+import { ROBOT_GROUND_Z, ROBOT_HEIGHT, ROBOT_LENGTH, ROBOT_WIDTH, robotFootprint } from '../ros/robot';
 
 /**
  * Third-person 3D view of what the robot's lidar sees right now.
@@ -26,7 +26,9 @@ import { ROBOT_GROUND_Z, ROBOT_HEIGHT, ROBOT_LENGTH, ROBOT_WIDTH } from '../ros/
  * without map -> odom it falls back to odom). The scan's own frame
  * (unilidar_link) hangs off base_link through a fixed joint, published on
  * /tf_static. The robot is drawn as a box for now; replace the children of the
- * `robot` group with the real model later (see makeRobotMarker).
+ * `robot` group with the real model later (see makeRobotMarker). The box's
+ * length follows the drum arms (frontActuatorPosition / backActuatorPosition,
+ * 0 = raised, 1 = lowered; see robotFootprint in ros/robot.js).
  *
  * Points without colour are coloured by height in the world.
  *
@@ -173,17 +175,21 @@ function makeRobotMarker() {
   nose.position.set(ROBOT_LENGTH / 2 + 0.2, 0, bodyZ);
 
   robot.add(body, nose);
-  robot.userData.nose = nose; // flipped to the rear by setNoseDirection
+  robot.userData.body = body; // stretched to the drum footprint by updateRobotMarker
+  robot.userData.nose = nose; // flipped to the rear by updateRobotMarker
   robot.visible = false; // shown once the first pose arrives
   return robot;
 }
 
-// Puts the nose cone on the driving end: the front (+x) normally, the rear
-// when the direction is switched.
-function setNoseDirection(robot, reversed) {
-  const nose = robot.userData.nose;
+// Stretches the box along x to the drum footprint (robotFootprint: shortest
+// with both drums raised) and puts the nose cone just past the driving end:
+// the front (+x) normally, the rear when the direction is switched.
+function updateRobotMarker(robot, footprint, reversed) {
+  const { body, nose } = robot.userData;
+  body.scale.x = footprint.length / ROBOT_LENGTH; // geometry is ROBOT_LENGTH long
+  body.position.x = footprint.centerX;
   const sign = reversed ? -1 : 1;
-  nose.position.x = sign * (ROBOT_LENGTH / 2 + 0.2);
+  nose.position.x = reversed ? -(footprint.rear + 0.2) : footprint.front + 0.2;
   nose.rotation.z = -sign * Math.PI / 2;
 }
 
@@ -196,10 +202,13 @@ function disposeObject(root) {
 
 export default function PointCloudPanel({
   ros, isConnected, topic = '/unilidar/cloud', label = 'Lidar', directionSwitched = false,
+  frontActuatorPosition, backActuatorPosition,
 }) {
   // Read by the render loop every frame, so it must not restart the scene.
   const directionRef = useRef(directionSwitched);
   directionRef.current = directionSwitched;
+  const footprintRef = useRef(null);
+  footprintRef.current = robotFootprint(frontActuatorPosition, backActuatorPosition);
   const mountRef = useRef(null);
   const sceneRef = useRef(null);
   const tfTreeRef = useTfTree(ros, isConnected);
@@ -298,7 +307,7 @@ export default function PointCloudPanel({
       // Direction switch: swing the camera round to the other end over about
       // half a second rather than jumping, and move the nose with it.
       const reversed = Boolean(directionRef.current);
-      setNoseDirection(robot, reversed);
+      updateRobotMarker(robot, footprintRef.current, reversed);
       const targetOffset = reversed ? Math.PI : 0;
       viewOffset += (targetOffset - viewOffset) * (1 - Math.exp(-dt / VIEW_SWING_S));
       if (Math.abs(targetOffset - viewOffset) < 1e-3) viewOffset = targetOffset;

@@ -229,8 +229,8 @@ const BrunoApp = () => {
               <GamepadPanel gamepadStatus={gamepadStatus} setGamepadStatus={setGamepadStatus} gamepadData={gamepadData} setGamepadData={setGamepadData} gamepadIndex={0} camera0Active={camera0Active} camera4Active={camera4Active} getGamepadState={gamepadFns.getGamepadState} />
               <ArmIndicator frontArmActive={panelFrontArmActive} backArmActive={panelBackArmActive} label="Arm Control" directionSwitched={directionSwitched} />
               <RightButtonPanel currentActionState={panelRobotState} backArmActive={panelBackArmActive} onDig={commands.dig} onDump={commands.dump} onStop={commands.stop}>
-                <UnbeachButton unbeach={unbeach} drivingToward={directionSwitched ? 'rear' : 'front'}
-                  disabled={!(USE_ROSBRIDGE && isConnected)} />
+                {/*<UnbeachButton unbeach={unbeach} drivingToward={directionSwitched ? 'rear' : 'front'}
+                  disabled={!(USE_ROSBRIDGE && isConnected)} />*/}
               </RightButtonPanel>
               <DirectionChangeButton directionSwitched={directionSwitched} setDirectionSwitched={setDirectionSwitched} gamepadData={gamepadData} />
               {espNotPresent && <SimDrivePad setVirtualStick={setVirtualStick} setVirtualRightStick={setVirtualRightStick} />}
@@ -266,13 +266,17 @@ const BrunoApp = () => {
                 <div className="map-card-title">3D view</div>
                 <div className="map-card-body">
                   <PointCloudPanel ros={ros} isConnected={isConnected} topic="/unilidar/cloud" label="Lidar"
-                    directionSwitched={directionSwitched} />
+                    directionSwitched={directionSwitched}
+                    frontActuatorPosition={telemetry.position?.front_actuator_position}
+                    backActuatorPosition={telemetry.position?.back_actuator_position} />
                 </div>
               </section>
               <section className="map-card">
                 <div className="map-card-title">Minimap</div>
                 <div className="map-card-body">
-                  <MiniMapPanel ros={ros} isConnected={isConnected} directionSwitched={directionSwitched} />
+                  <MiniMapPanel ros={ros} isConnected={isConnected} directionSwitched={directionSwitched}
+                    frontActuatorPosition={telemetry.position?.front_actuator_position}
+                    backActuatorPosition={telemetry.position?.back_actuator_position} />
                 </div>
               </section>
             </div>

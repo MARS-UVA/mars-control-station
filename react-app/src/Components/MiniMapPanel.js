@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Topic } from 'roslib';
 import useTfTree, { cleanFrame, lookupInRobotWorld, lookupRobotPose, yawOf } from '../ros/tf';
 import { forEachPoint, POINT_CLOUD2_TYPE } from '../ros/pointCloud2';
-import { ROBOT_GROUND_Z, ROBOT_LENGTH, ROBOT_WIDTH } from '../ros/robot';
+import { ROBOT_GROUND_Z, ROBOT_LENGTH, ROBOT_WIDTH, robotFootprint } from '../ros/robot';
 import { ARENA, ROBOT_START_IN_ARENA } from '../arena';
 
 /**
@@ -296,10 +296,15 @@ function paintGrid(grid, groundZ) {
   }
 }
 
-export default function MiniMapPanel({ ros, isConnected, directionSwitched = false }) {
+export default function MiniMapPanel({
+  ros, isConnected, directionSwitched = false, frontActuatorPosition, backActuatorPosition,
+}) {
   // Read by the render loop every frame.
   const directionRef = useRef(directionSwitched);
   directionRef.current = directionSwitched;
+  // Drawn length follows the drum arms (robotFootprint: shortest when raised).
+  const footprintRef = useRef(null);
+  footprintRef.current = robotFootprint(frontActuatorPosition, backActuatorPosition);
   const canvasRef = useRef(null);
   const gridRef = useRef(null);
   if (!gridRef.current) gridRef.current = createGrid();
@@ -426,18 +431,20 @@ export default function MiniMapPanel({ ros, isConnected, directionSwitched = fal
       ctx.translate(robotX, robotY);
       ctx.rotate(robotYaw);
       ctx.globalAlpha = pose ? 0.9 : 0.35;
+      const { front, rear, length } = footprintRef.current;
       ctx.fillStyle = COLORS.robot;
-      ctx.fillRect(-ROBOT_LENGTH / 2, -ROBOT_WIDTH / 2, ROBOT_LENGTH, ROBOT_WIDTH);
+      ctx.fillRect(-rear, -ROBOT_WIDTH / 2, length, ROBOT_WIDTH);
       ctx.lineWidth = 2 / k;
       ctx.strokeStyle = COLORS.robotEdge;
-      ctx.strokeRect(-ROBOT_LENGTH / 2, -ROBOT_WIDTH / 2, ROBOT_LENGTH, ROBOT_WIDTH);
+      ctx.strokeRect(-rear, -ROBOT_WIDTH / 2, length, ROBOT_WIDTH);
       // Arrow on the driving end: mirrored to the rear when switched.
       const end = directionRef.current ? -1 : 1;
+      const endX = directionRef.current ? -rear : front;
       ctx.fillStyle = COLORS.nose;
       ctx.beginPath();
-      ctx.moveTo(end * (ROBOT_LENGTH / 2 + 0.35), 0);
-      ctx.lineTo(end * ROBOT_LENGTH / 2, ROBOT_WIDTH * 0.3);
-      ctx.lineTo(end * ROBOT_LENGTH / 2, -ROBOT_WIDTH * 0.3);
+      ctx.moveTo(endX + end * 0.35, 0);
+      ctx.lineTo(endX, ROBOT_WIDTH * 0.3);
+      ctx.lineTo(endX, -ROBOT_WIDTH * 0.3);
       ctx.closePath();
       ctx.fill();
       ctx.restore();

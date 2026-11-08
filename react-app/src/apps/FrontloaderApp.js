@@ -99,13 +99,17 @@ const FrontloaderApp = () => {
                 <div className="map-card-title">3D view</div>
                 <div className="map-card-body">
                   <PointCloudPanel ros={ros} isConnected={isConnected} topic="/unilidar/cloud" label="Lidar"
-                    directionSwitched={DIRECTION_SWITCHED} />
+                    directionSwitched={DIRECTION_SWITCHED}
+                    frontActuatorPosition={telemetry.position?.front_actuator_position}
+                    backActuatorPosition={telemetry.position?.back_actuator_position} />
                 </div>
               </section>
               <section className="map-card">
                 <div className="map-card-title">Minimap</div>
                 <div className="map-card-body">
-                  <MiniMapPanel ros={ros} isConnected={isConnected} directionSwitched={DIRECTION_SWITCHED} />
+                  <MiniMapPanel ros={ros} isConnected={isConnected} directionSwitched={DIRECTION_SWITCHED}
+                    frontActuatorPosition={telemetry.position?.front_actuator_position}
+                    backActuatorPosition={telemetry.position?.back_actuator_position} />
                 </div>
               </section>
             </div>

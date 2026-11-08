@@ -21,10 +21,12 @@ import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, ChevronsDown, ChevronsUp } f
  */
 
 // Fraction of full stick. Teleop scales this to the robot's max speed.
-const DRIVE_SPEED = 0.6;
+// Was 0.6; doubled would be 1.2, but the stick tops out at 1.0, so this is
+// full stick (~1.67x the old speed). Go faster by raising teleop's max speed.
+const DRIVE_SPEED = 1.0;
 // Fraction of full right stick for the drum arms. Teleop ignores |y| <= 0.2
-// and scales the rest to the arm actuator speed.
-const DRUM_SPEED = 0.6;
+// and scales the rest to the arm actuator speed. Halved from 0.6.
+const DRUM_SPEED = 0.3;
 const KEY_TO_DIRECTION = {
   KeyW: 'forward', KeyS: 'back', KeyA: 'left', KeyD: 'right',
   ArrowUp: 'drumsUp', ArrowDown: 'drumsDown',
