@@ -1,11 +1,14 @@
 /**
  * Lunabotics arena layout (KSC arena diagram) for the minimap overlay.
  *
- * Arena coordinates, in metres: origin at the bottom-left corner of the
+ * Arena coordinates, in metres: origin at the inner bottom-left corner of the
  * diagram (the starting-zone corner), x along the 6.88 m side toward the
- * construction zone, y along the 5 m side away from it. This is the frame
- * mars-jetson's Gazebo world uses too, shifted by y - 2.5 there
- * (startup/world/arena_nasa.world).
+ * construction zone, y along the 5 m side away from it. mars-jetson's NASA
+ * Gazebo worlds use this same corner-based frame (startup/world/arena_nasa.world,
+ * checked by startup/test/test_arena_origins.py), and so do the surveyed
+ * AprilTag priors (startup/marker_priors.py) that RTAB-Map anchors its map
+ * frame to. So once the robot is localized, map coordinates are arena
+ * coordinates and the overlay needs no offset.
  *
  * Only the zones and the target berm area are included. Rocks, craters and
  * the column are left out for now; the minimap shows real obstacles from the
@@ -27,10 +30,11 @@ export const ARENA = {
 };
 
 /**
- * Where the robot started, in arena coordinates. RTAB-Map's map frame (and
- * odom) begin at the robot's starting pose, so this is what lines the overlay
- * up with the minimap. The default is the Gazebo spawn: the middle of the
- * starting zone, facing +x (gazebo.launch.py spawns at world 1.0, -1.5, yaw 0).
- * On the real robot, set it to the actual start position and heading.
+ * Where the robot started, in arena coordinates. Only used as a fallback,
+ * when there is no map frame (RTAB-Map not running), so the robot pose
+ * resolves in odom, which begins at the robot's starting pose. The default
+ * is the Gazebo spawn: the middle of the starting zone, facing +x
+ * (gazebo.launch.py spawns at 1.0, 1.0, yaw 0). With a map frame the overlay
+ * is placed by the AprilTag anchor instead and this value is not used.
  */
 export const ROBOT_START_IN_ARENA = { x: 1.0, y: 1.0, yaw: 0 };

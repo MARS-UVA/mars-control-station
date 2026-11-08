@@ -56,6 +56,23 @@ export function lookupInRobotWorld(tree, frame) {
   return ok ? placement.matrix : null;
 }
 
+/**
+ * The link hanging directly off MAP_FRAME on the way up from `start`
+ * (normally map -> odom, which RTAB-Map publishes), as { child, matrix }, or
+ * null when `start` does not reach the map frame. The matrix is the live
+ * cache entry, which later /tf messages overwrite: clone it to keep it.
+ */
+export function lookupMapLink(tree, start) {
+  let frame = start;
+  for (let i = 0; i < MAX_TF_DEPTH; i++) {
+    const link = tree.get(frame);
+    if (!link) return null;
+    if (link.parent === MAP_FRAME) return { child: frame, matrix: link.matrix };
+    frame = link.parent;
+  }
+  return null;
+}
+
 /** Yaw (rad, about +z) of a pose matrix's x axis. */
 export function yawOf(matrix) {
   const e = matrix.elements; // column 0 is the x axis

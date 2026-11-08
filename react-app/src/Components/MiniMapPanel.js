@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Topic } from 'roslib';
-import useTfTree, { cleanFrame, lookupInRobotWorld, lookupRobotPose, yawOf } from '../ros/tf';
+import useTfTree, {
+  cleanFrame, lookupInRobotWorld, lookupMapLink, lookupRobotPose, MAP_FRAME, ROBOT_FRAME, yawOf,
+} from '../ros/tf';
 import { forEachPoint, POINT_CLOUD2_TYPE } from '../ros/pointCloud2';
 import { ROBOT_GROUND_Z, ROBOT_LENGTH, ROBOT_WIDTH, robotFootprint } from '../ros/robot';
 import { ARENA, ROBOT_START_IN_ARENA } from '../arena';
@@ -27,12 +29,20 @@ import { ARENA, ROBOT_START_IN_ARENA } from '../arena';
  * up) or map-up. Drag to pan away from the robot, scroll to zoom, double-click
  * or Recenter to go back.
  *
- * The grid covers GRID_EXTENT around the map origin, which is where the robot
- * starts. Points outside it are ignored.
+ * The grid covers GRID_EXTENT around the map origin. Points outside it are
+ * ignored.
  *
- * The arena zones and target berm area (arena.js) are drawn on top, placed from the robot's
- * starting pose in the arena (ROBOT_START_IN_ARENA), since the map frame
- * starts where the robot does. The Arena button hides them.
+ * The arena zones and target berm area (arena.js) are drawn on top. RTAB-Map
+ * anchors the map frame to the surveyed AprilTags, so map coordinates are
+ * arena coordinates and the overlay is drawn as is. Without a map frame the
+ * pose falls back to odom, which starts at the robot's starting pose, so the
+ * overlay is placed from ROBOT_START_IN_ARENA instead and a note says so.
+ * The Arena button hides it.
+ *
+ * When RTAB-Map first sees a tag, map -> odom jumps from the start pose to
+ * the arena frame. Scans gathered before the jump sit in the old frame and
+ * would show as ghost walls, so the grid is cleared whenever map -> odom
+ * jumps by more than ANCHOR_JUMP_* or the pose switches between map and odom.
  */
 
 const LIDAR_TOPIC = '/unilidar/cloud';
@@ -50,6 +60,12 @@ const OBSTACLE_STEP = 0.2;        // metres of height jump that counts as an obs
 const ELEVATION_RANGE = 0.3;      // +- metres mapped onto the terrain colours
 const MAX_POINT_HEIGHT = 2.0;     // ignore returns this far above the ground (overhangs)
 const BODY_MARGIN = 0.15;         // ignore returns this close to the robot's outline
+
+// A map -> odom change this big between two scans is a re-anchor (the first
+// AprilTag fix, or RTAB-Map starting a new map), not normal drift
+// correction: the grid is cleared so old scans don't linger as ghost walls.
+const ANCHOR_JUMP_M = 0.5;
+const ANCHOR_JUMP_RAD = 0.35;     // about 20 degrees
 
 // Default zoom: fit FIT_RADIUS metres around the robot into the panel's
 // shorter side, so from the start pose the far end of the arena (5.9 m away)
@@ -93,16 +109,20 @@ const ZONE_LABELS = [
   { text: 'Berm', x: ARENA.berm.cx, y: ARENA.berm.cy, color: COLORS.berm },
 ];
 
-// Draws the arena zones. ctx must already map world (map frame) metres to
-// the screen; k is device pixels per metre, for line widths and dashes.
-// Labels are drawn upright in screen space so they never appear mirrored or
-// upside down when the view rotates.
-function drawArena(ctx, k, dpr) {
+// Draws the arena zones. ctx must already map world metres to the screen;
+// k is device pixels per metre, for line widths and dashes. anchored: the
+// world is the AprilTag-anchored map frame, which is the arena frame itself;
+// otherwise it is odom, which starts at the robot's starting pose. Labels are
+// drawn upright in screen space so they never appear mirrored or upside down
+// when the view rotates.
+function drawArena(ctx, k, dpr, anchored) {
   ctx.save();
-  // map_T_arena = inverse(arena_T_start): rotate back by the start heading,
-  // then shift so the start position sits at the map origin.
-  ctx.rotate(-ROBOT_START_IN_ARENA.yaw);
-  ctx.translate(-ROBOT_START_IN_ARENA.x, -ROBOT_START_IN_ARENA.y);
+  if (!anchored) {
+    // odom_T_arena = inverse(arena_T_start): rotate back by the start
+    // heading, then shift so the start position sits at the odom origin.
+    ctx.rotate(-ROBOT_START_IN_ARENA.yaw);
+    ctx.translate(-ROBOT_START_IN_ARENA.x, -ROBOT_START_IN_ARENA.y);
+  }
   const px = (n) => n / k; // n device pixels, in metres
 
   // Zone fills first, faint, so the terrain still shows through.
@@ -214,6 +234,22 @@ function createGrid() {
   };
 }
 
+// An empty grid, marked dirty so the old image is repainted away.
+function emptyGrid() {
+  const grid = createGrid();
+  grid.dirty = true;
+  return grid;
+}
+
+// True when two map -> odom transforms differ by a re-anchor, not drift.
+function anchorJumped(before, after) {
+  const a = before.elements;
+  const b = after.elements;
+  const dist = Math.hypot(b[12] - a[12], b[13] - a[13]);
+  const turn = Math.abs(Math.atan2(Math.sin(yawOf(after) - yawOf(before)), Math.cos(yawOf(after) - yawOf(before))));
+  return dist > ANCHOR_JUMP_M || turn > ANCHOR_JUMP_RAD;
+}
+
 // Drops one scan into the grid. world (world_T_cloud) and robot (world_T_base)
 // are Matrix4s. Returns the number of points used.
 function addScan(grid, msg, world, robot) {
@@ -317,6 +353,7 @@ export default function MiniMapPanel({
   const [showArena, setShowArena] = useState(true);
   const [panned, setPanned] = useState(false);
   const [status, setStatus] = useState('disconnected');
+  const [anchored, setAnchored] = useState(true); // pose resolves in the map frame
 
   // Lidar subscription: recreated on every rosbridge (re)connect.
   useEffect(() => {
@@ -326,6 +363,9 @@ export default function MiniMapPanel({
     }
     let lastAt = 0;
     let missingTf = null;
+    // World frame and map -> odom of the scans already in the grid.
+    let lastRoot = null;
+    let lastAnchor = null;
     const onScan = (msg) => {
       lastAt = performance.now();
       const tree = tfTreeRef.current;
@@ -334,6 +374,16 @@ export default function MiniMapPanel({
       const robot = lookupRobotPose(tree);
       if (!world || !robot) { missingTf = frame || '(none)'; return; }
       missingTf = null;
+
+      // A changed world frame or a re-anchored map invalidates the grid.
+      const link = robot.root === MAP_FRAME ? lookupMapLink(tree, ROBOT_FRAME) : null;
+      if (lastRoot !== null && (robot.root !== lastRoot
+          || (link && lastAnchor && anchorJumped(lastAnchor, link.matrix)))) {
+        gridRef.current = emptyGrid();
+      }
+      lastRoot = robot.root;
+      lastAnchor = link ? link.matrix.clone() : null;
+
       addScan(gridRef.current, msg, world, robot.matrix);
     };
     const topic = new Topic({
@@ -371,6 +421,7 @@ export default function MiniMapPanel({
     let robotY = 0;
     let robotYaw = 0;
     let viewYaw = Math.PI / 2;
+    let lastAnchored = true;
 
     const fitScale = () => Math.min(MAX_SCALE, Math.max(MIN_SCALE,
       Math.min(canvas.clientWidth, canvas.clientHeight) / 2 / FIT_RADIUS));
@@ -424,7 +475,13 @@ export default function MiniMapPanel({
       ctx.drawImage(offscreen, 0, 0);
       ctx.restore();
 
-      if (view.showArena) drawArena(ctx, k, dpr);
+      // No pose yet: keep the last known placement rather than flicker.
+      const isAnchored = pose ? pose.root === MAP_FRAME : lastAnchored;
+      if (isAnchored !== lastAnchored) {
+        lastAnchored = isAnchored;
+        setAnchored(isAnchored);
+      }
+      if (view.showArena) drawArena(ctx, k, dpr, isAnchored);
 
       // Robot: outline box plus a nose triangle at the front.
       ctx.save();
@@ -534,11 +591,7 @@ export default function MiniMapPanel({
     viewRef.current.pan = null;
     setPanned(false);
   };
-  const clear = () => {
-    const grid = createGrid();
-    grid.dirty = true; // repaint so the old image is replaced by the empty one
-    gridRef.current = grid;
-  };
+  const clear = () => { gridRef.current = emptyGrid(); };
 
   let statusText;
   if (status === 'disconnected') statusText = 'Not connected to rosbridge';
@@ -546,6 +599,9 @@ export default function MiniMapPanel({
   else if (status === 'stalled') statusText = 'No scan for over 1 s';
   else if (status.startsWith('notf:')) statusText = `No transform for ${status.slice(5)}`;
   else statusText = null;
+  const notes = [statusText];
+  if (showArena && !anchored) notes.push('No map frame: arena placed from start pose');
+  const statusLines = notes.filter(Boolean);
 
   return (
     <div style={styles.container}>
@@ -560,7 +616,11 @@ export default function MiniMapPanel({
         </button>
         <button type="button" style={styles.button} onClick={clear}>Clear</button>
       </div>
-      {statusText && <div style={styles.status}>{statusText}</div>}
+      {statusLines.length > 0 && (
+        <div style={styles.status}>
+          {statusLines.map((line) => <div key={line}>{line}</div>)}
+        </div>
+      )}
     </div>
   );
 }
