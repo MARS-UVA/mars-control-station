@@ -10,9 +10,14 @@
  * frame to. So once the robot is localized, map coordinates are arena
  * coordinates and the overlay needs no offset.
  *
+ * This is the minimap's fallback only. When mars-jetson publishes
+ * /arena/markers (Nav2 launched with arena_name:=ARENA_NASA), the minimap
+ * draws those instead, so the robot's robot_navigation/scripts/arena_configs.py
+ * is the source of truth; keep these numbers in step with it.
+ *
  * Only the zones and the target berm area are included. Rocks, craters and
- * the column are left out for now; the minimap shows real obstacles from the
- * lidar.
+ * the column are left out; the minimap shows real obstacles from the
+ * costmaps.
  */
 
 export const ARENA = {
@@ -23,10 +28,9 @@ export const ARENA = {
   startZone: { x: 0, y: 0, w: 2.0, h: 2.0 },
   constructionZone: { x: 3.88, y: 0, w: 3.0, h: 1.5 },
   // Target berm area, 2.2 m x 0.9 m, inside the construction zone. Berm
-  // volume outside it does not score. The diagram is not to scale, so its
-  // centre is measured off the drawing and only approximate: correct cx/cy
-  // to the official berm position.
-  berm: { cx: 5.40, cy: 0.57, w: 2.2, h: 0.9 },
+  // volume outside it does not score. The diagram does not give its exact
+  // position; like arena_configs.py, it is centred in the construction zone.
+  berm: { cx: 5.38, cy: 0.75, w: 2.2, h: 0.9 },
 };
 
 /**

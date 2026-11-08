@@ -44,33 +44,18 @@ export function lookupRobotPose(tree) {
 
 /**
  * world_T_frame for data stamped in `frame`, where "world" is the root the
- * robot pose resolves to. Returns null when the frame cannot be connected to
- * the robot's world, so data is never drawn in the wrong place.
+ * robot pose resolves to (MAP_FRAME while the robot pose is unknown). Returns
+ * null when the frame cannot be connected to the robot's world, so data is
+ * never drawn in the wrong place.
  */
 export function lookupInRobotWorld(tree, frame) {
   const placement = lookupTransform(tree, frame);
   const robotPose = lookupRobotPose(tree);
+  const world = robotPose ? robotPose.root : MAP_FRAME;
   const ok = frame === placement.root
-    ? placement.root === MAP_FRAME || !robotPose // data already in the world frame
-    : Boolean(robotPose) && placement.root === robotPose.root;
+    ? frame === world // data stamped in a root frame: only if it is the world
+    : Boolean(robotPose) && placement.root === world;
   return ok ? placement.matrix : null;
-}
-
-/**
- * The link hanging directly off MAP_FRAME on the way up from `start`
- * (normally map -> odom, which RTAB-Map publishes), as { child, matrix }, or
- * null when `start` does not reach the map frame. The matrix is the live
- * cache entry, which later /tf messages overwrite: clone it to keep it.
- */
-export function lookupMapLink(tree, start) {
-  let frame = start;
-  for (let i = 0; i < MAX_TF_DEPTH; i++) {
-    const link = tree.get(frame);
-    if (!link) return null;
-    if (link.parent === MAP_FRAME) return { child: frame, matrix: link.matrix };
-    frame = link.parent;
-  }
-  return null;
 }
 
 /** Yaw (rad, about +z) of a pose matrix's x axis. */

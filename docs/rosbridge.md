@@ -102,7 +102,10 @@ about 1 Hz, which makes the gamepad publish rate and topic rates look wrong.
 | `/human_input_state` | `teleop_msgs/HumanInputState`, 30 Hz | UI → robot | `useGamepadPublisher` |
 | `/robot_state/toggle` | `std_msgs/UInt8` | UI → robot | `useRobotStateToggle` |
 | `/digdump` | `autonomy_msgs/action/AutonomousActions` | UI → robot | `useDigDumpAction` |
-| `/unilidar/cloud` | `sensor_msgs/PointCloud2` (live lidar scan, not accumulated; CBOR, throttled to 5 Hz, voxel-thinned to 0.05 m in the browser; always subscribed: the 3D view and minimap are always on screen; crosses the wireless link on the real robot) | robot → UI | `PointCloudPanel`, `MiniMapPanel` |
+| `/unilidar/cloud` | `sensor_msgs/PointCloud2` (live lidar scan, not accumulated; CBOR, throttled to 5 Hz, voxel-thinned to 0.05 m in the browser; always subscribed: the 3D view is always on screen; crosses the wireless link on the real robot) | robot → UI | `PointCloudPanel` |
+| `/global_costmap/costmap` | `nav_msgs/OccupancyGrid` (Nav2 global costmap in `map`: RTAB-Map's lidar grid plus inflation; CBOR, 1 Hz; only while Nav2 runs) | robot → UI | `MiniMapPanel` |
+| `/local_costmap/costmap` | `nav_msgs/OccupancyGrid` (Nav2 local costmap in `odom`: 6 x 6 m around the robot from the RGB-D cameras; CBOR, 2 Hz; only while Nav2 runs) | robot → UI | `MiniMapPanel` |
+| `/arena/markers` | `visualization_msgs/MarkerArray` (arena zones in `map` from `arena_markers_node`; read once per connection, then unsubscribed; only with `enable_nav2:=true arena_name:=ARENA_NASA`, else the built-in `arena.js` layout is drawn) | robot → UI | `MiniMapPanel` |
 | `/tf`, `/tf_static` | `tf2_msgs/TFMessage` (JSON, unthrottled; used for `map → odom → base_link` and the lidar's fixed mount, to place the robot, camera and scans; always subscribed) | robot → UI | `PointCloudPanel`, `MiniMapPanel` (via `ros/tf.js`) |
 
 Constants live in `react-app/src/hooks/rosTypes.js`. `RobotState` is TELEOP 0,

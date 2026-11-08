@@ -1,71 +1,64 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Topic } from 'roslib';
 import useTfTree, {
-  cleanFrame, lookupInRobotWorld, lookupMapLink, lookupRobotPose, MAP_FRAME, ROBOT_FRAME, yawOf,
+  cleanFrame, lookupInRobotWorld, lookupRobotPose, MAP_FRAME, yawOf,
 } from '../ros/tf';
-import { forEachPoint, POINT_CLOUD2_TYPE } from '../ros/pointCloud2';
-import { ROBOT_GROUND_Z, ROBOT_LENGTH, ROBOT_WIDTH, robotFootprint } from '../ros/robot';
+import { ROBOT_WIDTH, robotFootprint } from '../ros/robot';
 import { ARENA, ROBOT_START_IN_ARENA } from '../arena';
 
 /**
- * Bird's-eye minimap built from the live lidar scans (/unilidar/cloud).
+ * Bird's-eye minimap built from Nav2's costmaps on the robot, the same maps
+ * the planner and controller use (mars-jetson robot_navigation/config):
  *
- * Every scan is placed in the world with TF and dropped into a 2.5D height
- * grid of CELL_SIZE cells: each cell keeps the lowest and highest point seen in
- * it. A scan overwrites the cells it hits, so moved obstacles update, while
- * cells out of view keep their last value, so the map fills in as the robot
- * drives. Clear empties it.
+ * - Global costmap (/global_costmap/costmap, map frame, 1 Hz): RTAB-Map's
+ *   lidar occupancy grid plus Nav2's inflation, covering the whole mapped
+ *   arena. Drawn as the base layer: free space grey, obstacles red, the
+ *   inflation margin as a fading red halo, unknown space left dark.
+ * - Local costmap (/local_costmap/costmap, odom frame, 2 Hz): a 6 x 6 m window
+ *   around the robot built from the RGB-D cameras. Drawn on top in orange,
+ *   obstacles and inflation only, so live obstacles near the robot stand out
+ *   and global obstacles outside the cameras' view stay visible. The window
+ *   itself is not outlined: it is sized for the controller's 2.8 s horizon,
+ *   much larger than the cameras' 2.5 m marking range, so its edge says
+ *   little and would cover most of the arena.
  *
- * Colours: terrain is shaded by height relative to the ground under the robot
- * (blue = lower, green = level, orange = higher), which shows hills and
- * craters. Cells with a sudden height step of OBSTACLE_STEP or more, within the
- * cell or to a neighbour, are drawn red as obstacles (rocks, walls, crater
- * edges). Unseen cells stay dark.
+ * Both are nav_msgs/OccupancyGrid in Nav2's costmap scale: -1 unknown,
+ * 0 free, 1-98 inflation, 99 the robot's footprint would touch an obstacle,
+ * 100 obstacle. They are corrected on the robot (AprilTag fixes, loop
+ * closures), so the minimap keeps no history of its own. They only exist
+ * while Nav2 runs (enable_nav2:=true); otherwise the panel says it is
+ * waiting for them.
+ *
+ * Arena: the zones from /arena/markers (arena_markers_node, published when
+ * Nav2 is launched with arena_name), read once per connection. Without them
+ * the built-in layout in arena.js is drawn instead and a note says so. RTAB-Map
+ * anchors the map frame to the AprilTags, so map coordinates are arena
+ * coordinates; with no map frame the pose falls back to odom, which starts at
+ * the robot's starting pose, and the built-in layout is placed from
+ * ROBOT_START_IN_ARENA.
  *
  * The yellow arrow marks the driving end: the front normally, the rear when
  * the operator switches direction (directionSwitched).
  *
  * View: centred on the robot, heading-up by default (the robot always points
  * up) or map-up. Drag to pan away from the robot, scroll to zoom, double-click
- * or Recenter to go back.
- *
- * The grid covers GRID_EXTENT around the map origin. Points outside it are
- * ignored.
- *
- * The arena zones and target berm area (arena.js) are drawn on top. RTAB-Map
- * anchors the map frame to the surveyed AprilTags, so map coordinates are
- * arena coordinates and the overlay is drawn as is. Without a map frame the
- * pose falls back to odom, which starts at the robot's starting pose, so the
- * overlay is placed from ROBOT_START_IN_ARENA instead and a note says so.
- * The Arena button hides it.
- *
- * When RTAB-Map first sees a tag, map -> odom jumps from the start pose to
- * the arena frame. Scans gathered before the jump sit in the old frame and
- * would show as ghost walls, so the grid is cleared whenever map -> odom
- * jumps by more than ANCHOR_JUMP_* or the pose switches between map and odom.
+ * or Recenter to go back. The Global, Local and Arena buttons toggle layers.
  */
 
-const LIDAR_TOPIC = '/unilidar/cloud';
-const THROTTLE_MS = 200;          // 5 scans per second
-const MAX_INPUT_POINTS = 60000;   // per scan; the sim lidar sends about 11,500
-const STALL_MS = 1000;
+const GLOBAL_COSTMAP_TOPIC = '/global_costmap/costmap';
+const LOCAL_COSTMAP_TOPIC = '/local_costmap/costmap';
+const ARENA_MARKERS_TOPIC = '/arena/markers';
+const OCCUPANCY_GRID_TYPE = 'nav_msgs/msg/OccupancyGrid';
+const MARKER_ARRAY_TYPE = 'visualization_msgs/msg/MarkerArray';
+const STALE_MS = 3000;            // the global costmap publishes at 1 Hz, the local at 2 Hz
 const STATUS_INTERVAL_MS = 500;
 
-const CELL_SIZE = 0.1;            // metres per grid cell
-const GRID_EXTENT = 40;           // metres per side, centred on the map origin
-const GRID_CELLS = Math.round(GRID_EXTENT / CELL_SIZE);
-const GRID_ORIGIN = -GRID_EXTENT / 2; // world x/y of the grid's first cell edge
-
-const OBSTACLE_STEP = 0.2;        // metres of height jump that counts as an obstacle
-const ELEVATION_RANGE = 0.3;      // +- metres mapped onto the terrain colours
-const MAX_POINT_HEIGHT = 2.0;     // ignore returns this far above the ground (overhangs)
-const BODY_MARGIN = 0.15;         // ignore returns this close to the robot's outline
-
-// A map -> odom change this big between two scans is a re-anchor (the first
-// AprilTag fix, or RTAB-Map starting a new map), not normal drift
-// correction: the grid is cleared so old scans don't linger as ghost walls.
-const ANCHOR_JUMP_M = 0.5;
-const ANCHOR_JUMP_RAD = 0.35;     // about 20 degrees
+// visualization_msgs/Marker types and actions the arena node uses.
+const MARKER_LINE_STRIP = 4;
+const MARKER_LINE_LIST = 5;
+const MARKER_TEXT = 9;            // TEXT_VIEW_FACING
+const MARKER_DELETE = 2;
+const MARKER_DELETEALL = 3;
 
 // Default zoom: fit FIT_RADIUS metres around the robot into the panel's
 // shorter side, so from the start pose the far end of the arena (5.9 m away)
@@ -78,7 +71,9 @@ const MAX_SCALE = 150;
 
 const COLORS = {
   background: '#151515',
-  obstacle: [225, 55, 55],
+  globalCost: [225, 55, 55],
+  globalFree: [46, 46, 46, 255],
+  localCost: [255, 160, 40],
   robot: '#0088ff',
   robotEdge: '#ffffff',
   nose: '#ffcc00',
@@ -90,7 +85,37 @@ const COLORS = {
   label: 'rgba(255, 255, 255, 0.85)',
 };
 
-// Arena zones in arena coordinates, with their label anchor points.
+// RGBA lookup for costmap values: entries 0-100 by value, 101 for unknown
+// (left transparent). Free cells get freeRgba, or stay transparent when null.
+// Inflation is a light halo that strengthens with cost, so free space still
+// reads; 99 (the footprint would touch) is half opaque, 100 fully.
+function buildPalette(rgb, freeRgba) {
+  const lut = new Uint8ClampedArray(102 * 4);
+  if (freeRgba) lut.set(freeRgba, 0);
+  for (let v = 1; v <= 100; v++) {
+    let alpha;
+    if (v === 100) alpha = 255;
+    else if (v === 99) alpha = 120;
+    else alpha = 10 + (v / 98) * 80;
+    lut.set([rgb[0], rgb[1], rgb[2], alpha], v * 4);
+  }
+  return lut;
+}
+
+const LAYERS = {
+  global: {
+    topic: GLOBAL_COSTMAP_TOPIC,
+    label: 'Global costmap',
+    palette: buildPalette(COLORS.globalCost, COLORS.globalFree),
+  },
+  local: {
+    topic: LOCAL_COSTMAP_TOPIC,
+    label: 'Local costmap',
+    palette: buildPalette(COLORS.localCost, null),
+  },
+};
+
+// Built-in arena zones (arena.js) in arena coordinates, with label anchors.
 const ZONE_LABELS = [
   { text: 'Excavation', x: ARENA.zoneDivideX / 2, y: ARENA.height - 0.3 },
   { text: 'Obstacle', x: (ARENA.zoneDivideX + ARENA.width) / 2, y: ARENA.height - 0.3 },
@@ -109,13 +134,195 @@ const ZONE_LABELS = [
   { text: 'Berm', x: ARENA.berm.cx, y: ARENA.berm.cy, color: COLORS.berm },
 ];
 
-// Draws the arena zones. ctx must already map world metres to the screen;
-// k is device pixels per metre, for line widths and dashes. anchored: the
-// world is the AprilTag-anchored map frame, which is the arena frame itself;
-// otherwise it is odom, which starts at the robot's starting pose. Labels are
-// drawn upright in screen space so they never appear mirrored or upside down
-// when the view rotates.
-function drawArena(ctx, k, dpr, anchored) {
+const styles = {
+  container: { position: 'relative', width: '100%', height: '100%', overflow: 'hidden', background: COLORS.background },
+  canvas: { position: 'absolute', inset: 0, width: '100%', height: '100%', cursor: 'grab', touchAction: 'none' },
+  buttons: { position: 'absolute', top: 8, right: 8, display: 'flex', gap: 6 },
+  button: {
+    padding: '3px 8px', fontSize: 12, borderRadius: 4, border: '1px solid #666',
+    background: 'rgba(0,0,0,0.6)', color: 'white', cursor: 'pointer',
+  },
+  buttonOff: { opacity: 0.45 },
+  status: {
+    position: 'absolute', left: 8, bottom: 8, background: 'rgba(0,0,0,0.6)', borderRadius: 6,
+    color: 'white', padding: '3px 8px', fontSize: 12, pointerEvents: 'none',
+  },
+};
+
+// --- Costmaps -------------------------------------------------------------
+
+function createLayer() {
+  return { canvas: document.createElement('canvas'), image: null, at: 0, noTf: false };
+}
+
+// int8[] arrives as an Int8Array with CBOR and as a number array with JSON.
+function toInt8(data) {
+  if (data instanceof Int8Array) return data;
+  if (data instanceof Uint8Array) return new Int8Array(data.buffer, data.byteOffset, data.byteLength);
+  if (Array.isArray(data)) return Int8Array.from(data);
+  if (typeof data === 'string') {
+    const bytes = Uint8Array.from(atob(data), (c) => c.charCodeAt(0));
+    return new Int8Array(bytes.buffer);
+  }
+  return null;
+}
+
+// Yaw (rad, about +z) of a geometry_msgs/Quaternion.
+function quaternionYaw(q) {
+  const { x = 0, y = 0, z = 0, w = 1 } = q || {};
+  return Math.atan2(2 * (w * z + x * y), 1 - 2 * (y * y + z * z));
+}
+
+// Paints one OccupancyGrid into the layer's offscreen canvas, one pixel per
+// cell, and keeps its placement. Returns false for a malformed message.
+function paintLayer(layer, msg, palette) {
+  const info = msg.info || {};
+  const { width, height, resolution } = info;
+  const data = toInt8(msg.data);
+  if (!width || !height || !(resolution > 0) || !data || data.length < width * height) return false;
+  if (!layer.image || layer.image.width !== width || layer.image.height !== height) {
+    layer.canvas.width = width;
+    layer.canvas.height = height;
+    layer.image = new ImageData(width, height);
+  }
+  const px = layer.image.data;
+  for (let c = 0; c < width * height; c++) {
+    const v = data[c];
+    const k = (v < 0 || v > 100 ? 101 : v) * 4;
+    const p = c * 4;
+    px[p] = palette[k]; px[p + 1] = palette[k + 1]; px[p + 2] = palette[k + 2]; px[p + 3] = palette[k + 3];
+  }
+  layer.canvas.getContext('2d').putImageData(layer.image, 0, 0);
+  const origin = info.origin || {};
+  const position = origin.position || {};
+  layer.frame = cleanFrame(msg.header && msg.header.frame_id);
+  layer.resolution = resolution;
+  layer.width = width;
+  layer.height = height;
+  layer.originX = position.x || 0;
+  layer.originY = position.y || 0;
+  layer.originYaw = quaternionYaw(origin.orientation);
+  layer.at = performance.now();
+  return true;
+}
+
+// Draws a layer where TF places its frame. ctx must map world metres to the
+// screen. Cell (i, j) covers origin + (i, j) cells, so the image goes in
+// unflipped: the world transform already has y up.
+function drawLayer(ctx, layer, tree) {
+  if (!layer.at) return;
+  const world = lookupInRobotWorld(tree, layer.frame);
+  layer.noTf = !world;
+  if (!world) return;
+  const e = world.elements; // world_T_frame, its 2D part
+  ctx.save();
+  ctx.transform(e[0], e[1], e[4], e[5], e[12], e[13]);
+  ctx.translate(layer.originX, layer.originY);
+  ctx.rotate(layer.originYaw);
+  ctx.scale(layer.resolution, layer.resolution);
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(layer.canvas, 0, 0);
+  ctx.restore();
+}
+
+// --- Arena ------------------------------------------------------------------
+
+function markerColor(c) {
+  const { r = 1, g = 1, b = 1, a = 1 } = c || {};
+  return `rgba(${Math.round(r * 255)}, ${Math.round(g * 255)}, ${Math.round(b * 255)}, ${a})`;
+}
+
+// Applies a MarkerArray to `store` (ns:id -> simplified marker). Only the
+// marker types the arena node publishes are kept; z is dropped.
+function applyMarkers(store, msg) {
+  for (const m of msg.markers || []) {
+    if (m.action === MARKER_DELETEALL) { store.clear(); continue; }
+    const key = `${m.ns}:${m.id}`;
+    if (m.action === MARKER_DELETE) { store.delete(key); continue; }
+    if (m.type !== MARKER_LINE_STRIP && m.type !== MARKER_LINE_LIST && m.type !== MARKER_TEXT) continue;
+    const pose = m.pose || {};
+    const position = pose.position || {};
+    store.set(key, {
+      type: m.type,
+      frame: cleanFrame(m.header && m.header.frame_id) || MAP_FRAME,
+      x: position.x || 0,
+      y: position.y || 0,
+      yaw: quaternionYaw(pose.orientation),
+      points: (m.points || []).map((p) => [p.x, p.y]),
+      width: (m.scale && m.scale.x) || 0,
+      text: m.text || '',
+      color: markerColor(m.color),
+    });
+  }
+}
+
+// Draws text centred at screen point (x, y) in CSS pixels, with a dark
+// outline so it stays readable over the costmap. ctx must be in CSS pixels.
+function drawLabel(ctx, text, x, y, color) {
+  ctx.font = '11px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.lineJoin = 'round';
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = 'rgba(0, 0, 0, 0.85)';
+  ctx.strokeText(text, x, y);
+  ctx.fillStyle = color;
+  ctx.fillText(text, x, y);
+}
+
+// Draws the stored arena markers. Returns false, drawing nothing, when there
+// are none or one of their frames cannot be placed (no map frame yet).
+// Lines are at least 2 px wide; labels are drawn upright in screen space so
+// they never appear mirrored or upside down when the view rotates.
+function drawMarkers(ctx, k, dpr, markers, tree) {
+  if (!markers.size) return false;
+  const frames = new Map();
+  for (const m of markers.values()) {
+    if (frames.has(m.frame)) continue;
+    const world = lookupInRobotWorld(tree, m.frame);
+    if (!world) return false;
+    frames.set(m.frame, world.elements);
+  }
+  const labels = [];
+  for (const m of markers.values()) {
+    const e = frames.get(m.frame);
+    ctx.save();
+    ctx.transform(e[0], e[1], e[4], e[5], e[12], e[13]);
+    ctx.translate(m.x, m.y);
+    ctx.rotate(m.yaw);
+    if (m.type === MARKER_TEXT) {
+      const p = ctx.getTransform().transformPoint(new DOMPoint(0, 0));
+      labels.push({ text: m.text, color: m.color, x: p.x, y: p.y });
+    } else if (m.points.length > 1) {
+      ctx.strokeStyle = m.color;
+      ctx.lineWidth = Math.max(m.width, (2 * dpr) / k);
+      ctx.lineJoin = 'round';
+      ctx.beginPath();
+      if (m.type === MARKER_LINE_STRIP) {
+        m.points.forEach(([x, y], i) => (i ? ctx.lineTo(x, y) : ctx.moveTo(x, y)));
+      } else {
+        for (let i = 0; i + 1 < m.points.length; i += 2) {
+          ctx.moveTo(m.points[i][0], m.points[i][1]);
+          ctx.lineTo(m.points[i + 1][0], m.points[i + 1][1]);
+        }
+      }
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+  ctx.save();
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  for (const label of labels) drawLabel(ctx, label.text, label.x / dpr, label.y / dpr, label.color);
+  ctx.restore();
+  return true;
+}
+
+// Draws the built-in arena (arena.js), the fallback when /arena/markers is
+// not published. ctx must already map world metres to the screen; k is
+// device pixels per metre. anchored: the world is the AprilTag-anchored map
+// frame, which is the arena frame itself; otherwise it is odom, which starts
+// at the robot's starting pose.
+function drawBuiltinArena(ctx, k, dpr, anchored) {
   ctx.save();
   if (!anchored) {
     // odom_T_arena = inverse(arena_T_start): rotate back by the start
@@ -125,7 +332,7 @@ function drawArena(ctx, k, dpr, anchored) {
   }
   const px = (n) => n / k; // n device pixels, in metres
 
-  // Zone fills first, faint, so the terrain still shows through.
+  // Zone fills first, faint, so the costmap still shows through.
   const zones = [
     [ARENA.startZone, COLORS.startZone],
     [ARENA.constructionZone, COLORS.constructionZone],
@@ -175,162 +382,19 @@ function drawArena(ctx, k, dpr, anchored) {
   // Labels: arena point -> screen point, then draw unrotated.
   const toScreen = ctx.getTransform();
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  ctx.font = '11px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
   for (const label of ZONE_LABELS) {
     const p = toScreen.transformPoint(new DOMPoint(label.x, label.y));
-    ctx.fillStyle = label.color || COLORS.label;
-    ctx.fillText(label.text, p.x / dpr, p.y / dpr);
+    drawLabel(ctx, label.text, p.x / dpr, p.y / dpr, label.color || COLORS.label);
   }
   ctx.restore();
 }
 
-// 256-step terrain palette: blue (low) -> green (level) -> orange (high).
-const TERRAIN_LUT = (() => {
-  const lut = new Uint8ClampedArray(256 * 3);
-  for (let i = 0; i < 256; i++) {
-    const t = i / 255;
-    const h = (220 - t * 185) / 360;
-    const [r, g, b] = hslToRgb(h, 0.55, 0.42);
-    lut[i * 3] = r; lut[i * 3 + 1] = g; lut[i * 3 + 2] = b;
-  }
-  return lut;
-})();
-
-function hslToRgb(h, s, l) {
-  const k = (n) => (n + h * 12) % 12;
-  const a = s * Math.min(l, 1 - l);
-  const f = (n) => l - a * Math.max(-1, Math.min(k(n) - 3, 9 - k(n), 1));
-  return [Math.round(f(0) * 255), Math.round(f(8) * 255), Math.round(f(4) * 255)];
-}
-
-const styles = {
-  container: { position: 'relative', width: '100%', height: '100%', overflow: 'hidden', background: COLORS.background },
-  canvas: { position: 'absolute', inset: 0, width: '100%', height: '100%', cursor: 'grab', touchAction: 'none' },
-  buttons: { position: 'absolute', top: 8, right: 8, display: 'flex', gap: 6 },
-  button: {
-    padding: '3px 8px', fontSize: 12, borderRadius: 4, border: '1px solid #666',
-    background: 'rgba(0,0,0,0.6)', color: 'white', cursor: 'pointer',
-  },
-  status: {
-    position: 'absolute', left: 8, bottom: 8, background: 'rgba(0,0,0,0.6)', borderRadius: 6,
-    color: 'white', padding: '3px 8px', fontSize: 12, pointerEvents: 'none',
-  },
+const ARENA_NOTES = {
+  builtin: `Arena: built-in layout (no ${ARENA_MARKERS_TOPIC})`,
+  start: 'No map frame: arena placed from start pose',
 };
 
-function createGrid() {
-  const n = GRID_CELLS * GRID_CELLS;
-  return {
-    minZ: new Float32Array(n),
-    maxZ: new Float32Array(n),
-    scanOf: new Uint32Array(n),   // last scan that touched the cell; 0 = never seen
-    scan: 0,
-    // Bounding box of seen cells, so recolouring skips the empty grid.
-    lo: [GRID_CELLS, GRID_CELLS],
-    hi: [-1, -1],
-    image: new ImageData(GRID_CELLS, GRID_CELLS),
-    dirty: false,
-  };
-}
-
-// An empty grid, marked dirty so the old image is repainted away.
-function emptyGrid() {
-  const grid = createGrid();
-  grid.dirty = true;
-  return grid;
-}
-
-// True when two map -> odom transforms differ by a re-anchor, not drift.
-function anchorJumped(before, after) {
-  const a = before.elements;
-  const b = after.elements;
-  const dist = Math.hypot(b[12] - a[12], b[13] - a[13]);
-  const turn = Math.abs(Math.atan2(Math.sin(yawOf(after) - yawOf(before)), Math.cos(yawOf(after) - yawOf(before))));
-  return dist > ANCHOR_JUMP_M || turn > ANCHOR_JUMP_RAD;
-}
-
-// Drops one scan into the grid. world (world_T_cloud) and robot (world_T_base)
-// are Matrix4s. Returns the number of points used.
-function addScan(grid, msg, world, robot) {
-  const m = world.elements;
-  const r = robot.elements;
-  const rx = r[12];
-  const ry = r[13];
-  const groundZ = r[14] + ROBOT_GROUND_Z;
-  const yaw = Math.atan2(r[1], r[0]);
-  const cos = Math.cos(yaw);
-  const sin = Math.sin(yaw);
-  const halfL = ROBOT_LENGTH / 2 + BODY_MARGIN;
-  const halfW = ROBOT_WIDTH / 2 + BODY_MARGIN;
-  const scan = ++grid.scan;
-  let used = 0;
-
-  forEachPoint(msg, MAX_INPUT_POINTS, (x, y, z) => {
-    const wx = m[0] * x + m[4] * y + m[8] * z + m[12];
-    const wy = m[1] * x + m[5] * y + m[9] * z + m[13];
-    const wz = m[2] * x + m[6] * y + m[10] * z + m[14];
-    if (wz - groundZ > MAX_POINT_HEIGHT) return false;
-    // Skip returns off the robot itself.
-    const dx = wx - rx;
-    const dy = wy - ry;
-    if (Math.abs(dx * cos + dy * sin) < halfL && Math.abs(-dx * sin + dy * cos) < halfW) return false;
-
-    const i = Math.floor((wx - GRID_ORIGIN) / CELL_SIZE);
-    const j = Math.floor((wy - GRID_ORIGIN) / CELL_SIZE);
-    if (i < 0 || j < 0 || i >= GRID_CELLS || j >= GRID_CELLS) return false;
-    const c = j * GRID_CELLS + i;
-    if (grid.scanOf[c] !== scan) {
-      // First hit in this scan: replace whatever the cell held before.
-      grid.scanOf[c] = scan;
-      grid.minZ[c] = wz;
-      grid.maxZ[c] = wz;
-    } else {
-      if (wz < grid.minZ[c]) grid.minZ[c] = wz;
-      if (wz > grid.maxZ[c]) grid.maxZ[c] = wz;
-    }
-    if (i < grid.lo[0]) grid.lo[0] = i;
-    if (j < grid.lo[1]) grid.lo[1] = j;
-    if (i > grid.hi[0]) grid.hi[0] = i;
-    if (j > grid.hi[1]) grid.hi[1] = j;
-    used++;
-    return false;
-  });
-  grid.dirty = true;
-  return used;
-}
-
-// Recolours the seen part of the grid into grid.image. groundZ is the height
-// that counts as level (the ground under the robot now).
-function paintGrid(grid, groundZ) {
-  const { minZ, maxZ, scanOf, image } = grid;
-  const px = image.data;
-  const N = GRID_CELLS;
-  const lut = TERRAIN_LUT;
-  for (let j = grid.lo[1]; j <= grid.hi[1]; j++) {
-    for (let i = grid.lo[0]; i <= grid.hi[0]; i++) {
-      const c = j * N + i;
-      const p = c * 4;
-      if (!scanOf[c]) { px[p + 3] = 0; continue; }
-      const top = maxZ[c];
-      // Height step inside the cell, or from this cell's top down to the
-      // lowest seen neighbour.
-      let lowest = minZ[c];
-      if (i > 0 && scanOf[c - 1] && minZ[c - 1] < lowest) lowest = minZ[c - 1];
-      if (i < N - 1 && scanOf[c + 1] && minZ[c + 1] < lowest) lowest = minZ[c + 1];
-      if (j > 0 && scanOf[c - N] && minZ[c - N] < lowest) lowest = minZ[c - N];
-      if (j < N - 1 && scanOf[c + N] && minZ[c + N] < lowest) lowest = minZ[c + N];
-      if (top - lowest >= OBSTACLE_STEP) {
-        px[p] = COLORS.obstacle[0]; px[p + 1] = COLORS.obstacle[1]; px[p + 2] = COLORS.obstacle[2];
-      } else {
-        const t = (top - groundZ + ELEVATION_RANGE) / (2 * ELEVATION_RANGE);
-        const k = Math.round(Math.min(1, Math.max(0, t)) * 255) * 3;
-        px[p] = lut[k]; px[p + 1] = lut[k + 1]; px[p + 2] = lut[k + 2];
-      }
-      px[p + 3] = 255;
-    }
-  }
-}
+// --- Panel ------------------------------------------------------------------
 
 export default function MiniMapPanel({
   ros, isConnected, directionSwitched = false, frontActuatorPosition, backActuatorPosition,
@@ -342,86 +406,101 @@ export default function MiniMapPanel({
   const footprintRef = useRef(null);
   footprintRef.current = robotFootprint(frontActuatorPosition, backActuatorPosition);
   const canvasRef = useRef(null);
-  const gridRef = useRef(null);
-  if (!gridRef.current) gridRef.current = createGrid();
+  const layersRef = useRef(null);
+  if (!layersRef.current) layersRef.current = { global: createLayer(), local: createLayer() };
+  const markersRef = useRef(new Map());
   const tfTreeRef = useTfTree(ros, isConnected);
 
   // View state lives in a ref so the render loop and pointer handlers share it
   // without re-rendering; React state only mirrors what the buttons show.
-  const viewRef = useRef({ scale: DEFAULT_SCALE, userZoomed: false, headingUp: true, pan: null, showArena: true });
+  const viewRef = useRef({
+    scale: DEFAULT_SCALE, userZoomed: false, headingUp: true, pan: null,
+    showArena: true, showGlobal: true, showLocal: true,
+  });
   const [headingUp, setHeadingUp] = useState(true);
   const [showArena, setShowArena] = useState(true);
+  const [showGlobal, setShowGlobal] = useState(true);
+  const [showLocal, setShowLocal] = useState(true);
   const [panned, setPanned] = useState(false);
-  const [status, setStatus] = useState('disconnected');
-  const [anchored, setAnchored] = useState(true); // pose resolves in the map frame
+  const [status, setStatus] = useState('Not connected to rosbridge'); // lines joined by \n
+  const [arenaMode, setArenaMode] = useState(null); // 'markers', 'builtin', 'start' or null (hidden)
 
-  // Lidar subscription: recreated on every rosbridge (re)connect.
+  // Subscriptions: recreated on every rosbridge (re)connect.
   useEffect(() => {
     if (!ros || !isConnected) {
-      setStatus('disconnected');
+      setStatus('Not connected to rosbridge');
       return undefined;
     }
-    let lastAt = 0;
-    let missingTf = null;
-    // World frame and map -> odom of the scans already in the grid.
-    let lastRoot = null;
-    let lastAnchor = null;
-    const onScan = (msg) => {
-      lastAt = performance.now();
-      const tree = tfTreeRef.current;
-      const frame = cleanFrame(msg.header && msg.header.frame_id);
-      const world = lookupInRobotWorld(tree, frame);
-      const robot = lookupRobotPose(tree);
-      if (!world || !robot) { missingTf = frame || '(none)'; return; }
-      missingTf = null;
-
-      // A changed world frame or a re-anchored map invalidates the grid.
-      const link = robot.root === MAP_FRAME ? lookupMapLink(tree, ROBOT_FRAME) : null;
-      if (lastRoot !== null && (robot.root !== lastRoot
-          || (link && lastAnchor && anchorJumped(lastAnchor, link.matrix)))) {
-        gridRef.current = emptyGrid();
-      }
-      lastRoot = robot.root;
-      lastAnchor = link ? link.matrix.clone() : null;
-
-      addScan(gridRef.current, msg, world, robot.matrix);
+    const layers = layersRef.current;
+    const subscriptions = [];
+    const subscribe = (options, callback) => {
+      const topic = new Topic({ ros, queue_length: 1, reconnect_on_close: false, ...options });
+      topic.subscribe(callback);
+      subscriptions.push([topic, callback]);
+      return topic;
     };
-    const topic = new Topic({
-      ros,
-      name: LIDAR_TOPIC,
-      messageType: POINT_CLOUD2_TYPE,
-      compression: 'cbor',
-      queue_length: 1,
-      throttle_rate: THROTTLE_MS,
-      reconnect_on_close: false,
-    });
-    topic.subscribe(onScan);
-    setStatus('waiting');
-    const timer = setInterval(() => {
-      if (!lastAt) setStatus('waiting');
-      else if (performance.now() - lastAt > STALL_MS) setStatus('stalled');
-      else setStatus(missingTf ? `notf:${missingTf}` : 'live');
-    }, STATUS_INTERVAL_MS);
+
+    // Costmaps: CBOR sends the int8 cells as raw bytes instead of JSON text.
+    for (const [name, def] of Object.entries(LAYERS)) {
+      subscribe(
+        { name: def.topic, messageType: OCCUPANCY_GRID_TYPE, compression: 'cbor' },
+        (msg) => paintLayer(layers[name], msg, def.palette),
+      );
+    }
+
+    // Arena markers: republished every second but fixed for a run, so the
+    // first non-empty message is kept and the subscription dropped.
+    let markersSeen = false;
+    const onMarkers = (msg) => {
+      if (markersSeen) return;
+      const store = markersRef.current;
+      store.clear(); // replaces whatever an earlier connection left
+      applyMarkers(store, msg);
+      if (store.size) {
+        markersSeen = true;
+        markerTopic.unsubscribe(onMarkers);
+      }
+    };
+    const markerTopic = subscribe({ name: ARENA_MARKERS_TOPIC, messageType: MARKER_ARRAY_TYPE }, onMarkers);
+
+    const update = () => {
+      const view = viewRef.current;
+      const now = performance.now();
+      const lines = [];
+      if (!layers.global.at && !layers.local.at) {
+        lines.push('Waiting for Nav2 costmaps');
+      } else {
+        for (const [name, def] of Object.entries(LAYERS)) {
+          const layer = layers[name];
+          if (!(name === 'global' ? view.showGlobal : view.showLocal)) continue;
+          if (!layer.at) lines.push(`Waiting for ${def.topic}`);
+          else if (now - layer.at > STALE_MS) lines.push(`${def.label}: no update for over ${STALE_MS / 1000} s`);
+          else if (layer.noTf) lines.push(`${def.label}: no transform for ${layer.frame || '(none)'}`);
+        }
+      }
+      const text = lines.join('\n');
+      setStatus((prev) => (prev === text ? prev : text));
+    };
+    update();
+    const timer = setInterval(update, STATUS_INTERVAL_MS);
     return () => {
       clearInterval(timer);
-      topic.unsubscribe(onScan);
+      subscriptions.forEach(([topic, callback]) => topic.unsubscribe(callback));
     };
-  }, [ros, isConnected, tfTreeRef]);
+  }, [ros, isConnected]);
 
   // Canvas, render loop and pointer handling.
   useEffect(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
-    const offscreen = document.createElement('canvas');
-    offscreen.width = GRID_CELLS;
-    offscreen.height = GRID_CELLS;
-    const offCtx = offscreen.getContext('2d');
     const view = viewRef.current;
+    const layers = layersRef.current;
     let robotX = 0;
     let robotY = 0;
     let robotYaw = 0;
     let viewYaw = Math.PI / 2;
     let lastAnchored = true;
+    let lastArenaMode = null;
 
     const fitScale = () => Math.min(MAX_SCALE, Math.max(MIN_SCALE,
       Math.min(canvas.clientWidth, canvas.clientHeight) / 2 / FIT_RADIUS));
@@ -437,16 +516,11 @@ export default function MiniMapPanel({
 
     let frame;
     const draw = () => {
-      const grid = gridRef.current;
-      const pose = lookupRobotPose(tfTreeRef.current);
+      const tree = tfTreeRef.current;
+      const pose = lookupRobotPose(tree);
       if (pose) {
         const e = pose.matrix.elements;
         robotX = e[12]; robotY = e[13]; robotYaw = yawOf(pose.matrix);
-        if (grid.dirty) {
-          paintGrid(grid, e[14] + ROBOT_GROUND_Z);
-          offCtx.putImageData(grid.image, 0, 0);
-          grid.dirty = false;
-        }
       }
 
       const dpr = window.devicePixelRatio || 1;
@@ -469,19 +543,25 @@ export default function MiniMapPanel({
         w / 2 - (a * centerX + cc * centerY),
         h / 2 - (b * centerX + d * centerY));
 
-      ctx.imageSmoothingEnabled = false;
-      ctx.save();
-      ctx.transform(CELL_SIZE, 0, 0, CELL_SIZE, GRID_ORIGIN, GRID_ORIGIN);
-      ctx.drawImage(offscreen, 0, 0);
-      ctx.restore();
+      if (view.showGlobal) drawLayer(ctx, layers.global, tree);
+      if (view.showLocal) drawLayer(ctx, layers.local, tree);
 
-      // No pose yet: keep the last known placement rather than flicker.
-      const isAnchored = pose ? pose.root === MAP_FRAME : lastAnchored;
-      if (isAnchored !== lastAnchored) {
-        lastAnchored = isAnchored;
-        setAnchored(isAnchored);
+      // Arena: the robot's markers when they can be placed, else the
+      // built-in layout. No pose yet: keep the last known placement.
+      let mode = null;
+      if (view.showArena) {
+        if (drawMarkers(ctx, k, dpr, markersRef.current, tree)) {
+          mode = 'markers';
+        } else {
+          if (pose) lastAnchored = pose.root === MAP_FRAME;
+          drawBuiltinArena(ctx, k, dpr, lastAnchored);
+          mode = lastAnchored ? 'builtin' : 'start';
+        }
       }
-      if (view.showArena) drawArena(ctx, k, dpr, isAnchored);
+      if (mode !== lastArenaMode) {
+        lastArenaMode = mode;
+        setArenaMode(mode);
+      }
 
       // Robot: outline box plus a nose triangle at the front.
       ctx.save();
@@ -579,46 +659,39 @@ export default function MiniMapPanel({
     };
   }, [tfTreeRef]);
 
-  const toggleHeadingUp = () => {
-    viewRef.current.headingUp = !viewRef.current.headingUp;
-    setHeadingUp(viewRef.current.headingUp);
-  };
-  const toggleArena = () => {
-    viewRef.current.showArena = !viewRef.current.showArena;
-    setShowArena(viewRef.current.showArena);
+  const toggle = (key, setter) => () => {
+    viewRef.current[key] = !viewRef.current[key];
+    setter(viewRef.current[key]);
   };
   const recenter = () => {
     viewRef.current.pan = null;
     setPanned(false);
   };
-  const clear = () => { gridRef.current = emptyGrid(); };
+  const layerButton = (label, on, onClick, title) => (
+    <button type="button" style={on ? styles.button : { ...styles.button, ...styles.buttonOff }}
+      onClick={onClick} title={title}>
+      {label}
+    </button>
+  );
 
-  let statusText;
-  if (status === 'disconnected') statusText = 'Not connected to rosbridge';
-  else if (status === 'waiting') statusText = `Waiting for ${LIDAR_TOPIC}`;
-  else if (status === 'stalled') statusText = 'No scan for over 1 s';
-  else if (status.startsWith('notf:')) statusText = `No transform for ${status.slice(5)}`;
-  else statusText = null;
-  const notes = [statusText];
-  if (showArena && !anchored) notes.push('No map frame: arena placed from start pose');
-  const statusLines = notes.filter(Boolean);
+  const lines = status ? status.split('\n') : [];
+  if (ARENA_NOTES[arenaMode]) lines.push(ARENA_NOTES[arenaMode]);
 
   return (
     <div style={styles.container}>
       <canvas ref={canvasRef} style={styles.canvas} />
       <div style={styles.buttons}>
         {panned && <button type="button" style={styles.button} onClick={recenter}>Recenter</button>}
-        <button type="button" style={styles.button} onClick={toggleHeadingUp}>
+        <button type="button" style={styles.button} onClick={toggle('headingUp', setHeadingUp)}>
           {headingUp ? 'Heading up' : 'Map up'}
         </button>
-        <button type="button" style={styles.button} onClick={toggleArena}>
-          {showArena ? 'Hide arena' : 'Show arena'}
-        </button>
-        <button type="button" style={styles.button} onClick={clear}>Clear</button>
+        {layerButton('Global', showGlobal, toggle('showGlobal', setShowGlobal), 'Global costmap: the whole mapped arena')}
+        {layerButton('Local', showLocal, toggle('showLocal', setShowLocal), 'Local costmap: live camera obstacles near the robot')}
+        {layerButton('Arena', showArena, toggle('showArena', setShowArena), 'Arena zones')}
       </div>
-      {statusLines.length > 0 && (
+      {lines.length > 0 && (
         <div style={styles.status}>
-          {statusLines.map((line) => <div key={line}>{line}</div>)}
+          {lines.map((line) => <div key={line}>{line}</div>)}
         </div>
       )}
     </div>
