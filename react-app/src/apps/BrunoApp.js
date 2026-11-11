@@ -28,6 +28,8 @@ import ConnectionStatus from "../Components/ConnectionStatus";
 import RosbridgeFeed from "../Components/RosbridgeFeed";
 import PointCloudPanel from "../Components/PointCloudPanel";
 import MiniMapPanel from "../Components/MiniMapPanel";
+import AprilTagOffsetPanel from "../Components/AprilTagOffsetPanel";
+import AprilTagGateButton from "../Components/AprilTagGateButton";
 import { setDirection } from '../gamepad/directionStore';
 import useRos from '../hooks/useRos';
 import useTelemetry from '../hooks/useTelemetry';
@@ -39,6 +41,8 @@ import useDigDumpAction from '../hooks/useDigDumpAction';
 import H264CameraPanel from "../Components/H264CameraPanel";
 import UnbeachButton from "../Components/UnbeachButton";
 import useUnbeachRoutine from '../hooks/useUnbeachRoutine';
+import useMarkerPriors from '../hooks/useMarkerPriors';
+import useAprilTagGate from '../hooks/useAprilTagGate';
 import { toLegacyGamepadData } from '../rosbridgeAdapters';
 
 // Data-path switch. CRA inlines REACT_APP_* at build/start time, so this is a
@@ -125,6 +129,8 @@ const BrunoApp = () => {
     useGamepadPublisher(ros, { directionSwitched });
   const { estop } = useRobotStateToggle(ros);
   const digDump = useDigDumpAction(ros);
+  const markerPriors = useMarkerPriors(ros);
+  const aprilTagGate = useAprilTagGate(ros);
   const { sendGoal, cancelGoal } = digDump;
   // Unbeach is rosbridge-only: it drives teleop through the gamepad publisher.
   const unbeach = useUnbeachRoutine({
@@ -233,6 +239,12 @@ const BrunoApp = () => {
                   disabled={!(USE_ROSBRIDGE && isConnected)} />*/}
               </RightButtonPanel>
               <DirectionChangeButton directionSwitched={directionSwitched} setDirectionSwitched={setDirectionSwitched} gamepadData={gamepadData} />
+              {USE_ROSBRIDGE && (
+                <>
+                  <AprilTagGateButton gate={aprilTagGate} disabled={!isConnected} />
+                  <AprilTagOffsetPanel markerPriors={markerPriors} disabled={!isConnected} />
+                </>
+              )}
               {espNotPresent && <SimDrivePad setVirtualStick={setVirtualStick} setVirtualRightStick={setVirtualRightStick} />}
             </>
           <div className="left-panel-footer">
