@@ -1,0 +1,175 @@
+From c40e498c21f1daa31e1e021176afdad36891c4a5 Mon Sep 17 00:00:00 2001
+From: MARS <mars@example.com>
+Date: Wed, 11 Nov 2026 23:22:29 +0000
+Subject: [PATCH] Add AprilTag localize button that opens the robot's AprilTag
+ gate
+
+---
+ .../src/Components/AprilTagGateButton.js      | 52 ++++++++++++++++++
+ react-app/src/apps/BrunoApp.js                |  8 ++-
+ react-app/src/hooks/useAprilTagGate.js        | 54 +++++++++++++++++++
+ 3 files changed, 113 insertions(+), 1 deletion(-)
+ create mode 100644 react-app/src/Components/AprilTagGateButton.js
+ create mode 100644 react-app/src/hooks/useAprilTagGate.js
+
+diff --git a/react-app/src/Components/AprilTagGateButton.js b/react-app/src/Components/AprilTagGateButton.js
+new file mode 100644
+index 0000000..b20174b
+--- /dev/null
++++ b/react-app/src/Components/AprilTagGateButton.js
+@@ -0,0 +1,52 @@
++import React, { useState } from 'react';
++
++/*
++"Localize" button: opens the robot's AprilTag gate for a few seconds so
++RTAB-Map receives tag detections and snaps the map onto the arena. Point a
++camera that the detector uses (the "Rear" view) at a tag first. Pressing
++again while open extends the time. See hooks/useAprilTagGate.
++*/
++const DURATIONS = [3, 5, 10, 20];
++
++const LABELS = {
++  open: (s) => `Gate open · ${Math.ceil(s.remaining)} s left`,
++  finishing: () => 'Finishing batch (waiting for tag sightings)',
++  closed: () => 'Gate closed',
++};
++
++export default function AprilTagGateButton({ gate, disabled }) {
++  const { status, available, open } = gate;
++  const [seconds, setSeconds] = useState(5);
++  const [notice, setNotice] = useState(null);
++
++  const state = status?.state ?? 'closed';
++  const off = disabled || !available || status?.gate_available === false;
++
++  let title;
++  if (disabled) title = 'Needs a rosbridge connection';
++  else if (!available) title = 'Waiting for apriltag_gate_trigger on the robot';
++  else if (status?.gate_available === false) title = 'AprilTagGate service is not running';
++
++  return (
++    <div className="panel apriltag-gate-panel">
++      <div className="panel-title">AprilTag localize</div>
++      <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
++        <button type="button" disabled={off} title={title}
++          onClick={() => setNotice(open(seconds) ? null : 'Not sent: rosbridge disconnected')}>
++          {state === 'open' ? 'Extend' : 'Localize'}
++        </button>
++        <select value={seconds} onChange={(e) => setSeconds(Number(e.target.value))}>
++          {DURATIONS.map((d) => <option key={d} value={d}>{d} s</option>)}
++        </select>
++      </div>
++      <div className="rosbridge-status-line">
++        {available ? (LABELS[state] || LABELS.closed)(status) : title || 'Waiting for robot…'}
++        {available && status.batches > 0 ? ` · ${status.batches} batch${status.batches === 1 ? '' : 'es'} sent` : ''}
++      </div>
++      {available && status.message && !['open', 'closed'].includes(status.message) && (
++        <div className="rosbridge-status-error">{status.message}</div>
++      )}
++      {notice && <div className="rosbridge-status-error">{notice}</div>}
++    </div>
++  );
++}
+diff --git a/react-app/src/apps/BrunoApp.js b/react-app/src/apps/BrunoApp.js
+index faef959..71639e1 100644
+--- a/react-app/src/apps/BrunoApp.js
++++ b/react-app/src/apps/BrunoApp.js
+@@ -29,6 +29,7 @@ import RosbridgeFeed from "../Components/RosbridgeFeed";
+ import PointCloudPanel from "../Components/PointCloudPanel";
+ import MiniMapPanel from "../Components/MiniMapPanel";
+ import AprilTagOffsetPanel from "../Components/AprilTagOffsetPanel";
++import AprilTagGateButton from "../Components/AprilTagGateButton";
+ import { setDirection } from '../gamepad/directionStore';
+ import useRos from '../hooks/useRos';
+ import useTelemetry from '../hooks/useTelemetry';
+@@ -41,6 +42,7 @@ import H264CameraPanel from "../Components/H264CameraPanel";
+ import UnbeachButton from "../Components/UnbeachButton";
+ import useUnbeachRoutine from '../hooks/useUnbeachRoutine';
+ import useMarkerPriors from '../hooks/useMarkerPriors';
++import useAprilTagGate from '../hooks/useAprilTagGate';
+ import { toLegacyGamepadData } from '../rosbridgeAdapters';
+ 
+ // Data-path switch. CRA inlines REACT_APP_* at build/start time, so this is a
+@@ -128,6 +130,7 @@ const BrunoApp = () => {
+   const { estop } = useRobotStateToggle(ros);
+   const digDump = useDigDumpAction(ros);
+   const markerPriors = useMarkerPriors(ros);
++  const aprilTagGate = useAprilTagGate(ros);
+   const { sendGoal, cancelGoal } = digDump;
+   // Unbeach is rosbridge-only: it drives teleop through the gamepad publisher.
+   const unbeach = useUnbeachRoutine({
+@@ -237,7 +240,10 @@ const BrunoApp = () => {
+               </RightButtonPanel>
+               <DirectionChangeButton directionSwitched={directionSwitched} setDirectionSwitched={setDirectionSwitched} gamepadData={gamepadData} />
+               {USE_ROSBRIDGE && (
+-                <AprilTagOffsetPanel markerPriors={markerPriors} disabled={!isConnected} />
++                <>
++                  <AprilTagGateButton gate={aprilTagGate} disabled={!isConnected} />
++                  <AprilTagOffsetPanel markerPriors={markerPriors} disabled={!isConnected} />
++                </>
+               )}
+               {espNotPresent && <SimDrivePad setVirtualStick={setVirtualStick} setVirtualRightStick={setVirtualRightStick} />}
+             </>
+diff --git a/react-app/src/hooks/useAprilTagGate.js b/react-app/src/hooks/useAprilTagGate.js
+new file mode 100644
+index 0000000..59d202b
+--- /dev/null
++++ b/react-app/src/hooks/useAprilTagGate.js
+@@ -0,0 +1,54 @@
++import { useCallback, useEffect, useRef, useState } from 'react';
++import { Topic } from 'roslib';
++
++const OPEN_TOPIC = '/apriltag_gate/open';     // std_msgs/Float32, seconds
++const STATUS_TOPIC = '/apriltag_gate/status'; // std_msgs/String, JSON, 2 Hz
++const STALE_MS = 3000;
++
++/**
++ * Opens mars-jetson's AprilTag gate for a few seconds, through
++ * apriltag_gate_trigger (startup/apriltag_gate_trigger.py). While open, tag
++ * detections reach RTAB-Map so it can localize the map to the arena.
++ *
++ * Like useRobotStateToggle, nothing is sent while disconnected; open()
++ * returns whether the request went out.
++ *
++ * @returns {{ status: object|null, available: boolean,
++ *             open: (seconds: number) => boolean }}
++ */
++export default function useAprilTagGate(ros) {
++  const [status, setStatus] = useState(null);
++  const [now, setNow] = useState(Date.now());
++  const lastReceivedRef = useRef(0);
++  const pubRef = useRef(null);
++
++  useEffect(() => {
++    if (!ros) return undefined;
++    const sub = new Topic({ ros, name: STATUS_TOPIC, messageType: 'std_msgs/msg/String' });
++    const onStatus = (msg) => {
++      try {
++        setStatus(JSON.parse(msg.data));
++        lastReceivedRef.current = Date.now();
++      } catch { /* ignore malformed status */ }
++    };
++    sub.subscribe(onStatus);
++    pubRef.current = new Topic({ ros, name: OPEN_TOPIC, messageType: 'std_msgs/msg/Float32' });
++    const tick = setInterval(() => setNow(Date.now()), 1000);
++    return () => {
++      clearInterval(tick);
++      sub.unsubscribe(onStatus);
++      pubRef.current.unadvertise();
++      pubRef.current = null;
++    };
++  }, [ros]);
++
++  const open = useCallback((seconds) => {
++    const topic = pubRef.current;
++    if (!topic || !topic.ros.isConnected) return false;
++    topic.publish({ data: seconds });
++    return true;
++  }, []);
++
++  const available = status !== null && now - lastReceivedRef.current < STALE_MS;
++  return { status, available, open };
++}
+-- 
+2.43.0
+
