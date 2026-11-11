@@ -24,11 +24,12 @@ const STATUS_INTERVAL_MS = 250;
 const PROBE_CODEC = 'avc1.42E01E'; // constrained baseline, level 3.0
 
 const styles = {
+  // The largest 3:2 box that fits the .camera-slot it sits in (a CSS size
+  // container, so cqw/cqh are the slot's width and height).
   container: {
     position: 'relative',
-    aspectRatio: '3 / 2',
-    height: '50%',
-    maxWidth: '100%',
+    width: 'min(100cqw, 150cqh)',
+    height: 'min(100cqh, 66.667cqw)',
     margin: '0 auto',
   },
   cameraContainer: {

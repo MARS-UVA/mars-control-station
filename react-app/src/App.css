@@ -687,3 +687,302 @@ body {
   font-weight: bold;
   color: var(--accent-color1);
 }
+
+/* ------------------------------------------------------------------------
+   Single-screen layout. The dashboard always fills exactly one screen:
+   three full-height columns, nothing below the fold. The left and right
+   columns share out their height (control buttons and current charts
+   stretch or shrink) and only scroll as a last resort on very short
+   screens. These rules override the older sizes above.
+   ------------------------------------------------------------------------ */
+.app-container {
+  height: 100vh;
+  padding: 10px 12px;
+  overflow: hidden;
+}
+
+.content {
+  flex: 1;
+  min-height: 0;
+  height: auto;
+  gap: 12px;
+}
+
+.left-panel,
+.middle-panel,
+.right-panel {
+  height: 100%;
+  min-height: 0;
+  max-height: none;
+  padding: 2px;
+}
+
+.left-panel {
+  width: 22%;
+  gap: clamp(6px, 1.3vh, 14px);
+  overflow-y: auto;
+}
+
+.left-panel--minimal {
+  justify-content: flex-end;
+}
+
+.left-panel-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  margin-top: auto;
+  flex-shrink: 0;
+}
+
+.robot-label {
+  padding: 0 4px;
+  color: var(--secondary-color);
+  font-size: 0.85rem;
+}
+
+.middle-panel {
+  width: 50%;
+  justify-content: flex-start;
+  gap: 10px;
+}
+
+.right-panel {
+  width: 28%;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Middle column: camera on top, lidar views below. */
+.camera-slot {
+  position: relative;
+  flex: 1.25 1 0;
+  min-height: 0;
+  container-type: size; /* the camera sizes itself to this box (cqw/cqh) */
+}
+
+.camera-slot .esp-not-working {
+  top: auto;
+  bottom: 18px;
+  transform: translateX(-50%);
+  padding: 10px 26px;
+  font-size: 1.25rem;
+  white-space: nowrap;
+  z-index: 15;
+}
+
+.map-row {
+  flex: 1 1 0;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.map-card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background-color: var(--panel-bg-color);
+  box-shadow: 0 4px 6px var(--box-shadow-color);
+}
+
+.map-card-title {
+  padding: 4px 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.map-card-body {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+/* Left column: the Control Panel buttons take whatever height is left,
+   down to a usable minimum. Everything else keeps its natural height. */
+.left-panel > * {
+  flex-shrink: 0;
+}
+
+.left-panel > .control-panel {
+  flex: 1 1 0;
+  min-height: 110px;
+  display: flex;
+  flex-direction: column;
+}
+
+.control-panel .panel-title {
+  margin: 0 0 6px;
+}
+
+.control-panel .drive-panel-grid {
+  flex: 1;
+  min-height: 0;
+  height: auto;
+  gap: 10px;
+  grid-template-rows: minmax(0, 1fr);
+}
+
+.control-panel .drive-panel-stop-col,
+.control-panel .drive-panel-other-col {
+  min-height: 0;
+}
+
+.control-panel .drive-panel-other-col {
+  gap: 10px;
+}
+
+.control-panel .drive-panel-other-col > *,
+.control-panel .drive-panel-stop-col > * {
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.unbeach-control {
+  flex-shrink: 0;
+  margin-top: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.unbeach-row {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+}
+
+.command-button-unbeach {
+  flex: 1;
+  position: relative;
+  border-radius: 8px;
+  padding: 6px 8px;
+  font-size: 1.1rem;
+  box-shadow: 0 4px 6px var(--box-shadow-color);
+  border: 1px solid var(--border-color);
+  background-color: var(--accent-color1, #E1A365);
+  color: var(--primary-color);
+  cursor: pointer;
+}
+
+.command-button-unbeach h4 {
+  margin: 0;
+}
+
+.command-button-unbeach:hover:not(:disabled) {
+  transform: scale(1.03);
+  background-color: var(--accent-color1-hover, #dd9043);
+}
+
+.command-button-unbeach-running {
+  background-color: var(--active-color);
+}
+
+.command-button-unbeach-running:hover:not(:disabled) {
+  background-color: var(--active-color-hover, var(--active-color));
+}
+
+.command-button-unbeach:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.unbeach-direction {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  font-size: 0.75rem;
+  color: var(--secondary-color);
+}
+
+.unbeach-status {
+  font-size: 0.75rem;
+  color: var(--secondary-color);
+}
+
+.theme-changer {
+  position: static;
+  align-self: flex-start;
+}
+
+/* Right column: the current charts take whatever height is left. */
+.right-panel > .panel {
+  flex: 1 1 0;
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+}
+
+.chart-grid {
+  flex: 1;
+  min-height: 0;
+  height: auto;
+}
+
+.chart-column {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-fill {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.chart-fill h3 {
+  margin: 4px 0 2px;
+  font-size: 1rem;
+}
+
+.chart-fill-body {
+  flex: 1;
+  min-height: 90px;
+}
+
+/* Shorter screens (laptops): tighten the fixed-size blocks. */
+@media (max-height: 900px) {
+  /* Rules for elements styled in component CSS files are scoped with
+     .left-panel: those files load after App.css and would otherwise win. */
+  .app-container { padding: 6px 10px; }
+  .gamepad-status { font-size: 1rem; margin: 0; }
+  .left-panel .panel { padding: 8px 12px; }
+  .left-panel .arm-indicator-box { padding: 8px; font-size: 16px; }
+  .command-button-sstop,
+  .command-button-sstop-feedback { font-size: 2rem; }
+  .command-button-digauto,
+  .command-button-dumpauto,
+  .command-button-digauto-feedback,
+  .command-button-dumpauto-feedback,
+  .command-button-dumpauto-front { font-size: 1.2rem; }
+  .timer-overlay { padding: 8px 10px; }
+  .timer-display { font-size: 1.7rem; }
+  .timer-controls { margin-top: 6px; }
+  .timer-button-reset,
+  .timer-button-start,
+  .timer-button-lap { padding: 8px 10px; font-size: 0.95rem; }
+  .chart-space h3 { margin: 2px; font-size: 0.95rem; }
+  .left-panel { gap: 6px; }
+  .rosbridge-status { gap: 2px; }
+  .left-panel .arm-indicator-box { font-size: 15px; }
+  .rosbridge-status-line { font-size: 11px; }
+  .left-panel .arm-indicator-container { gap: 4px; }
+  .left-panel .arm-indicator-box { padding: 6px; }
+  .control-panel .panel-title { font-size: 1rem; margin-bottom: 4px; }
+  .lap-display { margin-bottom: 4px; }
+}

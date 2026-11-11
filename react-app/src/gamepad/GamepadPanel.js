@@ -1,33 +1,13 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import GamepadDisplay from './GamepadDisplay';
 
-const BUTTON_POSITIONS = {
-  'Record': { top: 385, left: 25 },
-  'Play': { top: 385, left: 170 },
-  'Reset': { top: 385, left: 315 },
-};
-
-const BUTTON_CLASSES = {
-  'Record': 'command-button-record',
-  'Play': 'command-button-run',
-  'Reset': 'command-button-reset',
-};
-
-const CommandButton = React.memo(({ label, className, onClick, style }) => (
-  <button className={className} onClick={onClick} style={style}>
-    <h4>{label}</h4>
-  </button>
-));
-
 /**
- * The three networking functions used to be imported from gamepad/gamepad.js
- * and packets.js. They are props now so App.js can supply either the legacy
- * implementations or the rosbridge adapters (see docs/rosbridge.md):
- *  - getGamepadState(index, directionOverride): legacy-shaped pad snapshot
- *    ({ leftStick, rightStick, buttons }) or null when no pad at that index.
- *  - setTransmissionActive(bool): pause/resume the live transmit loop while a
- *    recorded macro is played back.
- *  - sendCustomGamepadState(frame): transmit one recorded frame.
+ * Shows whether a gamepad is connected and a live picture of its inputs.
+ *
+ * getGamepadState(index, directionOverride) is a prop so the app can supply
+ * either the legacy gamepad.js reader or the rosbridge adapter (see
+ * docs/rosbridge.md). It returns a legacy-shaped pad snapshot
+ * ({ leftStick, rightStick, buttons }) or null when no pad is at that index.
  */
 function GamepadPanel({
   gamepadStatus,
@@ -36,17 +16,7 @@ function GamepadPanel({
   setGamepadData,
   gamepadIndex,
   getGamepadState,
-  setTransmissionActive,
-  sendCustomGamepadState,
 }) {
-  const [isRecording, setIsRecording] = useState(false);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [recordedMacros, setRecordedMacros] = useState([]);
-
-  const recordedMacrosRef = useRef([]);
-  const playbackIndexRef = useRef(0);
-
-  // Gamepad loop
   useEffect(() => {
     const handleGamepadConnected = (e) => setGamepadStatus(`Gamepad connected!: ${e.gamepad.id}`);
     const handleGamepadDisconnected = () => {
@@ -58,18 +28,11 @@ function GamepadPanel({
     window.addEventListener('gamepaddisconnected', handleGamepadDisconnected);
 
     const interval = setInterval(() => {
-      if (isPlaying) return;
-
       const gamepads = navigator.getGamepads();
       if (gamepads[gamepadIndex]) {
         const state = getGamepadState(gamepadIndex, false);
         if (state) {
           setGamepadData(state);
-
-          if (isRecording) {
-            recordedMacrosRef.current.push(state);
-            setRecordedMacros([...recordedMacrosRef.current]);
-          }
         } else {
           console.warn('Failed to get gamepad state');
         }
@@ -81,133 +44,13 @@ function GamepadPanel({
       window.removeEventListener('gamepaddisconnected', handleGamepadDisconnected);
       clearInterval(interval);
     };
-  }, [isRecording, isPlaying, setGamepadData, setGamepadStatus, getGamepadState, gamepadIndex]);
-
-  // Playback
-  useEffect(() => {
-    let playbackInterval;
-    if (isPlaying) {
-      setTransmissionActive(false);
-      playbackIndexRef.current = 0;
-
-      playbackInterval = setInterval(() => {
-        const index = playbackIndexRef.current;
-        const macro = recordedMacrosRef.current;
-
-        if (index >= macro.length) {
-          handleStopPlayback();
-        } else {
-          const frame = macro[index];
-          setGamepadData(frame);
-          sendCustomGamepadState(frame);
-          playbackIndexRef.current += 1;
-        }
-      }, 30);
-    } else {
-      setTransmissionActive(true);
-    }
-
-    return () => clearInterval(playbackInterval);
-  }, [isPlaying, setTransmissionActive, sendCustomGamepadState]);
-
-  // Handlers
-  const handleStartRecording = () => {
-    setRecordedMacros([]);
-    recordedMacrosRef.current = [];
-    setIsRecording(true);
-    setIsPlaying(false);
-  };
-  const handleStopRecording = () => setIsRecording(false);
-  const handleStartPlayback = () => {
-    if (recordedMacros.length > 0) {
-      setIsRecording(false);
-      setIsPlaying(true);
-    }
-  };
-  const handleStopPlayback = () => {
-    setIsPlaying(false);
-    setTransmissionActive(true);
-  };
-  const resetRecording = () => {
-    setRecordedMacros([]);
-    recordedMacrosRef.current = [];
-  };
-
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.key === 'q' && !isPlaying){
-        if (isRecording) {
-          handleStopRecording();
-        } else {
-          handleStartRecording();
-        }
-      }
-      else if (e.key === 'w' && !isRecording){
-        if (!isPlaying){
-          handleStartPlayback();
-        }
-        if (isPlaying){
-          handleStopPlayback();
-        }
-      }
-      else if (e.key === 'e' && !isPlaying && !isRecording){
-        resetRecording();
-      }
-    }
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isRecording, isPlaying]);
+  }, [setGamepadData, setGamepadStatus, getGamepadState, gamepadIndex]);
 
   return (
     <div>
       <div className="panel">
         <p className="gamepad-status">{gamepadStatus}</p>
         {gamepadData && <GamepadDisplay gamepadData={gamepadData} />}
-      </div>
-
-      <div className="controller-record-buttons">
-        {/* Show all three buttons only if not recording or playing */}
-        {!isRecording && !isPlaying && (
-          <>
-            <CommandButton
-              label="Record Inputs"
-              className={BUTTON_CLASSES['Record']}
-              onClick={handleStartRecording}
-            />
-            <CommandButton
-              label={`Run Inputs (${recordedMacros.length})`}
-              className={BUTTON_CLASSES['Play']}
-              onClick={handleStartPlayback}
-              disabled={recordedMacros.length === 0}
-            />
-            <CommandButton
-              label="Reset Recording"
-              className={BUTTON_CLASSES['Reset']}
-              onClick={resetRecording}
-              disabled={recordedMacros.length === 0}
-            />
-          </>
-        )}
-
-        {/* Show only stop recording button if recording */}
-        {isRecording && (
-          <CommandButton
-            label="Stop Recording"
-            className={BUTTON_CLASSES['Record']}
-            style={{ backgroundColor: '#ffcccc' }}
-            onClick={handleStopRecording}
-          />
-        )}
-
-        {/* Show only stop playback button if playing */}
-        {isPlaying && (
-          <CommandButton
-            label="Stop Playback"
-            className={BUTTON_CLASSES['Play']}
-            style={{ backgroundColor: '#ccffcc' }}
-            onClick={handleStopPlayback}
-          />
-        )}
       </div>
     </div>
   );

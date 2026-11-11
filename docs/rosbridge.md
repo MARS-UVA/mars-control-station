@@ -70,6 +70,8 @@ that topic; `start-rosbridge.sh` warns about missing packages up front.
 ./ros/verify-jetson-link.sh                    # second terminal, with the Jetson up
 ./start-rosbridge.sh                           # UI and rosbridge only, no robot
 JETSON_IP=<robot ip> ROS_DOMAIN_ID=0 ./start.sh   # real robot
+./start.sh --robot frontloader                # select the Frontloader UI
+./start.sh --robot groundDrum                 # select the groundDrum UI
 ```
 
 `start.sh` starts the relay and UI immediately, waits for the Jetson's Zenoh
@@ -79,6 +81,10 @@ waiting. The script refuses to start on a busy port
 and stops all three processes on Ctrl+C or a
 closed terminal. `start-rosbridge.sh` also disables Zenoh scouting so a bench
 run cannot attach to a real robot on the LAN.
+The optional `--robot` flag accepts `bruno` (the default), `frontloader`, or
+`groundDrum`. Bruno keeps the existing dashboard. The other profiles currently
+show the camera and lidar visualizations in the middle column, with blank side
+columns except for the timer and selected robot label at the lower-left.
 
 Keep the browser tab in the foreground. Chrome throttles background timers to
 about 1 Hz, which makes the gamepad publish rate and topic rates look wrong.
@@ -95,14 +101,18 @@ about 1 Hz, which makes the gamepad publish rate and topic rates look wrong.
 | `/esp_working` | `std_msgs/UInt8` (nothing publishes it) | robot → UI | `useRobotState` |
 | `/human_input_state` | `teleop_msgs/HumanInputState`, 30 Hz | UI → robot | `useGamepadPublisher` |
 | `/robot_state/toggle` | `std_msgs/UInt8` | UI → robot | `useRobotStateToggle` |
-| `/dig` | `autonomy_msgs/action/Dig` | UI → robot | `useDigDumpAction` |
-| `/dump` | `autonomy_msgs/action/Dump` | UI → robot | `useDigDumpAction` |
+| `/digdump` | `autonomy_msgs/action/AutonomousActions` | UI → robot | `useDigDumpAction` |
+| `/unilidar/cloud` | `sensor_msgs/PointCloud2` (live lidar scan, not accumulated; CBOR, throttled to 5 Hz, voxel-thinned to 0.05 m in the browser; always subscribed: the 3D view is always on screen; crosses the wireless link on the real robot) | robot → UI | `PointCloudPanel` |
+| `/global_costmap/costmap` | `nav_msgs/OccupancyGrid` (Nav2 global costmap in `map`: RTAB-Map's lidar grid plus inflation; CBOR, 1 Hz; only while Nav2 runs) | robot → UI | `MiniMapPanel` |
+| `/local_costmap/costmap` | `nav_msgs/OccupancyGrid` (Nav2 local costmap in `odom`: 6 x 6 m around the robot from the RGB-D cameras; CBOR, 2 Hz; only while Nav2 runs) | robot → UI | `MiniMapPanel` |
+| `/arena/markers` | `visualization_msgs/MarkerArray` (arena zones in `map` from `arena_markers_node`; read once per connection, then unsubscribed; only with `enable_nav2:=true arena_name:=ARENA_NASA`, else the built-in `arena.js` layout is drawn) | robot → UI | `MiniMapPanel` |
+| `/tf`, `/tf_static` | `tf2_msgs/TFMessage` (JSON, unthrottled; used for `map → odom → base_link` and the lidar's fixed mount, to place the robot, camera and scans; always subscribed) | robot → UI | `PointCloudPanel`, `MiniMapPanel` (via `ros/tf.js`) |
 
 Constants live in `react-app/src/hooks/rosTypes.js`. `RobotState` is TELEOP 0,
 DIG 1, DUMP 2, ESTOP 3. `HumanInputState.drive_mode` uses its own enum (TELEOP 0,
 AUTONOMOUS 1, ADVANCED_TELEOP 2). Both goals take `{ index }`, return `{ success }`, and report `{ phase }`.
-The bottom Robot selector uses `react-app/src/robotProfiles.js`; Bruno is the
-only currently implemented profile, with index 0 for both routines. Add profiles
+Bruno's routine indices are in `robotProfile` at the top of
+`react-app/src/apps/BrunoApp.js`, with index 0 for both routines. Change them
 as Jetson variants become available. Selection is locked during active,
 canceling, or unknown goals and on the legacy transport. This selects routines
 on the connected Jetson; it does not change the rosbridge host.
@@ -110,7 +120,7 @@ on the connected Jetson; it does not change the rosbridge host.
 ## UI behaviour
 
 `REACT_APP_USE_ROSBRIDGE` is read at build time. `start.sh` sets it to `true`.
-`App.js` passes either the rosbridge hooks or the old `packets.js` functions to
+Each robot app in `src/apps/` passes either the rosbridge hooks or the old `packets.js` functions to
 the same panels; only one path is ever loaded.
 
 No hook sends while rosbridge is disconnected. roslib would queue the message and

@@ -5,17 +5,13 @@ import Guidelines from "../gamepad/Guidelines";
 import pauseImage from '../assets/touchedNpaused.png';
 
 const styles = {
+  // The largest 3:2 box that fits the .camera-slot it sits in (a CSS size
+  // container, so cqw/cqh are the slot's width and height).
   container: {
     position: 'relative',
-    // width: '750px',
-    // height: '475px',
-    // maxWidth: '100%',
-    aspectRatio: '3 / 2',
-    // width: "auto",
-    // maxHeight: "40%",
-    height: "50%",
-    maxWidth: "100%",
-    margin: "0 auto"
+    width: 'min(100cqw, 150cqh)',
+    height: 'min(100cqh, 66.667cqw)',
+    margin: '0 auto',
   },
   cameraContainer: {
     position: "relative",

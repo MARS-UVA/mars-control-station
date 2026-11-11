@@ -1,0 +1,89 @@
+.drum-visualizer {
+  display: flex;
+  flex: 0 0 auto;
+  min-width: 0;
+  flex-direction: column;
+  padding: 8px 10px 6px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background-color: var(--panel-bg-color);
+  box-shadow: 0 4px 6px var(--box-shadow-color);
+  color: var(--primary-color);
+}
+
+.drum-visualizer-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.drum-visualizer-heading h2 {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+.drum-visualizer-heading > span {
+  color: var(--secondary-color);
+  font-size: 0.65rem;
+  text-align: right;
+}
+
+.drum-model-view {
+  width: 100%;
+  height: clamp(125px, 20vh, 210px);
+  min-height: 125px;
+}
+
+.drum-model-view canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.drum-visualizer-readings {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.drum-reading {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  font-size: clamp(0.65rem, 1.2vh, 0.8rem);
+  font-variant-numeric: tabular-nums;
+}
+
+.drum-reading-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+}
+
+.drum-reading-label i {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+}
+
+.drum-reading-values {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.drum-visualizer-status {
+  margin: 4px 0 0;
+  color: var(--secondary-color);
+  font-size: 0.65rem;
+  text-align: center;
+}
+
+.drum-visualizer-status.error {
+  color: #c53030;
+}

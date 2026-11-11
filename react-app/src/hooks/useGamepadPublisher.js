@@ -111,10 +111,28 @@ function readGamepadState(directionSwitched) {
  *  - publishCustomFrame(gamepadState) publishes one caller-supplied frame
  *    through the same disconnect guard. Returns whether it was sent.
  *
+ * On-screen / keyboard driving (SimDrivePad):
+ *  - setVirtualStick({ x, y }) replaces the left stick of every live frame
+ *    until setVirtualStick(null). y is "forward" in the current driving
+ *    direction (positive drives toward the camera being shown), so
+ *    directionSwitched is applied to it the same way as to a real stick; x is
+ *    the raw stick x (positive turns right). A blurred or hidden window still
+ *    publishes neutral, so a held key cannot keep the robot moving.
+ *  - setVirtualRightStick({ x, y }) does the same for the right stick until
+ *    setVirtualRightStick(null). Teleop raises the selected drum arms with
+ *    right stick y > 0 and lowers them with y < 0 (0.2 deadzone). Raw values:
+ *    the direction switch never applies to the right stick.
+ *  - setVirtualButtons({ y_pressed: true, ... }) forces those GamepadState
+ *    button fields in every live frame until setVirtualButtons(null). Used by
+ *    the unbeach routine (useUnbeachRoutine) to press teleop's buttons.
+ *
  * @returns {{ driveMode: number, setDriveMode: (mode: number) => void,
  *             gamepadStatus: 'none'|'unsupported-mapping'|'connected'|'suspended',
  *             setLiveEnabled: (enabled: boolean) => void,
- *             publishCustomFrame: (gamepadState: object) => boolean }}
+ *             publishCustomFrame: (gamepadState: object) => boolean,
+ *             setVirtualStick: (stick: {x: number, y: number} | null) => void,
+ *             setVirtualRightStick: (stick: {x: number, y: number} | null) => void,
+ *             setVirtualButtons: (buttons: object | null) => void }}
  */
 export default function useGamepadPublisher(ros, { directionSwitched = false } = {}) {
   const [driveMode, setDriveModeState] = useState(DRIVE_MODE.TELEOP);
@@ -124,6 +142,9 @@ export default function useGamepadPublisher(ros, { directionSwitched = false } =
   const driveModeRef = useRef(DRIVE_MODE.TELEOP);
   const suspendedRef = useRef(false);
   const liveEnabledRef = useRef(true);
+  const virtualStickRef = useRef(null);
+  const virtualRightStickRef = useRef(null);
+  const virtualButtonsRef = useRef(null);
   // Read by the 30 ms tick, so it must be current without restarting the timer.
   const directionSwitchedRef = useRef(directionSwitched);
   directionSwitchedRef.current = Boolean(directionSwitched);
@@ -159,6 +180,25 @@ export default function useGamepadPublisher(ros, { directionSwitched = false } =
 
   const publishCustomFrame = useCallback((gamepadState) => publishFrame(gamepadState), [publishFrame]);
 
+  const setVirtualStick = useCallback((stick) => {
+    virtualStickRef.current = stick ? { x: Number(stick.x) || 0, y: Number(stick.y) || 0 } : null;
+  }, []);
+
+  const setVirtualRightStick = useCallback((stick) => {
+    virtualRightStickRef.current = stick ? { x: Number(stick.x) || 0, y: Number(stick.y) || 0 } : null;
+  }, []);
+
+  // Only boolean *_pressed fields can be forced; anything else is ignored.
+  const setVirtualButtons = useCallback((buttons) => {
+    if (!buttons) {
+      virtualButtonsRef.current = null;
+      return;
+    }
+    virtualButtonsRef.current = Object.fromEntries(
+      Object.entries(buttons).filter(([name, value]) => name.endsWith('_pressed') && typeof value === 'boolean'),
+    );
+  }, []);
+
   const tick = useCallback(() => {
     if (suspendedRef.current) {
       publishNeutral();
@@ -166,6 +206,18 @@ export default function useGamepadPublisher(ros, { directionSwitched = false } =
       return;
     }
     const { frame, gamepadStatus: next } = readGamepadState(directionSwitchedRef.current);
+    const virtualStick = virtualStickRef.current;
+    if (virtualStick) {
+      frame.left_stick = {
+        x: virtualStick.x,
+        y: directionSwitchedRef.current ? -virtualStick.y : virtualStick.y,
+      };
+    }
+    const virtualRightStick = virtualRightStickRef.current;
+    if (virtualRightStick) {
+      frame.right_stick = { x: virtualRightStick.x, y: virtualRightStick.y };
+    }
+    if (virtualButtonsRef.current) Object.assign(frame, virtualButtonsRef.current);
     if (liveEnabledRef.current) publishFrame(frame);
     setGamepadStatus(next);
   }, [publishFrame, publishNeutral]);
@@ -206,5 +258,5 @@ export default function useGamepadPublisher(ros, { directionSwitched = false } =
     };
   }, [ros, tick, publishNeutral]);
 
-  return { driveMode, setDriveMode, gamepadStatus, setLiveEnabled, publishCustomFrame };
+  return { driveMode, setDriveMode, gamepadStatus, setLiveEnabled, publishCustomFrame, setVirtualStick, setVirtualRightStick, setVirtualButtons };
 }

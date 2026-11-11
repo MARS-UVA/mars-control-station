@@ -19,6 +19,20 @@ server (port 3000) immediately, with `REACT_APP_USE_ROSBRIDGE=true`. It waits
 for the Jetson's Zenoh port (7447) to become reachable before starting
 rosbridge (port 9090). The UI retries its connection in the meantime.
 The Zenoh wait has no overall timeout; Ctrl+C stops all three services.
+The Bruno dashboard is the default. Choose another robot's UI profile with
+`--robot`:
+
+```bash
+./start.sh --robot frontloader
+./start.sh --robot groundDrum
+```
+
+Each robot has its own UI file in `react-app/src/apps/` (`BrunoApp.js`,
+`FrontloaderApp.js`, `GroundDrumApp.js`), built from the components in
+`react-app/src/Components/`; `react-app/src/App.js` picks one from the
+`--robot` flag. Frontloader and groundDrum currently show the camera and lidar visualizations
+in the middle column, with blank side columns except for the timer and robot
+name in the lower-left.
 
 `start.sh` connects to the Jetson at `$JETSON_IP`. The devcontainer presets it to
 `mars-jetson` for a Jetson container on the same Docker host and shared
@@ -26,8 +40,14 @@ The Zenoh wait has no overall timeout; Ctrl+C stops all three services.
 the robot's address instead and match its ROS domain:
 
 ```bash
-JETSON_IP=<robot ip> ROS_DOMAIN_ID=0 ./start.sh
+ROS_DOMAIN_ID=0 ./start.sh --ip <robot ip>
+# combine with a robot profile:
+ROS_DOMAIN_ID=0 ./start.sh --robot frontloader --ip <robot ip>
 ```
+
+`--ip` overrides `JETSON_IP` (including the devcontainer's preset), so
+`JETSON_IP=<robot ip> ./start.sh` still works too. With neither, `start.sh`
+asks for the address.
 
 To check the link once both sides are up, from a second terminal in the container:
 
