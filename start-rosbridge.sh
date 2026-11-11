@@ -104,6 +104,10 @@ if [ ${#missing_pkgs[@]} -gt 0 ]; then
     echo "warning: rosbridge cannot load ${missing_pkgs[*]}; topics of those types will fail." >&2
     echo "         Build them with ros/setup-ros-ws.sh (see docs/rosbridge.md)." >&2
 fi
+if ! ros2 pkg prefix nav2_msgs >/dev/null 2>&1; then
+    echo "warning: rosbridge cannot load nav2_msgs; the minimap's path preview will fail." >&2
+    echo "         Install it with: sudo apt install ros-jazzy-nav2-msgs (or rebuild the devcontainer)." >&2
+fi
 
 if port_open "$ROSBRIDGE_PORT"; then
     echo "error: port $ROSBRIDGE_PORT is already in use (a previous rosbridge still running?)." >&2

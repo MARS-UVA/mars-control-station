@@ -5,6 +5,8 @@ import useTfTree, {
 } from '../ros/tf';
 import { ROBOT_WIDTH, robotFootprint } from '../ros/robot';
 import { ARENA, ROBOT_START_IN_ARENA } from '../arena';
+import usePlanPath from '../hooks/usePlanPath';
+import { quaternionYaw } from '../ros/navPath';
 
 /**
  * Bird's-eye minimap built from Nav2's costmaps on the robot, the same maps
@@ -43,6 +45,14 @@ import { ARENA, ROBOT_START_IN_ARENA } from '../arena';
  * View: centred on the robot, heading-up by default (the robot always points
  * up) or map-up. Drag to pan away from the robot, scroll to zoom, double-click
  * or Recenter to go back. The Global, Local and Arena buttons toggle layers.
+ *
+ * Path preview: Set goal arms a single pick. Click a spot to place the goal;
+ * drag before releasing to choose the heading the robot should end at,
+ * otherwise it faces away from the robot. Esc or Cancel goal disarms it. The
+ * goal goes to Nav2's planner (/compute_path_to_pose, usePlanPath) and the
+ * returned path is drawn in magenta, dashed where the robot would reverse.
+ * This only plans: the robot does not move. Picking needs the map frame
+ * (RTAB-Map running), since that is the planner's global frame.
  */
 
 const GLOBAL_COSTMAP_TOPIC = '/global_costmap/costmap';
@@ -77,6 +87,9 @@ const COLORS = {
   robot: '#0088ff',
   robotEdge: '#ffffff',
   nose: '#ffcc00',
+  path: '#e65cff',
+  pathCasing: 'rgba(0, 0, 0, 0.7)',
+  goalFailed: '#bdbdbd',
   arenaWall: 'rgba(255, 255, 255, 0.9)',
   zoneLine: 'rgba(255, 255, 255, 0.55)',
   startZone: '#8bd450',
@@ -138,11 +151,16 @@ const styles = {
   container: { position: 'relative', width: '100%', height: '100%', overflow: 'hidden', background: COLORS.background },
   canvas: { position: 'absolute', inset: 0, width: '100%', height: '100%', cursor: 'grab', touchAction: 'none' },
   buttons: { position: 'absolute', top: 8, right: 8, display: 'flex', gap: 6 },
+  goalButtons: {
+    position: 'absolute', top: 8, left: 8, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 6,
+  },
   button: {
     padding: '3px 8px', fontSize: 12, borderRadius: 4, border: '1px solid #666',
     background: 'rgba(0,0,0,0.6)', color: 'white', cursor: 'pointer',
   },
   buttonOff: { opacity: 0.45 },
+  buttonDisabled: { opacity: 0.35, cursor: 'not-allowed' },
+  buttonArmed: { borderColor: COLORS.path, background: 'rgba(230, 92, 255, 0.25)' },
   status: {
     position: 'absolute', left: 8, bottom: 8, background: 'rgba(0,0,0,0.6)', borderRadius: 6,
     color: 'white', padding: '3px 8px', fontSize: 12, pointerEvents: 'none',
@@ -165,12 +183,6 @@ function toInt8(data) {
     return new Int8Array(bytes.buffer);
   }
   return null;
-}
-
-// Yaw (rad, about +z) of a geometry_msgs/Quaternion.
-function quaternionYaw(q) {
-  const { x = 0, y = 0, z = 0, w = 1 } = q || {};
-  return Math.atan2(2 * (w * z + x * y), 1 - 2 * (y * y + z * z));
 }
 
 // Paints one OccupancyGrid into the layer's offscreen canvas, one pixel per
@@ -389,6 +401,100 @@ function drawBuiltinArena(ctx, k, dpr, anchored) {
   ctx.restore();
 }
 
+// --- Path preview -------------------------------------------------------------
+
+// Goal marker at (x, y) in the current world transform: a ring with an arrow
+// along the goal heading. px converts CSS pixels to metres so the marker keeps
+// its size on screen at any zoom.
+function drawGoalMarker(ctx, px, x, y, yaw, color, dashed) {
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(yaw);
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+  const shape = () => {
+    ctx.beginPath();
+    ctx.arc(0, 0, px(7), 0, 2 * Math.PI);
+    ctx.moveTo(px(7), 0);
+    ctx.lineTo(px(24), 0);
+    ctx.moveTo(px(18), px(5));
+    ctx.lineTo(px(24), 0);
+    ctx.lineTo(px(18), -px(5));
+  };
+  ctx.strokeStyle = COLORS.pathCasing;
+  ctx.lineWidth = px(5);
+  shape();
+  ctx.stroke();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = px(2.5);
+  if (dashed) ctx.setLineDash([px(4), px(3)]);
+  shape();
+  ctx.stroke();
+  ctx.restore();
+}
+
+// Draws the planned path (in its own frame, placed by TF) and the goal.
+// Reversing stretches are dashed. Nothing is drawn for a frame that cannot be
+// placed in the robot's world.
+function drawPlan(ctx, k, dpr, plan, tree) {
+  const px = (n) => (n * dpr) / k;
+  const { path, goal } = plan;
+  if (path && path.points.length > 1) {
+    const world = lookupInRobotWorld(tree, path.frame || MAP_FRAME);
+    if (world) {
+      const e = world.elements;
+      ctx.save();
+      ctx.transform(e[0], e[1], e[4], e[5], e[12], e[13]);
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.strokeStyle = COLORS.pathCasing;
+      ctx.lineWidth = px(6);
+      ctx.beginPath();
+      path.points.forEach((p, i) => (i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)));
+      ctx.stroke();
+      ctx.strokeStyle = COLORS.path;
+      ctx.lineWidth = px(3);
+      for (const run of path.runs) {
+        ctx.setLineDash(run.reverse ? [px(7), px(5)] : []);
+        ctx.beginPath();
+        run.points.forEach((p, i) => (i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)));
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+  }
+  if (goal) {
+    const world = lookupInRobotWorld(tree, goal.frame);
+    if (world) {
+      const e = world.elements;
+      ctx.save();
+      ctx.transform(e[0], e[1], e[4], e[5], e[12], e[13]);
+      const color = plan.status === 'failed' ? COLORS.goalFailed : COLORS.path;
+      drawGoalMarker(ctx, px, goal.x, goal.y, goal.yaw, color, plan.status === 'planning');
+      ctx.restore();
+    }
+  }
+}
+
+function planStatusLine(plan) {
+  switch (plan.status) {
+    case 'planning':
+      return 'Planning a path\u2026';
+    case 'succeeded': {
+      const reverse = plan.path.hasReverse ? '; dashed = reversing' : '';
+      return `Path: ${plan.path.length.toFixed(1)} m, planned in ${plan.planningTime.toFixed(2)} s${reverse}`;
+    }
+    case 'failed':
+      return plan.error;
+    default:
+      return null;
+  }
+}
+
+// A drag shorter than this (CSS px) is a plain click: the goal faces away
+// from the robot instead of along the drag.
+const HEADING_DRAG_PX = 10;
+
 const ARENA_NOTES = {
   builtin: `Arena: built-in layout (no ${ARENA_MARKERS_TOPIC})`,
   start: 'No map frame: arena placed from start pose',
@@ -411,11 +517,21 @@ export default function MiniMapPanel({
   const markersRef = useRef(new Map());
   const tfTreeRef = useTfTree(ros, isConnected);
 
+  // Path preview. The render loop and pointer handlers read these refs.
+  const { plan, requestPlan, clearPlan } = usePlanPath(ros);
+  const planRef = useRef(plan);
+  planRef.current = plan;
+  const requestPlanRef = useRef(requestPlan);
+  requestPlanRef.current = requestPlan;
+  const [picking, setPicking] = useState(false);
+  const [mapReady, setMapReady] = useState(false); // robot pose resolves to the map frame
+  const [pickNote, setPickNote] = useState(null);
+
   // View state lives in a ref so the render loop and pointer handlers share it
   // without re-rendering; React state only mirrors what the buttons show.
   const viewRef = useRef({
     scale: DEFAULT_SCALE, userZoomed: false, headingUp: true, pan: null,
-    showArena: true, showGlobal: true, showLocal: true,
+    showArena: true, showGlobal: true, showLocal: true, picking: false, pick: null,
   });
   const [headingUp, setHeadingUp] = useState(true);
   const [showArena, setShowArena] = useState(true);
@@ -501,6 +617,9 @@ export default function MiniMapPanel({
     let viewYaw = Math.PI / 2;
     let lastAnchored = true;
     let lastArenaMode = null;
+    let lastMapReady = false;
+    let worldRoot = null;          // frame the minimap's world is, from the robot pose
+    let screenFromWorld = new DOMMatrix(); // world metres -> canvas device pixels
 
     const fitScale = () => Math.min(MAX_SCALE, Math.max(MIN_SCALE,
       Math.min(canvas.clientWidth, canvas.clientHeight) / 2 / FIT_RADIUS));
@@ -522,6 +641,12 @@ export default function MiniMapPanel({
         const e = pose.matrix.elements;
         robotX = e[12]; robotY = e[13]; robotYaw = yawOf(pose.matrix);
       }
+      worldRoot = pose ? pose.root : null;
+      const ready = worldRoot === MAP_FRAME;
+      if (ready !== lastMapReady) {
+        lastMapReady = ready;
+        setMapReady(ready);
+      }
 
       const dpr = window.devicePixelRatio || 1;
       const w = canvas.width;
@@ -542,6 +667,7 @@ export default function MiniMapPanel({
       ctx.setTransform(a, b, cc, d,
         w / 2 - (a * centerX + cc * centerY),
         h / 2 - (b * centerX + d * centerY));
+      screenFromWorld = ctx.getTransform();
 
       if (view.showGlobal) drawLayer(ctx, layers.global, tree);
       if (view.showLocal) drawLayer(ctx, layers.local, tree);
@@ -561,6 +687,13 @@ export default function MiniMapPanel({
       if (mode !== lastArenaMode) {
         lastArenaMode = mode;
         setArenaMode(mode);
+      }
+
+      // Planned path and goal, then the goal being picked on top.
+      drawPlan(ctx, k, dpr, planRef.current, tree);
+      if (view.pick) {
+        drawGoalMarker(ctx, (n) => (n * dpr) / k, view.pick.x, view.pick.y,
+          view.pick.yaw ?? Math.atan2(view.pick.y - robotY, view.pick.x - robotX), COLORS.path, true);
       }
 
       // Robot: outline box plus a nose triangle at the front.
@@ -606,15 +739,57 @@ export default function MiniMapPanel({
     };
     draw();
 
+    // Pointer position -> world metres, through the last drawn frame's view.
+    const toWorld = (event) => {
+      const rect = canvas.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      const p = screenFromWorld.inverse().transformPoint(
+        new DOMPoint((event.clientX - rect.left) * dpr, (event.clientY - rect.top) * dpr));
+      return { x: p.x, y: p.y };
+    };
+
+    // Goal picking: pointer down places the goal, dragging sets its heading,
+    // pointer up sends it to the planner and disarms picking.
+    let lastPickAt = 0;
+    const finishPick = (event) => {
+      const pick = view.pick;
+      view.pick = null;
+      view.picking = false;
+      setPicking(false);
+      canvas.style.cursor = 'grab';
+      lastPickAt = performance.now();
+      if (!pick || !event) return;
+      if (worldRoot !== MAP_FRAME) {
+        setPickNote('Goal not sent: no map frame (is RTAB-Map running?)');
+        return;
+      }
+      const yaw = pick.yaw ?? Math.atan2(pick.y - robotY, pick.x - robotX);
+      setPickNote(null);
+      requestPlanRef.current({ frame: MAP_FRAME, x: pick.x, y: pick.y, yaw });
+    };
+
     // Drag to pan: screen movement converted to world movement for the
     // current zoom and rotation, so the map follows the pointer.
     let dragging = null;
     const onPointerDown = (event) => {
       canvas.setPointerCapture(event.pointerId);
+      if (view.picking) {
+        const p = toWorld(event);
+        view.pick = { ...p, yaw: null, clientX: event.clientX, clientY: event.clientY };
+        return;
+      }
       dragging = { x: event.clientX, y: event.clientY };
       canvas.style.cursor = 'grabbing';
     };
     const onPointerMove = (event) => {
+      if (view.pick) {
+        const moved = Math.hypot(event.clientX - view.pick.clientX, event.clientY - view.pick.clientY);
+        if (moved >= HEADING_DRAG_PX) {
+          const p = toWorld(event);
+          view.pick.yaw = Math.atan2(p.y - view.pick.y, p.x - view.pick.x);
+        }
+        return;
+      }
       if (!dragging) return;
       const du = (event.clientX - dragging.x) / view.scale;
       const dv = -(event.clientY - dragging.y) / view.scale;
@@ -625,9 +800,13 @@ export default function MiniMapPanel({
       view.pan = { x: pan.x - (s * du + c * dv), y: pan.y - (-c * du + s * dv) };
       setPanned(true);
     };
-    const onPointerUp = () => {
+    const onPointerUp = (event) => {
+      if (view.pick) {
+        finishPick(event.type === 'pointerup' ? event : null);
+        return;
+      }
       dragging = null;
-      canvas.style.cursor = 'grab';
+      canvas.style.cursor = view.picking ? 'crosshair' : 'grab';
     };
     const onWheel = (event) => {
       event.preventDefault();
@@ -635,6 +814,8 @@ export default function MiniMapPanel({
       view.userZoomed = true;
     };
     const onDoubleClick = () => {
+      // The second click of a double-click right after a pick is not a reset.
+      if (view.picking || performance.now() - lastPickAt < 500) return;
       view.pan = null;
       view.userZoomed = false;
       view.scale = fitScale();
@@ -659,6 +840,42 @@ export default function MiniMapPanel({
     };
   }, [tfTreeRef]);
 
+  // Esc disarms picking; the cursor shows when it is armed.
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (canvas) canvas.style.cursor = picking ? 'crosshair' : 'grab';
+    if (!picking) return undefined;
+    const onKey = (event) => {
+      if (event.key !== 'Escape') return;
+      viewRef.current.picking = false;
+      viewRef.current.pick = null;
+      setPicking(false);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [picking]);
+
+  // Losing the connection or the map frame disarms picking.
+  const canPick = Boolean(isConnected) && mapReady;
+  useEffect(() => {
+    if (canPick || !viewRef.current.picking) return;
+    viewRef.current.picking = false;
+    viewRef.current.pick = null;
+    setPicking(false);
+  }, [canPick]);
+
+  const togglePicking = () => {
+    const next = !viewRef.current.picking;
+    viewRef.current.picking = next;
+    viewRef.current.pick = null;
+    setPicking(next);
+    setPickNote(null);
+  };
+  const clearGoal = () => {
+    clearPlan();
+    setPickNote(null);
+  };
+
   const toggle = (key, setter) => () => {
     viewRef.current[key] = !viewRef.current[key];
     setter(viewRef.current[key]);
@@ -676,10 +893,31 @@ export default function MiniMapPanel({
 
   const lines = status ? status.split('\n') : [];
   if (ARENA_NOTES[arenaMode]) lines.push(ARENA_NOTES[arenaMode]);
+  if (picking) lines.push('Click to place the goal, drag to aim it. Esc cancels.');
+  else if (pickNote) lines.push(pickNote);
+  else if (planStatusLine(plan)) lines.push(planStatusLine(plan));
+
+  let goalTitle = 'Pick a goal on the map and preview the path Nav2 plans to it';
+  if (!isConnected) goalTitle = 'Connect to rosbridge to set a goal';
+  else if (!mapReady) goalTitle = 'Needs the map frame: start RTAB-Map and Nav2 on the robot';
 
   return (
     <div style={styles.container}>
       <canvas ref={canvasRef} style={styles.canvas} />
+      <div style={styles.goalButtons}>
+        <button type="button" disabled={!canPick && !picking} title={goalTitle} onClick={togglePicking}
+          style={{
+            ...styles.button,
+            whiteSpace: 'nowrap',
+            ...(picking ? styles.buttonArmed : null),
+            ...(!canPick && !picking ? styles.buttonDisabled : null),
+          }}>
+          {picking ? 'Cancel goal' : 'Set goal'}
+        </button>
+        {!picking && plan.status !== 'idle' && (
+          <button type="button" style={{ ...styles.button, whiteSpace: 'nowrap' }} onClick={clearGoal}>Clear goal</button>
+        )}
+      </div>
       <div style={styles.buttons}>
         {panned && <button type="button" style={styles.button} onClick={recenter}>Recenter</button>}
         <button type="button" style={styles.button} onClick={toggle('headingUp', setHeadingUp)}>
