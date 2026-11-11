@@ -106,6 +106,7 @@ about 1 Hz, which makes the gamepad publish rate and topic rates look wrong.
 | `/global_costmap/costmap` | `nav_msgs/OccupancyGrid` (Nav2 global costmap in `map`: RTAB-Map's lidar grid plus inflation; CBOR, 1 Hz; only while Nav2 runs) | robot → UI | `MiniMapPanel` |
 | `/local_costmap/costmap` | `nav_msgs/OccupancyGrid` (Nav2 local costmap in `odom`: 6 x 6 m around the robot from the RGB-D cameras; CBOR, 2 Hz; only while Nav2 runs) | robot → UI | `MiniMapPanel` |
 | `/arena/markers` | `visualization_msgs/MarkerArray` (arena zones in `map` from `arena_markers_node`; read once per connection, then unsubscribed; only with `enable_nav2:=true arena_name:=ARENA_NASA`, else the built-in `arena.js` layout is drawn) | robot → UI | `MiniMapPanel` |
+| `/compute_path_to_pose` | `nav2_msgs/action/ComputePathToPose` (Nav2 planner_server; plans only, never moves the robot; goal in `map`, `use_start: false`; result `path` drawn on the minimap; needs `ros-jazzy-nav2-msgs` in this container; only while Nav2 runs) | UI → robot | `usePlanPath` via `MiniMapPanel` |
 | `/tf`, `/tf_static` | `tf2_msgs/TFMessage` (JSON, unthrottled; used for `map → odom → base_link` and the lidar's fixed mount, to place the robot, camera and scans; always subscribed) | robot → UI | `PointCloudPanel`, `MiniMapPanel` (via `ros/tf.js`) |
 
 Constants live in `react-app/src/hooks/rosTypes.js`. `RobotState` is TELEOP 0,
@@ -144,6 +145,24 @@ ESP is "not present" and the banner is hidden. The `mock` backend looks like
 real hardware with a dead ESP and shows the banner. Dig/Dump buttons and
 keyboard shortcuts remain available regardless of ESP status; goals are only
 sent while rosbridge is connected.
+
+### Path preview
+
+Set goal on the minimap arms one pick. Clicking places the goal; dragging
+before releasing sets the heading the robot should finish at, and a plain click
+makes it face away from the robot. Esc or Cancel goal disarms it. The goal is
+sent to `/compute_path_to_pose` in the `map` frame, so the button is disabled
+until the robot pose resolves to `map` (RTAB-Map running). The returned path is
+drawn in magenta, dashed where Hybrid-A* plans a reversal, with its length and
+planning time in the status block; planner errors (goal occupied, outside the
+map, no valid path) are shown there instead. A new pick cancels a request still
+in flight, and Clear goal removes the goal and path.
+
+This calls the planner directly, the same action server `bt_navigator` uses
+while navigating. Nav2's action servers serve one goal at a time, so a preview
+requested during autonomous navigation can preempt the navigator's own
+replanning request and make it run a recovery. Preview while the robot is not
+navigating.
 
 ## Known gaps
 
