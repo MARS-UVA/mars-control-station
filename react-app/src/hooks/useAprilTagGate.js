@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState, useMemo } from 'react';
 import { Topic } from 'roslib';
+import { Ros, Service} from 'roslib';
 
 const OPEN_TOPIC = '/apriltag_gate/open';     // std_msgs/Float32, seconds
 const STATUS_TOPIC = '/apriltag_gate/status'; // std_msgs/String, JSON, 2 Hz
@@ -16,6 +17,42 @@ const STALE_MS = 3000;
  * @returns {{ status: object|null, available: boolean,
  *             open: (seconds: number) => boolean }}
  */
+export function useServiceGate(ros) {
+
+  const [status, setStatus] = useState("idle");
+
+  const callAprilTagClient = useMemo(() => {
+    if (!ros) return null;
+    return new Service({
+    ros: ros,
+    name: '/AprilTagGate',
+    serviceType: 'robot_perception_interfaces/srv/AprilTagGate'
+    }); 
+  }, [ros]); 
+
+  const callAprilTagGate = useCallback((tagData = {}) => {
+    if (!apriltagGateClient) {
+      console.warn('ROS is not connected yet.');
+      setStatus('disconnected');
+      return;
+    }
+
+    setStatus('pending')
+    const request = new ServiceRequest(tagData);
+    apriltagGate_client.callService(request, (result) => {
+      setStatus(result.success ? "success" : "failed");
+      console.log(result.data)
+    }, (error) => {
+      console.error('Service call failed:', error);
+      setStatus('Error');
+    });
+  }, [apriltagGateClient]);
+
+return (callAprilTagClient, status)
+  
+}
+
+
 export default function useAprilTagGate(ros) {
   const [status, setStatus] = useState(null);
   const [now, setNow] = useState(Date.now());

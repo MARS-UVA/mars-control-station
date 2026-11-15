@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import callAprilTagGate from '../hooks/useAprilTagGate';
 
 /*
 "Localize" button: opens the robot's AprilTag gate for a few seconds so
@@ -32,7 +33,10 @@ export default function AprilTagGateButton({ gate, disabled }) {
       <div className="panel-title">AprilTag localize</div>
       <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
         <button type="button" disabled={off} title={title}
-          onClick={() => setNotice(open(seconds) ? null : 'Not sent: rosbridge disconnected')}>
+          onClick={() => {
+            setNotice(open(seconds) ? null : 'Not sent: rosbridge disconnected');
+            callAprilTagGate();
+            }}> 
           {state === 'open' ? 'Extend' : 'Localize'}
         </button>
         <select value={seconds} onChange={(e) => setSeconds(Number(e.target.value))}>
