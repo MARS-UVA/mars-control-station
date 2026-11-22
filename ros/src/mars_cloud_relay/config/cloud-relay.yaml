@@ -1,0 +1,4 @@
+mars_cloud_relay:
+  ros__parameters:
+    in_transport: draco
+    out_transport: raw

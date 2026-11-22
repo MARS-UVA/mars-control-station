@@ -12,6 +12,7 @@ import os
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import IncludeLaunchDescription
+from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch_xml.launch_description_sources import XMLLaunchDescriptionSource
 
 
@@ -26,4 +27,13 @@ def generate_launch_description():
         ),
         launch_arguments={'websocket_ping_interval': '5.0'}.items(),
     )
-    return LaunchDescription([rosbridge_launch])
+    cloud_relay = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(
+                get_package_share_directory('mars_cloud_relay'),
+                'launch',
+                'cloud_relay.launch.py',
+            )
+        ),
+    )
+    return LaunchDescription([rosbridge_launch, cloud_relay])

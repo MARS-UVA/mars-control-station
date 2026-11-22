@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>mars_cloud_relay</name>
+  <version>0.0.0</version>
+  <description>Draco point cloud relay for the MARS control station.</description>
+  <maintainer email="maintainer@example.com">MARS</maintainer>
+  <license>TODO</license>
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <exec_depend>ament_index_python</exec_depend>
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+  <exec_depend>point_cloud_transport</exec_depend>
+  <exec_depend>draco_point_cloud_transport</exec_depend>
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

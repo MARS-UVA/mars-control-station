@@ -258,14 +258,13 @@ const BrunoApp = () => {
             )}
             {panelEspWorking || espNotPresent ? null : <div className="esp-not-working">ESP Not Receiving Packets</div>}
           </div>
-          {/* Lidar views, always shown under the camera: the 3D chase view of
-              the live scan and the bird's-eye minimap. */}
+          {/* The accumulated map and bird's-eye minimap are shown under the camera. */}
           {USE_ROSBRIDGE && (
             <div className="map-row">
               <section className="map-card">
                 <div className="map-card-title">3D view</div>
                 <div className="map-card-body">
-                  <PointCloudPanel ros={ros} isConnected={isConnected} topic="/unilidar/cloud" label="Lidar"
+                  <PointCloudPanel ros={ros} isConnected={isConnected} topic="/station/cloud_map_decompressed" label="Map"
                     directionSwitched={directionSwitched}
                     frontActuatorPosition={telemetry.position?.front_actuator_position}
                     backActuatorPosition={telemetry.position?.back_actuator_position} />

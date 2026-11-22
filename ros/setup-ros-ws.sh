@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
-# Build the MARS interface packages this control station needs.
+# Build the MARS interface packages and point cloud relay.
 #
 # Usage:   ./ros/setup-ros-ws.sh
 #
 # Run from a Linux/WSL shell with ROS 2 Jazzy installed. It creates (or
 # refreshes) a colcon workspace outside this repo, links in the four IDL-only
-# packages from the ros/mars-ros-interfaces submodule, and builds them.
+# packages from the ros/mars-ros-interfaces submodule and the station relay,
+# and builds them.
 #
 # The submodule is the only source. mars-jetson pins the same submodule commit,
 # so both sides of the bridge build identical interface definitions. A package
@@ -25,6 +26,7 @@ MSG_PACKAGES=(serial_msgs teleop_msgs robot_control_msgs autonomy_msgs)
 : "${MARS_ROS_DISTRO:=jazzy}"
 : "${MARS_ROS_WS:=$HOME/UVA_Projects/mars-control-station-ros_ws}"
 INTERFACES_SRC="$(cd "$(dirname "$0")" && pwd)/mars-ros-interfaces/src"
+RELAY_SRC="$(cd "$(dirname "$0")" && pwd)/src/mars_cloud_relay"
 
 if [ ! -f "/opt/ros/${MARS_ROS_DISTRO}/setup.bash" ]; then
     echo "error: ROS 2 ${MARS_ROS_DISTRO} not found at /opt/ros/${MARS_ROS_DISTRO}" >&2
@@ -68,8 +70,9 @@ if [ ${#found[@]} -eq 0 ]; then
 fi
 
 cd "${MARS_ROS_WS}"
+ln -sfn "${RELAY_SRC}" "src/mars_cloud_relay"
 rosdep install --from-paths src --ignore-src -y
-colcon build --symlink-install --packages-select "${found[@]}"
+colcon build --symlink-install --packages-select "${found[@]}" mars_cloud_relay
 
 if [ ${#missing[@]} -gt 0 ]; then
     echo >&2
